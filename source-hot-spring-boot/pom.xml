@@ -10,18 +10,18 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>source-hot-spring-boot</artifactId>
+
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
-			<version>2.2.5.RELEASE</version>
-			<scope>compile</scope>
+			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<version>2.2.5.RELEASE</version>
-			<scope>compile</scope>
+			<version>${revision}</version>
 		</dependency>
 	</dependencies>
 
