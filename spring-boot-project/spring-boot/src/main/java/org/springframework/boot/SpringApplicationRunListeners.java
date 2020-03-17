@@ -35,6 +35,9 @@ class SpringApplicationRunListeners {
 
 	private final Log log;
 
+	/**
+	 * 监听器列表
+	 */
 	private final List<SpringApplicationRunListener> listeners;
 
 	SpringApplicationRunListeners(Log log, Collection<? extends SpringApplicationRunListener> listeners) {
@@ -66,6 +69,10 @@ class SpringApplicationRunListeners {
 		}
 	}
 
+	/**
+	 * 启动监听器
+	 * @param context
+	 */
 	void started(ConfigurableApplicationContext context) {
 		for (SpringApplicationRunListener listener : this.listeners) {
 			listener.started(context);

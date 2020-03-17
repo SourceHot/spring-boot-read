@@ -38,6 +38,8 @@ public interface SpringApplicationRunListener {
 	/**
 	 * Called immediately when the run method has first started. Can be used for very
 	 * early initialization.
+	 *
+	 * 这是一个最早期的启动方法
 	 */
 	default void starting() {
 	}
@@ -70,6 +72,8 @@ public interface SpringApplicationRunListener {
 	 * The context has been refreshed and the application has started but
 	 * {@link CommandLineRunner CommandLineRunners} and {@link ApplicationRunner
 	 * ApplicationRunners} have not been called.
+	 *
+	 * 上下文已经刷新并且已经启动了app 但是{@link CommandLineRunner} 和 {@link ApplicationRunner} 没有启动
 	 * @param context the application context.
 	 * @since 2.0.0
 	 */
@@ -80,6 +84,9 @@ public interface SpringApplicationRunListener {
 	 * Called immediately before the run method finishes, when the application context has
 	 * been refreshed and all {@link CommandLineRunner CommandLineRunners} and
 	 * {@link ApplicationRunner ApplicationRunners} have been called.
+	 *
+	 * 在{@link SpringApplication#run(java.lang.String...)}
+	 * 完整之前调用，并且{@link CommandLineRunner} 和{@link ApplicationRunner} 会完成调用
 	 * @param context the application context.
 	 * @since 2.0.0
 	 */

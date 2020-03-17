@@ -59,6 +59,7 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.ConfigurableConversionService;
@@ -170,6 +171,8 @@ public class SpringApplication {
 	/**
 	 * The class name of application context that will be used by default for web
 	 * environments.
+	 *
+	 * 默认上下文
 	 */
 	public static final String DEFAULT_SERVLET_WEB_CONTEXT_CLASS = "org.springframework.boot."
 			+ "web.servlet.context.AnnotationConfigServletWebServerApplicationContext";
@@ -274,6 +277,95 @@ public class SpringApplication {
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 
+	/**
+	 * Static helper that can be used to run a {@link SpringApplication} from the
+	 * specified source using default settings.
+	 *
+	 * 启动方法
+	 * @param primarySource the primary source to load
+	 * @param args the application arguments (usually passed from a Java main method)
+	 * @return the running {@link ApplicationContext}
+	 */
+	public static ConfigurableApplicationContext run(Class<?> primarySource, String... args) {
+		return run(new Class<?>[] { primarySource }, args);
+	}
+
+	/**
+	 * Static helper that can be used to run a {@link SpringApplication} from the
+	 * specified sources using default settings and user supplied arguments.
+	 * @param primarySources the primary sources to load
+	 * @param args the application arguments (usually passed from a Java main method)
+	 * @return the running {@link ApplicationContext}
+	 */
+	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
+		return new SpringApplication(primarySources).run(args);
+	}
+
+	/**
+	 * A basic main that can be used to launch an application. This method is useful when
+	 * application sources are defined via a {@literal --spring.main.sources} command line
+	 * argument.
+	 * <p>
+	 * Most developers will want to define their own main method and call the
+	 * {@link #run(Class, String...) run} method instead.
+	 * @param args command line arguments
+	 * @throws Exception if the application cannot be started
+	 * @see SpringApplication#run(Class[], String[])
+	 * @see SpringApplication#run(Class, String...)
+	 */
+	public static void main(String[] args) throws Exception {
+		SpringApplication.run(new Class<?>[0], args);
+	}
+
+	/**
+	 * Static helper that can be used to exit a {@link SpringApplication} and obtain a
+	 * code indicating success (0) or otherwise. Does not throw exceptions but should
+	 * print stack traces of any encountered. Applies the specified
+	 * {@link ExitCodeGenerator} in addition to any Spring beans that implement
+	 * {@link ExitCodeGenerator}. In the case of multiple exit codes the highest value
+	 * will be used (or if all values are negative, the lowest value will be used)
+	 * @param context the context to close if possible
+	 * @param exitCodeGenerators exist code generators
+	 * @return the outcome (0 if successful)
+	 */
+	public static int exit(ApplicationContext context, ExitCodeGenerator... exitCodeGenerators) {
+		Assert.notNull(context, "Context must not be null");
+		int exitCode = 0;
+		try {
+			try {
+				ExitCodeGenerators generators = new ExitCodeGenerators();
+				Collection<ExitCodeGenerator> beans = context.getBeansOfType(ExitCodeGenerator.class).values();
+				generators.addAll(exitCodeGenerators);
+				generators.addAll(beans);
+				exitCode = generators.getExitCode();
+				if (exitCode != 0) {
+					context.publishEvent(new ExitCodeEvent(context, exitCode));
+				}
+			}
+			finally {
+				close(context);
+			}
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+			exitCode = (exitCode != 0) ? exitCode : 1;
+		}
+		return exitCode;
+	}
+
+	private static void close(ApplicationContext context) {
+		if (context instanceof ConfigurableApplicationContext) {
+			ConfigurableApplicationContext closable = (ConfigurableApplicationContext) context;
+			closable.close();
+		}
+	}
+
+	private static <E> Set<E> asUnmodifiableOrderedSet(Collection<E> elements) {
+		List<E> list = new ArrayList<>(elements);
+		list.sort(AnnotationAwareOrderComparator.INSTANCE);
+		return new LinkedHashSet<>(list);
+	}
+
 	private Class<?> deduceMainApplicationClass() {
 		try {
 			StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
@@ -296,29 +388,44 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 */
 	public ConfigurableApplicationContext run(String... args) {
+		// 秒表
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		ConfigurableApplicationContext context = null;
+		//
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		configureHeadlessProperty();
+		// 获取监听器
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// 监听器启动
 		listeners.starting();
 		try {
+			// application 启动参数列表
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+			// 准备环境
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
+			// 配置忽略的bean信息
 			configureIgnoreBeanInfo(environment);
+			// 输出Banner
 			Banner printedBanner = printBanner(environment);
+			// 创建应用上下文
 			context = createApplicationContext();
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
+			// 准备上下文，装配bean
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+			// 上下文刷新
 			refreshContext(context);
+			// 刷新后做什么
 			afterRefresh(context, applicationArguments);
+			// 秒表结束
 			stopWatch.stop();
 			if (this.logStartupInfo) {
 				new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
 			}
+			// 监听器开始了
 			listeners.started(context);
+			// 唤醒
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
@@ -327,6 +434,7 @@ public class SpringApplication {
 		}
 
 		try {
+			// 监听器正式运行
 			listeners.running(context);
 		}
 		catch (Throwable ex) {
@@ -336,6 +444,12 @@ public class SpringApplication {
 		return context;
 	}
 
+    /**
+     * 准备环境
+     * @param listeners
+     * @param applicationArguments
+     * @return
+     */
 	private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments) {
 		// Create and configure the environment
@@ -375,6 +489,7 @@ public class SpringApplication {
 		}
 		// Add boot specific singleton beans
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+		// 单例对象注册
 		beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
 		if (printedBanner != null) {
 			beanFactory.registerSingleton("springBootBanner", printedBanner);
@@ -405,11 +520,20 @@ public class SpringApplication {
 		}
 	}
 
+	/**
+	 * 配置属性 java.awt.headless
+	 *
+	 */
 	private void configureHeadlessProperty() {
 		System.setProperty(SYSTEM_PROPERTY_JAVA_AWT_HEADLESS,
 				System.getProperty(SYSTEM_PROPERTY_JAVA_AWT_HEADLESS, Boolean.toString(this.headless)));
 	}
 
+	/**
+	 * 获取监听器
+	 * @param args
+	 * @return
+	 */
 	private SpringApplicationRunListeners getRunListeners(String[] args) {
 		Class<?>[] types = new Class<?>[] { SpringApplication.class, String[].class };
 		return new SpringApplicationRunListeners(logger,
@@ -420,25 +544,53 @@ public class SpringApplication {
 		return getSpringFactoriesInstances(type, new Class<?>[] {});
 	}
 
+	/**
+	 * 获取 Spring Factory 实例
+	 * @param type
+	 * @param parameterTypes
+	 * @param args
+	 * @param <T>
+	 * @return
+	 */
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
+		// 读取 spring.factories
 		Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+		// 创建SpringFactory实例
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
+		/**
+		 * 排序 {@link Ordered}
+		 */
 		AnnotationAwareOrderComparator.sort(instances);
 		return instances;
 	}
 
+	/**
+	 * 创建 Spring Factory 实例
+	 * @param type
+	 * @param parameterTypes
+	 * @param classLoader
+	 * @param args
+	 * @param names
+	 * @param <T>
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	private <T> List<T> createSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes,
 			ClassLoader classLoader, Object[] args, Set<String> names) {
+	    // 初始化
 		List<T> instances = new ArrayList<>(names.size());
 		for (String name : names) {
 			try {
+			    // 通过名字创建类的class对象
 				Class<?> instanceClass = ClassUtils.forName(name, classLoader);
 				Assert.isAssignable(type, instanceClass);
+				// 构造器获取
 				Constructor<?> constructor = instanceClass.getDeclaredConstructor(parameterTypes);
+				// 创建具体实例
 				T instance = (T) BeanUtils.instantiateClass(constructor, args);
+				// 加入实例表中
 				instances.add(instance);
 			}
 			catch (Throwable ex) {
@@ -569,6 +721,7 @@ public class SpringApplication {
 		Class<?> contextClass = this.applicationContextClass;
 		if (contextClass == null) {
 			try {
+				// 根据不同类型选择创建的实例
 				switch (this.webApplicationType) {
 				case SERVLET:
 					contextClass = Class.forName(DEFAULT_SERVLET_WEB_CONTEXT_CLASS);
@@ -698,6 +851,15 @@ public class SpringApplication {
 	 */
 	public ResourceLoader getResourceLoader() {
 		return this.resourceLoader;
+	}
+
+	/**
+	 * Sets the {@link ResourceLoader} that should be used when loading resources.
+	 * @param resourceLoader the resource loader
+	 */
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
+		this.resourceLoader = resourceLoader;
 	}
 
 	/**
@@ -1129,15 +1291,6 @@ public class SpringApplication {
 	}
 
 	/**
-	 * Sets the {@link ResourceLoader} that should be used when loading resources.
-	 * @param resourceLoader the resource loader
-	 */
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
-		this.resourceLoader = resourceLoader;
-	}
-
-	/**
 	 * Sets the type of Spring {@link ApplicationContext} that will be created. If not
 	 * specified defaults to {@link #DEFAULT_SERVLET_WEB_CONTEXT_CLASS} for web based
 	 * applications or {@link AnnotationConfigApplicationContext} for non web based
@@ -1147,15 +1300,6 @@ public class SpringApplication {
 	public void setApplicationContextClass(Class<? extends ConfigurableApplicationContext> applicationContextClass) {
 		this.applicationContextClass = applicationContextClass;
 		this.webApplicationType = WebApplicationType.deduceFromApplicationContext(applicationContextClass);
-	}
-
-	/**
-	 * Sets the {@link ApplicationContextInitializer} that will be applied to the Spring
-	 * {@link ApplicationContext}.
-	 * @param initializers the initializers to set
-	 */
-	public void setInitializers(Collection<? extends ApplicationContextInitializer<?>> initializers) {
-		this.initializers = new ArrayList<>(initializers);
 	}
 
 	/**
@@ -1177,12 +1321,12 @@ public class SpringApplication {
 	}
 
 	/**
-	 * Sets the {@link ApplicationListener}s that will be applied to the SpringApplication
-	 * and registered with the {@link ApplicationContext}.
-	 * @param listeners the listeners to set
+	 * Sets the {@link ApplicationContextInitializer} that will be applied to the Spring
+	 * {@link ApplicationContext}.
+	 * @param initializers the initializers to set
 	 */
-	public void setListeners(Collection<? extends ApplicationListener<?>> listeners) {
-		this.listeners = new ArrayList<>(listeners);
+	public void setInitializers(Collection<? extends ApplicationContextInitializer<?>> initializers) {
+		this.initializers = new ArrayList<>(initializers);
 	}
 
 	/**
@@ -1205,90 +1349,12 @@ public class SpringApplication {
 	}
 
 	/**
-	 * Static helper that can be used to run a {@link SpringApplication} from the
-	 * specified source using default settings.
-	 * @param primarySource the primary source to load
-	 * @param args the application arguments (usually passed from a Java main method)
-	 * @return the running {@link ApplicationContext}
+	 * Sets the {@link ApplicationListener}s that will be applied to the SpringApplication
+	 * and registered with the {@link ApplicationContext}.
+	 * @param listeners the listeners to set
 	 */
-	public static ConfigurableApplicationContext run(Class<?> primarySource, String... args) {
-		return run(new Class<?>[] { primarySource }, args);
-	}
-
-	/**
-	 * Static helper that can be used to run a {@link SpringApplication} from the
-	 * specified sources using default settings and user supplied arguments.
-	 * @param primarySources the primary sources to load
-	 * @param args the application arguments (usually passed from a Java main method)
-	 * @return the running {@link ApplicationContext}
-	 */
-	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
-		return new SpringApplication(primarySources).run(args);
-	}
-
-	/**
-	 * A basic main that can be used to launch an application. This method is useful when
-	 * application sources are defined via a {@literal --spring.main.sources} command line
-	 * argument.
-	 * <p>
-	 * Most developers will want to define their own main method and call the
-	 * {@link #run(Class, String...) run} method instead.
-	 * @param args command line arguments
-	 * @throws Exception if the application cannot be started
-	 * @see SpringApplication#run(Class[], String[])
-	 * @see SpringApplication#run(Class, String...)
-	 */
-	public static void main(String[] args) throws Exception {
-		SpringApplication.run(new Class<?>[0], args);
-	}
-
-	/**
-	 * Static helper that can be used to exit a {@link SpringApplication} and obtain a
-	 * code indicating success (0) or otherwise. Does not throw exceptions but should
-	 * print stack traces of any encountered. Applies the specified
-	 * {@link ExitCodeGenerator} in addition to any Spring beans that implement
-	 * {@link ExitCodeGenerator}. In the case of multiple exit codes the highest value
-	 * will be used (or if all values are negative, the lowest value will be used)
-	 * @param context the context to close if possible
-	 * @param exitCodeGenerators exist code generators
-	 * @return the outcome (0 if successful)
-	 */
-	public static int exit(ApplicationContext context, ExitCodeGenerator... exitCodeGenerators) {
-		Assert.notNull(context, "Context must not be null");
-		int exitCode = 0;
-		try {
-			try {
-				ExitCodeGenerators generators = new ExitCodeGenerators();
-				Collection<ExitCodeGenerator> beans = context.getBeansOfType(ExitCodeGenerator.class).values();
-				generators.addAll(exitCodeGenerators);
-				generators.addAll(beans);
-				exitCode = generators.getExitCode();
-				if (exitCode != 0) {
-					context.publishEvent(new ExitCodeEvent(context, exitCode));
-				}
-			}
-			finally {
-				close(context);
-			}
-		}
-		catch (Exception ex) {
-			ex.printStackTrace();
-			exitCode = (exitCode != 0) ? exitCode : 1;
-		}
-		return exitCode;
-	}
-
-	private static void close(ApplicationContext context) {
-		if (context instanceof ConfigurableApplicationContext) {
-			ConfigurableApplicationContext closable = (ConfigurableApplicationContext) context;
-			closable.close();
-		}
-	}
-
-	private static <E> Set<E> asUnmodifiableOrderedSet(Collection<E> elements) {
-		List<E> list = new ArrayList<>(elements);
-		list.sort(AnnotationAwareOrderComparator.INSTANCE);
-		return new LinkedHashSet<>(list);
+	public void setListeners(Collection<? extends ApplicationListener<?>> listeners) {
+		this.listeners = new ArrayList<>(listeners);
 	}
 
 }
