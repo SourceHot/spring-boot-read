@@ -43,6 +43,7 @@ import org.springframework.util.StringValueResolver;
  * {@link #addApplicationFormatters(FormatterRegistry)} utility methods for ad-hoc use
  * against registry instance.
  *
+ * 应用转换服务类
  * @author Phillip Webb
  * @since 2.0.0
  */

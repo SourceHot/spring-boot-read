@@ -29,6 +29,8 @@ import org.springframework.util.ReflectionUtils;
 /**
  * A collection of {@link SpringApplicationRunListener}.
  *
+ * {@link SpringApplicationRunListener} 的集合
+ *
  * @author Phillip Webb
  */
 class SpringApplicationRunListeners {
@@ -79,6 +81,10 @@ class SpringApplicationRunListeners {
 		}
 	}
 
+    /**
+     * 监听器正式开始工作
+     * @param context
+     */
 	void running(ConfigurableApplicationContext context) {
 		for (SpringApplicationRunListener listener : this.listeners) {
 			listener.running(context);

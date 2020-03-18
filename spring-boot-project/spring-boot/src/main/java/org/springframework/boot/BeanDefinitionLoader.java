@@ -59,6 +59,9 @@ class BeanDefinitionLoader {
 
 	private final Object[] sources;
 
+    /**
+     * 注解形式的bean读取工具
+     */
 	private final AnnotatedBeanDefinitionReader annotatedReader;
 
 	private final XmlBeanDefinitionReader xmlReader;
@@ -153,6 +156,7 @@ class BeanDefinitionLoader {
 			GroovyBeanDefinitionSource loader = BeanUtils.instantiateClass(source, GroovyBeanDefinitionSource.class);
 			load(loader);
 		}
+		// 是否为组件
 		if (isComponent(source)) {
 			this.annotatedReader.register(source);
 			return 1;
@@ -273,6 +277,11 @@ class BeanDefinitionLoader {
 		return Package.getPackage(source.toString());
 	}
 
+    /**
+     * 是否为组件类, {@link Component} 注解
+     * @param type
+     * @return
+     */
 	private boolean isComponent(Class<?> type) {
 		// This has to be a bit of a guess. The only way to be sure that this type is
 		// eligible is to make a bean definition out of it and try to instantiate it.

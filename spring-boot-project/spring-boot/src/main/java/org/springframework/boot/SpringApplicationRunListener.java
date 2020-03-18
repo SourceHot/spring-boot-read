@@ -55,6 +55,8 @@ public interface SpringApplicationRunListener {
 	/**
 	 * Called once the {@link ApplicationContext} has been created and prepared, but
 	 * before sources have been loaded.
+	 *
+	 * 放入上下文
 	 * @param context the application context
 	 */
 	default void contextPrepared(ConfigurableApplicationContext context) {
@@ -63,6 +65,8 @@ public interface SpringApplicationRunListener {
 	/**
 	 * Called once the application context has been loaded but before it has been
 	 * refreshed.
+	 *
+	 * 上下文加载后执行
 	 * @param context the application context
 	 */
 	default void contextLoaded(ConfigurableApplicationContext context) {

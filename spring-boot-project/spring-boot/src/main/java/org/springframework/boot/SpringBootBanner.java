@@ -26,6 +26,7 @@ import org.springframework.core.env.Environment;
 /**
  * Default Banner implementation which writes the 'Spring' banner.
  *
+ * springBoot 的banner输出
  * @author Phillip Webb
  */
 class SpringBootBanner implements Banner {

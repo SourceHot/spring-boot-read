@@ -23,6 +23,7 @@ import org.springframework.core.env.Environment;
 /**
  * Interface class for writing a banner programmatically.
  *
+ * banner 接口图片
  * @author Phillip Webb
  * @author Michael Stummvoll
  * @author Jeremy Rickard
