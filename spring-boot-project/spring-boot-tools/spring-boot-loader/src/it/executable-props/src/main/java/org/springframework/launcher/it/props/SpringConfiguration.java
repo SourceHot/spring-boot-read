@@ -38,6 +38,7 @@ public class SpringConfiguration implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws IOException {
 		Properties props = new Properties();
+		// 读取文件
 		props.load(new ClassPathResource("application.properties").getInputStream());
 		String value = props.getProperty("message");
 		if (value!=null) {

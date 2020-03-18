@@ -1,2 +1,6 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   org.sourcehot.service.HelloServiceAutoConfiguration
+
+
+org.springframework.boot.env.PropertySourceLoader=\
+    org.sourcehot.runner.JsonPropertySourceLoader

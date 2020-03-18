@@ -94,6 +94,7 @@ import org.springframework.util.StringUtils;
  * locations or specific files.
  * <p>
  *
+ * 配置文件监听器
  * @author Dave Syer
  * @author Phillip Webb
  * @author Stephane Nicoll
@@ -107,8 +108,15 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	private static final String DEFAULT_PROPERTIES = "defaultProperties";
 
 	// Note the order is from least to most specific (last one wins)
+
+    /**
+     * 文件存储地
+     */
 	private static final String DEFAULT_SEARCH_LOCATIONS = "classpath:/,classpath:/config/,file:./,file:./config/";
 
+    /**
+     * 默认文件名
+     */
 	private static final String DEFAULT_NAMES = "application";
 
 	private static final Set<String> NO_SEARCH_NAMES = Collections.singleton(null);

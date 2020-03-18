@@ -28,6 +28,8 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 /**
  * Strategy to load '.properties' files into a {@link PropertySource}.
  *
+ *
+ * 拓展名为 properties 的读取器
  * @author Dave Syer
  * @author Phillip Webb
  * @author Madhura Bhave

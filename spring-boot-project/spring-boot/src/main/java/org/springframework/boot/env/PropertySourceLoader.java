@@ -35,6 +35,8 @@ public interface PropertySourceLoader {
 
 	/**
 	 * Returns the file extensions that the loader supports (excluding the '.').
+	 *
+	 * 文件拓展名
 	 * @return the file extensions
 	 */
 	String[] getFileExtensions();
@@ -45,6 +47,7 @@ public interface PropertySourceLoader {
 	 * such as yaml a source for each document in the resource.
 	 * @param name the root name of the property source. If multiple documents are loaded
 	 * an additional suffix should be added to the name for each source loaded.
+	 * 加载
 	 * @param resource the resource to load
 	 * @return a list property sources
 	 * @throws IOException if the source cannot be loaded
