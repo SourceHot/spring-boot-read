@@ -38,6 +38,10 @@ import org.springframework.util.ClassUtils;
  */
 public class YamlPropertySourceLoader implements PropertySourceLoader {
 
+    /**
+     * 文件拓展名
+     * @return
+     */
 	@Override
 	public String[] getFileExtensions() {
 		return new String[] { "yml", "yaml" };
@@ -49,6 +53,7 @@ public class YamlPropertySourceLoader implements PropertySourceLoader {
 			throw new IllegalStateException(
 					"Attempted to load " + name + " but snakeyaml was not found on the classpath");
 		}
+		// 将资源转换成集合对象
 		List<Map<String, Object>> loaded = new OriginTrackedYamlLoader(resource).load();
 		if (loaded.isEmpty()) {
 			return Collections.emptyList();
@@ -56,6 +61,7 @@ public class YamlPropertySourceLoader implements PropertySourceLoader {
 		List<PropertySource<?>> propertySources = new ArrayList<>(loaded.size());
 		for (int i = 0; i < loaded.size(); i++) {
 			String documentNumber = (loaded.size() != 1) ? " (document #" + i + ")" : "";
+			// 放入返回结果中
 			propertySources.add(new OriginTrackedMapPropertySource(name + documentNumber,
 					Collections.unmodifiableMap(loaded.get(i)), true));
 		}

@@ -95,6 +95,7 @@ import org.springframework.util.StringUtils;
  * <p>
  *
  * 配置文件监听器
+ *
  * @author Dave Syer
  * @author Phillip Webb
  * @author Stephane Nicoll
@@ -105,39 +106,12 @@ import org.springframework.util.StringUtils;
  */
 public class ConfigFileApplicationListener implements EnvironmentPostProcessor, SmartApplicationListener, Ordered {
 
-	private static final String DEFAULT_PROPERTIES = "defaultProperties";
-
-	// Note the order is from least to most specific (last one wins)
-
-    /**
-     * 文件存储地
-     */
-	private static final String DEFAULT_SEARCH_LOCATIONS = "classpath:/,classpath:/config/,file:./,file:./config/";
-
-    /**
-     * 默认文件名
-     */
-	private static final String DEFAULT_NAMES = "application";
-
-	private static final Set<String> NO_SEARCH_NAMES = Collections.singleton(null);
-
-	private static final Bindable<String[]> STRING_ARRAY = Bindable.of(String[].class);
-
-	private static final Bindable<List<String>> STRING_LIST = Bindable.listOf(String.class);
-
-	private static final Set<String> LOAD_FILTERED_PROPERTY;
-
-	static {
-		Set<String> filteredProperties = new HashSet<>();
-		filteredProperties.add("spring.profiles.active");
-		filteredProperties.add("spring.profiles.include");
-		LOAD_FILTERED_PROPERTY = Collections.unmodifiableSet(filteredProperties);
-	}
-
 	/**
 	 * The "active profiles" property name.
 	 */
 	public static final String ACTIVE_PROFILES_PROPERTY = "spring.profiles.active";
+
+	// Note the order is from least to most specific (last one wins)
 
 	/**
 	 * The "includes profiles" property name.
@@ -163,6 +137,33 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	 * The default order for the processor.
 	 */
 	public static final int DEFAULT_ORDER = Ordered.HIGHEST_PRECEDENCE + 10;
+
+	private static final String DEFAULT_PROPERTIES = "defaultProperties";
+
+	/**
+	 * 文件存储地
+	 */
+	private static final String DEFAULT_SEARCH_LOCATIONS = "classpath:/,classpath:/config/,file:./,file:./config/";
+
+	/**
+	 * 默认文件名
+	 */
+	private static final String DEFAULT_NAMES = "application";
+
+	private static final Set<String> NO_SEARCH_NAMES = Collections.singleton(null);
+
+	private static final Bindable<String[]> STRING_ARRAY = Bindable.of(String[].class);
+
+	private static final Bindable<List<String>> STRING_LIST = Bindable.listOf(String.class);
+
+	private static final Set<String> LOAD_FILTERED_PROPERTY;
+
+	static {
+		Set<String> filteredProperties = new HashSet<>();
+		filteredProperties.add("spring.profiles.active");
+		filteredProperties.add("spring.profiles.include");
+		LOAD_FILTERED_PROPERTY = Collections.unmodifiableSet(filteredProperties);
+	}
 
 	private final DeferredLog logger = new DeferredLog();
 
@@ -198,6 +199,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	}
 
 	List<EnvironmentPostProcessor> loadPostProcessors() {
+		// 加载 factory
 		return SpringFactoriesLoader.loadFactories(EnvironmentPostProcessor.class, getClass().getClassLoader());
 	}
 
@@ -213,12 +215,15 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 
 	/**
 	 * Add config file property sources to the specified environment.
-	 * @param environment the environment to add source to
-	 * @param resourceLoader the resource loader
+	 *
+	 * 加载配置资源
+	 * @param environment the environment to add source to 环境配置
+	 * @param resourceLoader the resource loader 资源加载器
 	 * @see #addPostProcessors(ConfigurableApplicationContext)
 	 */
 	protected void addPropertySources(ConfigurableEnvironment environment, ResourceLoader resourceLoader) {
 		RandomValuePropertySource.addToEnvironment(environment);
+		// 加载器加载信息
 		new Loader(environment, resourceLoader).load();
 	}
 
@@ -230,13 +235,13 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		context.addBeanFactoryPostProcessor(new PropertySourceOrderingPostProcessor(context));
 	}
 
-	public void setOrder(int order) {
-		this.order = order;
-	}
-
 	@Override
 	public int getOrder() {
 		return this.order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
 	}
 
 	/**
@@ -261,6 +266,41 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	public void setSearchNames(String names) {
 		Assert.hasLength(names, "Names must not be empty");
 		this.names = names;
+	}
+
+	/**
+	 * Factory used to create a {@link DocumentFilter}.
+	 */
+	@FunctionalInterface
+	private interface DocumentFilterFactory {
+
+		/**
+		 * Create a filter for the given profile.
+		 * @param profile the profile or {@code null}
+		 * @return the filter
+		 */
+		DocumentFilter getDocumentFilter(Profile profile);
+
+	}
+
+	/**
+	 * Filter used to restrict when a {@link Document} is loaded.
+	 */
+	@FunctionalInterface
+	private interface DocumentFilter {
+
+		boolean match(Document document);
+
+	}
+
+	/**
+	 * Consumer used to handle a loaded {@link Document}.
+	 */
+	@FunctionalInterface
+	private interface DocumentConsumer {
+
+		void accept(Profile profile, Document document);
+
 	}
 
 	/**
@@ -295,7 +335,136 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	}
 
 	/**
+	 * A Spring Profile that can be loaded.
+	 */
+	private static class Profile {
+
+		private final String name;
+
+		private final boolean defaultProfile;
+
+		Profile(String name) {
+			this(name, false);
+		}
+
+		Profile(String name, boolean defaultProfile) {
+			Assert.notNull(name, "Name must not be null");
+			this.name = name;
+			this.defaultProfile = defaultProfile;
+		}
+
+		String getName() {
+			return this.name;
+		}
+
+		boolean isDefaultProfile() {
+			return this.defaultProfile;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) {
+				return true;
+			}
+			if (obj == null || obj.getClass() != getClass()) {
+				return false;
+			}
+			return ((Profile) obj).name.equals(this.name);
+		}
+
+		@Override
+		public int hashCode() {
+			return this.name.hashCode();
+		}
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
+
+	}
+
+	/**
+	 * Cache key used to save loading the same document multiple times. 文档的缓存key
+	 */
+	private static class DocumentsCacheKey {
+
+		private final PropertySourceLoader loader;
+
+		private final Resource resource;
+
+		DocumentsCacheKey(PropertySourceLoader loader, Resource resource) {
+			this.loader = loader;
+			this.resource = resource;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			DocumentsCacheKey other = (DocumentsCacheKey) obj;
+			return this.loader.equals(other.loader) && this.resource.equals(other.resource);
+		}
+
+		@Override
+		public int hashCode() {
+			return this.loader.hashCode() * 31 + this.resource.hashCode();
+		}
+
+	}
+
+	/**
+	 * A single document loaded by a {@link PropertySourceLoader}.
+	 */
+	private static class Document {
+
+		private final PropertySource<?> propertySource;
+
+		private final Set<Profile> activeProfiles;
+
+		private final Set<Profile> includeProfiles;
+
+		private String[] profiles;
+
+		Document(PropertySource<?> propertySource, String[] profiles, Set<Profile> activeProfiles,
+				Set<Profile> includeProfiles) {
+			this.propertySource = propertySource;
+			this.profiles = profiles;
+			this.activeProfiles = activeProfiles;
+			this.includeProfiles = includeProfiles;
+		}
+
+		PropertySource<?> getPropertySource() {
+			return this.propertySource;
+		}
+
+		String[] getProfiles() {
+			return this.profiles;
+		}
+
+		Set<Profile> getActiveProfiles() {
+			return this.activeProfiles;
+		}
+
+		Set<Profile> getIncludeProfiles() {
+			return this.includeProfiles;
+		}
+
+		@Override
+		public String toString() {
+			return this.propertySource.toString();
+		}
+
+	}
+
+	/**
 	 * Loads candidate property sources and configures the active profiles.
+	 *
+	 * 配置资源加载器
 	 */
 	private class Loader {
 
@@ -303,10 +472,19 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 
 		private final ConfigurableEnvironment environment;
 
+		/**
+		 * 占位符处理器
+		 */
 		private final PropertySourcesPlaceholdersResolver placeholdersResolver;
 
+		/**
+		 * 资源加载器
+		 */
 		private final ResourceLoader resourceLoader;
 
+		/**
+		 * 配置信息加载器,集合
+		 */
 		private final List<PropertySourceLoader> propertySourceLoaders;
 
 		private Deque<Profile> profiles;
@@ -317,12 +495,19 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 
 		private Map<Profile, MutablePropertySources> loaded;
 
+		/**
+		 * 文档缓存
+		 */
 		private Map<DocumentsCacheKey, List<Document>> loadDocumentsCache = new HashMap<>();
 
 		Loader(ConfigurableEnvironment environment, ResourceLoader resourceLoader) {
+			// 环境配置
 			this.environment = environment;
+			// 占位符处理器
 			this.placeholdersResolver = new PropertySourcesPlaceholdersResolver(this.environment);
+			// 资源加载器
 			this.resourceLoader = (resourceLoader != null) ? resourceLoader : new DefaultResourceLoader();
+			// 配置信息加载器初始化
 			this.propertySourceLoaders = SpringFactoriesLoader.loadFactories(PropertySourceLoader.class,
 					getClass().getClassLoader());
 		}
@@ -334,6 +519,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 						this.processedProfiles = new LinkedList<>();
 						this.activatedProfiles = false;
 						this.loaded = new LinkedHashMap<>();
+						// 初始化配置文件
 						initializeProfiles();
 						while (!this.profiles.isEmpty()) {
 							Profile profile = this.profiles.poll();
@@ -354,6 +540,8 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		 * Initialize profile information from both the {@link Environment} active
 		 * profiles and any {@code spring.profiles.active}/{@code spring.profiles.include}
 		 * properties that are already set.
+		 *
+		 *
 		 */
 		private void initializeProfiles() {
 			// The default profile for these purposes is represented as null. We add it
@@ -445,11 +633,18 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		}
 
 		private void load(Profile profile, DocumentFilterFactory filterFactory, DocumentConsumer consumer) {
-			getSearchLocations().forEach((location) -> {
-				boolean isFolder = location.endsWith("/");
-				Set<String> names = isFolder ? getSearchNames() : NO_SEARCH_NAMES;
-				names.forEach((name) -> load(location, name, profile, filterFactory, consumer));
-			});
+			getSearchLocations().forEach(
+					// 本地路径
+					(location) -> {
+						// 是不是文件夹
+						boolean isFolder = location.endsWith("/");
+						// 文件名,默认application
+						Set<String> names = isFolder ? getSearchNames() : NO_SEARCH_NAMES;
+						// 循环加载
+						names.forEach((name) -> {
+							load(location, name, profile, filterFactory, consumer);
+						});
+					});
 		}
 
 		private void load(String location, String name, Profile profile, DocumentFilterFactory filterFactory,
@@ -465,8 +660,11 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 						+ "' is not known to any PropertySourceLoader. If the location is meant to reference "
 						+ "a directory, it must end in '/'");
 			}
+			// 文件后缀
 			Set<String> processed = new HashSet<>();
+			// 配置信息加载器
 			for (PropertySourceLoader loader : this.propertySourceLoaders) {
+				// 获取文件后缀
 				for (String fileExtension : loader.getFileExtensions()) {
 					if (processed.add(fileExtension)) {
 						loadForFileExtension(loader, location + name, "." + fileExtension, profile, filterFactory,
@@ -522,6 +720,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 					}
 					return;
 				}
+				// 最终地址
 				String name = "applicationConfig: [" + location + "]";
 				List<Document> documents = loadDocuments(loader, name, resource);
 				if (CollectionUtils.isEmpty(documents)) {
@@ -564,26 +763,43 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 
 		private List<Document> loadDocuments(PropertySourceLoader loader, String name, Resource resource)
 				throws IOException {
+			// 文档的缓存key
 			DocumentsCacheKey cacheKey = new DocumentsCacheKey(loader, resource);
+			// 文档信息
 			List<Document> documents = this.loadDocumentsCache.get(cacheKey);
 			if (documents == null) {
+				// 执行加载，将配置文件读取返回
 				List<PropertySource<?>> loaded = loader.load(name, resource);
+				// 数据转换
 				documents = asDocuments(loaded);
+				// 缓存设置
 				this.loadDocumentsCache.put(cacheKey, documents);
 			}
 			return documents;
 		}
 
+		/**
+		 * 将 {@link PropertySource} 转换成 {@link Document}
+		 * @param loaded
+		 * @return
+		 */
 		private List<Document> asDocuments(List<PropertySource<?>> loaded) {
 			if (loaded == null) {
 				return Collections.emptyList();
 			}
-			return loaded.stream().map((propertySource) -> {
-				Binder binder = new Binder(ConfigurationPropertySources.from(propertySource),
-						this.placeholdersResolver);
-				return new Document(propertySource, binder.bind("spring.profiles", STRING_ARRAY).orElse(null),
-						getProfiles(binder, ACTIVE_PROFILES_PROPERTY), getProfiles(binder, INCLUDE_PROFILES_PROPERTY));
-			}).collect(Collectors.toList());
+			return loaded.stream().map(
+					// 循环创建新对象
+					(propertySource) -> {
+						// 对象创建
+						Binder binder = new Binder(ConfigurationPropertySources.from(propertySource),
+								this.placeholdersResolver);
+						/**
+						 * 通过 {@link Binder} 将数据进行绑定，创建 {@link Document}进行返回
+						 */
+						return new Document(propertySource, binder.bind("spring.profiles", STRING_ARRAY).orElse(null),
+								getProfiles(binder, ACTIVE_PROFILES_PROPERTY),
+								getProfiles(binder, INCLUDE_PROFILES_PROPERTY));
+					}).collect(Collectors.toList());
 		}
 
 		private StringBuilder getDescription(String prefix, String location, Resource resource, Profile profile) {
@@ -629,6 +845,10 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 			this.environment.addActiveProfile(profile);
 		}
 
+		/**
+		 * 获取本地路径
+		 * @return
+		 */
 		private Set<String> getSearchLocations() {
 			if (this.environment.containsProperty(CONFIG_LOCATION_PROPERTY)) {
 				return getSearchLocations(CONFIG_LOCATION_PROPERTY);
@@ -723,168 +943,6 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		private List<String> getDefaultProfiles(Binder binder, String property) {
 			return binder.bind(property, STRING_LIST).orElse(Collections.emptyList());
 		}
-
-	}
-
-	/**
-	 * A Spring Profile that can be loaded.
-	 */
-	private static class Profile {
-
-		private final String name;
-
-		private final boolean defaultProfile;
-
-		Profile(String name) {
-			this(name, false);
-		}
-
-		Profile(String name, boolean defaultProfile) {
-			Assert.notNull(name, "Name must not be null");
-			this.name = name;
-			this.defaultProfile = defaultProfile;
-		}
-
-		String getName() {
-			return this.name;
-		}
-
-		boolean isDefaultProfile() {
-			return this.defaultProfile;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == this) {
-				return true;
-			}
-			if (obj == null || obj.getClass() != getClass()) {
-				return false;
-			}
-			return ((Profile) obj).name.equals(this.name);
-		}
-
-		@Override
-		public int hashCode() {
-			return this.name.hashCode();
-		}
-
-		@Override
-		public String toString() {
-			return this.name;
-		}
-
-	}
-
-	/**
-	 * Cache key used to save loading the same document multiple times.
-	 */
-	private static class DocumentsCacheKey {
-
-		private final PropertySourceLoader loader;
-
-		private final Resource resource;
-
-		DocumentsCacheKey(PropertySourceLoader loader, Resource resource) {
-			this.loader = loader;
-			this.resource = resource;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null || getClass() != obj.getClass()) {
-				return false;
-			}
-			DocumentsCacheKey other = (DocumentsCacheKey) obj;
-			return this.loader.equals(other.loader) && this.resource.equals(other.resource);
-		}
-
-		@Override
-		public int hashCode() {
-			return this.loader.hashCode() * 31 + this.resource.hashCode();
-		}
-
-	}
-
-	/**
-	 * A single document loaded by a {@link PropertySourceLoader}.
-	 */
-	private static class Document {
-
-		private final PropertySource<?> propertySource;
-
-		private String[] profiles;
-
-		private final Set<Profile> activeProfiles;
-
-		private final Set<Profile> includeProfiles;
-
-		Document(PropertySource<?> propertySource, String[] profiles, Set<Profile> activeProfiles,
-				Set<Profile> includeProfiles) {
-			this.propertySource = propertySource;
-			this.profiles = profiles;
-			this.activeProfiles = activeProfiles;
-			this.includeProfiles = includeProfiles;
-		}
-
-		PropertySource<?> getPropertySource() {
-			return this.propertySource;
-		}
-
-		String[] getProfiles() {
-			return this.profiles;
-		}
-
-		Set<Profile> getActiveProfiles() {
-			return this.activeProfiles;
-		}
-
-		Set<Profile> getIncludeProfiles() {
-			return this.includeProfiles;
-		}
-
-		@Override
-		public String toString() {
-			return this.propertySource.toString();
-		}
-
-	}
-
-	/**
-	 * Factory used to create a {@link DocumentFilter}.
-	 */
-	@FunctionalInterface
-	private interface DocumentFilterFactory {
-
-		/**
-		 * Create a filter for the given profile.
-		 * @param profile the profile or {@code null}
-		 * @return the filter
-		 */
-		DocumentFilter getDocumentFilter(Profile profile);
-
-	}
-
-	/**
-	 * Filter used to restrict when a {@link Document} is loaded.
-	 */
-	@FunctionalInterface
-	private interface DocumentFilter {
-
-		boolean match(Document document);
-
-	}
-
-	/**
-	 * Consumer used to handle a loaded {@link Document}.
-	 */
-	@FunctionalInterface
-	private interface DocumentConsumer {
-
-		void accept(Profile profile, Document document);
 
 	}
 

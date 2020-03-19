@@ -52,6 +52,9 @@ import org.springframework.core.io.Resource;
  */
 class OriginTrackedYamlLoader extends YamlProcessor {
 
+    /**
+     * 资源
+     */
 	private final Resource resource;
 
 	OriginTrackedYamlLoader(Resource resource) {
@@ -72,6 +75,7 @@ class OriginTrackedYamlLoader extends YamlProcessor {
 
 	List<Map<String, Object>> load() {
 		final List<Map<String, Object>> result = new ArrayList<>();
+		// 解析yml转换
 		process((properties, map) -> result.add(getFlattenedMap(map)));
 		return result;
 	}
