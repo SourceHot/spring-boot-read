@@ -38,6 +38,8 @@ import org.springframework.context.ResourceLoaderAware;
  * <li>{@link ResourceLoaderAware}</li>
  * </ul>
  *
+ * 自动配置监听器
+ *
  * @author Phillip Webb
  * @since 1.5.0
  */
@@ -45,7 +47,8 @@ import org.springframework.context.ResourceLoaderAware;
 public interface AutoConfigurationImportListener extends EventListener {
 
 	/**
-	 * Handle an auto-configuration import event.
+	 * Handle an auto-configuration import event. 在执行自动配置时触发
+	 * {@link AutoConfigurationImportSelector#fireAutoConfigurationImportEvents(java.util.List, java.util.Set)}
 	 * @param event the event to respond to
 	 */
 	void onAutoConfigurationImportEvent(AutoConfigurationImportEvent event);

@@ -31,6 +31,8 @@ import org.springframework.context.annotation.Import;
  * (for example using {@link Bean @Bean} methods) or, for convenience, can be specified
  * directly on this annotation.
  *
+ * 自动映射一个POJO到Spring Boot配置文件（默认是application.properties文件）的属性集。
+ *
  * @author Dave Syer
  * @since 1.0.0
  */
