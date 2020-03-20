@@ -40,6 +40,7 @@ public interface SpringApplicationRunListener {
 	 * early initialization.
 	 *
 	 * 这是一个最早期的启动方法
+	 * 对应的事件{@link ApplicationStartedEvent}
 	 */
 	default void starting() {
 	}

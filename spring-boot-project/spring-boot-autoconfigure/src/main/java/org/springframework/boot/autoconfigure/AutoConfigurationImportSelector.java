@@ -90,9 +90,11 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 
 	@Override
 	public String[] selectImports(AnnotationMetadata annotationMetadata) {
+		// 是否启动
 		if (!isEnabled(annotationMetadata)) {
 			return NO_IMPORTS;
 		}
+		// 注解配置信息加载
 		AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader
 				.loadMetadata(this.beanClassLoader);
 		AutoConfigurationEntry autoConfigurationEntry = getAutoConfigurationEntry(autoConfigurationMetadata,
@@ -128,8 +130,14 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		return AutoConfigurationGroup.class;
 	}
 
+	/**
+	 * 是否启动
+	 * @param metadata
+	 * @return
+	 */
 	protected boolean isEnabled(AnnotationMetadata metadata) {
 		if (getClass() == AutoConfigurationImportSelector.class) {
+			// 环境变量获取数据
 			return getEnvironment().getProperty(EnableAutoConfiguration.ENABLED_OVERRIDE_PROPERTY, Boolean.class, true);
 		}
 		return true;
@@ -314,19 +322,14 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		}
 	}
 
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		Assert.isInstanceOf(ConfigurableListableBeanFactory.class, beanFactory);
-		this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
-	}
-
 	protected final ConfigurableListableBeanFactory getBeanFactory() {
 		return this.beanFactory;
 	}
 
 	@Override
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		Assert.isInstanceOf(ConfigurableListableBeanFactory.class, beanFactory);
+		this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
 	}
 
 	protected ClassLoader getBeanClassLoader() {
@@ -334,8 +337,8 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 	}
 
 	@Override
-	public void setEnvironment(Environment environment) {
-		this.environment = environment;
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
 	}
 
 	protected final Environment getEnvironment() {
@@ -343,12 +346,17 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 	}
 
 	@Override
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.resourceLoader = resourceLoader;
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
 	}
 
 	protected final ResourceLoader getResourceLoader() {
 		return this.resourceLoader;
+	}
+
+	@Override
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		this.resourceLoader = resourceLoader;
 	}
 
 	@Override
@@ -393,7 +401,9 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 							AutoConfigurationImportSelector.class.getSimpleName(),
 							deferredImportSelector.getClass().getName()));
 			AutoConfigurationEntry autoConfigurationEntry = ((AutoConfigurationImportSelector) deferredImportSelector)
-					.getAutoConfigurationEntry(getAutoConfigurationMetadata(), annotationMetadata);
+					.getAutoConfigurationEntry(
+							// 加载配置元数据
+							getAutoConfigurationMetadata(), annotationMetadata);
 			this.autoConfigurationEntries.add(autoConfigurationEntry);
 			for (String importClassName : autoConfigurationEntry.getConfigurations()) {
 				this.entries.putIfAbsent(importClassName, annotationMetadata);
@@ -407,9 +417,11 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			}
 			Set<String> allExclusions = this.autoConfigurationEntries.stream()
 					.map(AutoConfigurationEntry::getExclusions).flatMap(Collection::stream).collect(Collectors.toSet());
+
 			Set<String> processedConfigurations = this.autoConfigurationEntries.stream()
 					.map(AutoConfigurationEntry::getConfigurations).flatMap(Collection::stream)
 					.collect(Collectors.toCollection(LinkedHashSet::new));
+
 			processedConfigurations.removeAll(allExclusions);
 
 			return sortAutoConfigurations(processedConfigurations, getAutoConfigurationMetadata()).stream()
@@ -417,8 +429,13 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 					.collect(Collectors.toList());
 		}
 
+		/**
+		 * 获取自动配置信息
+		 * @return
+		 */
 		private AutoConfigurationMetadata getAutoConfigurationMetadata() {
 			if (this.autoConfigurationMetadata == null) {
+				// 加载配置信息
 				this.autoConfigurationMetadata = AutoConfigurationMetadataLoader.loadMetadata(this.beanClassLoader);
 			}
 			return this.autoConfigurationMetadata;

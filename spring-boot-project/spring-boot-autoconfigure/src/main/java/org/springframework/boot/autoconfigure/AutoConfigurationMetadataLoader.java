@@ -29,21 +29,39 @@ import org.springframework.util.StringUtils;
 /**
  * Internal utility used to load {@link AutoConfigurationMetadata}.
  *
+ * 注解配置信息加载
+ *
  * @author Phillip Webb
  */
 final class AutoConfigurationMetadataLoader {
 
+	/**
+	 * 地址
+	 */
 	protected static final String PATH = "META-INF/spring-autoconfigure-metadata.properties";
 
 	private AutoConfigurationMetadataLoader() {
 	}
 
+	/**
+	 * 加载配置信息
+	 * @param classLoader
+	 * @return
+	 */
 	static AutoConfigurationMetadata loadMetadata(ClassLoader classLoader) {
 		return loadMetadata(classLoader, PATH);
 	}
 
+	/**
+	 * 加载配置元信息
+	 * @param classLoader 类加载器
+	 * @param path 地址
+	 * @return
+	 */
 	static AutoConfigurationMetadata loadMetadata(ClassLoader classLoader, String path) {
 		try {
+
+		    // 获取资源路径
 			Enumeration<URL> urls = (classLoader != null) ? classLoader.getResources(path)
 					: ClassLoader.getSystemResources(path);
 			Properties properties = new Properties();

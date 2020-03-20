@@ -112,6 +112,7 @@ public class EventPublishingRunListener implements SpringApplicationRunListener,
 		if (context != null && context.isActive()) {
 			// Listeners have been registered to the application context so we should
 			// use it at this point if we can
+			// 发布事件
 			context.publishEvent(event);
 		}
 		else {
