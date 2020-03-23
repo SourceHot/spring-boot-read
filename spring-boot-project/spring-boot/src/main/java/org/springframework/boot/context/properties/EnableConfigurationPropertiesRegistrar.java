@@ -35,20 +35,32 @@ class EnableConfigurationPropertiesRegistrar implements ImportBeanDefinitionRegi
 
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+	    // 注册bean
 		registerInfrastructureBeans(registry);
+	  // 配置属性Bean注册器
 		ConfigurationPropertiesBeanRegistrar beanRegistrar = new ConfigurationPropertiesBeanRegistrar(registry);
+		// 循环注册
 		getTypes(metadata).forEach(beanRegistrar::register);
 	}
 
+    /**
+     * 找出 {@link EnableConfigurationProperties} 注解标记的中的属性值,并且返回值不是void
+     * @param metadata
+     * @return
+     */
 	private Set<Class<?>> getTypes(AnnotationMetadata metadata) {
-		return metadata.getAnnotations().stream(EnableConfigurationProperties.class)
+		return
+
+		 metadata.getAnnotations().stream(EnableConfigurationProperties.class)
 				.flatMap((annotation) -> Arrays.stream(annotation.getClassArray(MergedAnnotation.VALUE)))
 				.filter((type) -> void.class != type).collect(Collectors.toSet());
 	}
 
 	@SuppressWarnings("deprecation")
 	static void registerInfrastructureBeans(BeanDefinitionRegistry registry) {
+	    // 属性绑定后置处理器
 		ConfigurationPropertiesBindingPostProcessor.register(registry);
+		// 属性校验器
 		ConfigurationPropertiesBeanDefinitionValidator.register(registry);
 		ConfigurationBeanFactoryMetadata.register(registry);
 	}

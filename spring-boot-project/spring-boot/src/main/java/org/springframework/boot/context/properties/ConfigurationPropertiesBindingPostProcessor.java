@@ -79,11 +79,13 @@ public class ConfigurationPropertiesBindingPostProcessor
 	/**
 	 * Register a {@link ConfigurationPropertiesBindingPostProcessor} bean if one is not
 	 * already registered.
+	 * 注册,补充注册bean对象
 	 * @param registry the bean definition registry
 	 * @since 2.2.0
 	 */
 	public static void register(BeanDefinitionRegistry registry) {
 		Assert.notNull(registry, "Registry must not be null");
+		// 是否存在
 		if (!registry.containsBeanDefinition(BEAN_NAME)) {
 			GenericBeanDefinition definition = new GenericBeanDefinition();
 			definition.setBeanClass(ConfigurationPropertiesBindingPostProcessor.class);

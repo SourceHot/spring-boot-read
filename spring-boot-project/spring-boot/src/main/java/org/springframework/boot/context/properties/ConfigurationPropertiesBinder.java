@@ -84,6 +84,10 @@ class ConfigurationPropertiesBinder {
 		this.jsr303Present = ConfigurationPropertiesJsr303Validator.isJsr303Present(applicationContext);
 	}
 
+    /**
+     * 注册,没有这个 beanName 放入
+     * @param registry
+     */
 	static void register(BeanDefinitionRegistry registry) {
 		if (!registry.containsBeanDefinition(FACTORY_BEAN_NAME)) {
 			GenericBeanDefinition definition = new GenericBeanDefinition();
