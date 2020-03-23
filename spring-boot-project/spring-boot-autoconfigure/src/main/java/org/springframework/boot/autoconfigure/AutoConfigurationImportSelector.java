@@ -499,6 +499,7 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 				// 继续放入k,v
 				this.entries.putIfAbsent(importClassName, annotationMetadata);
 			}
+			System.out.println();
 		}
 
 		@Override
@@ -506,15 +507,19 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			if (this.autoConfigurationEntries.isEmpty()) {
 				return Collections.emptyList();
 			}
+			// 获取忽略的类
 			Set<String> allExclusions = this.autoConfigurationEntries.stream()
 					.map(AutoConfigurationEntry::getExclusions).flatMap(Collection::stream).collect(Collectors.toSet());
 
+			// 获取需要注入的类
 			Set<String> processedConfigurations = this.autoConfigurationEntries.stream()
 					.map(AutoConfigurationEntry::getConfigurations).flatMap(Collection::stream)
 					.collect(Collectors.toCollection(LinkedHashSet::new));
 
+			// 把不需要自动注入的类从需要注入的类中移除
 			processedConfigurations.removeAll(allExclusions);
 
+			// 排序
 			return sortAutoConfigurations(processedConfigurations, getAutoConfigurationMetadata()).stream()
 					.map((importClassName) -> new Entry(this.entries.get(importClassName), importClassName))
 					.collect(Collectors.toList());
@@ -550,10 +555,19 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 
 	}
 
+	/**
+	 * 自动配置信息
+	 */
 	protected static class AutoConfigurationEntry {
 
+		/**
+		 * 需要配置的类
+		 */
 		private final List<String> configurations;
 
+		/**
+		 * 忽略的类
+		 */
 		private final Set<String> exclusions;
 
 		private AutoConfigurationEntry() {
