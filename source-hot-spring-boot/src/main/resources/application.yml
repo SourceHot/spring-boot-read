@@ -1,2 +1,6 @@
 server:
   port: 9999
+
+org.sourcehout:
+  describe: Open source organization
+  initiator: huifer

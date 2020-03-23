@@ -106,14 +106,23 @@ class SpringConfigurationPropertySource implements ConfigurationPropertySource {
 		return null;
 	}
 
+    /**
+     * 从配置文件读取配置信息
+     * @param mapping
+     * @return
+     */
 	private ConfigurationProperty find(PropertyMapping mapping) {
+	    // 需要读取的配置信息的key
 		String propertySourceName = mapping.getPropertySourceName();
+		// 信息的value
 		Object value = getPropertySource().getProperty(propertySourceName);
 		if (value == null) {
 			return null;
 		}
+		// 创建对象
 		ConfigurationPropertyName configurationPropertyName = mapping.getConfigurationPropertyName();
 		Origin origin = PropertySourceOrigin.get(this.propertySource, propertySourceName);
+		// 包装返回
 		return ConfigurationProperty.of(configurationPropertyName, value, origin);
 	}
 

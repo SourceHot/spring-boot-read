@@ -25,6 +25,8 @@ import org.springframework.boot.convert.DurationUnit;
 /**
  * Configuration properties for JDBC.
  *
+ * jdbc 配置信息实体
+ *
  * @author Kazuki Shimizu
  * @author Stephane Nicoll
  * @since 2.0.0

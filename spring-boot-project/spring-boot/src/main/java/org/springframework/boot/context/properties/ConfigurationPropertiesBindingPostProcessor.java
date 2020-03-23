@@ -61,6 +61,9 @@ public class ConfigurationPropertiesBindingPostProcessor
 
 	private BeanDefinitionRegistry registry;
 
+    /**
+     * 配置对象绑定工具
+     */
 	private ConfigurationPropertiesBinder binder;
 
 	/**
@@ -71,6 +74,23 @@ public class ConfigurationPropertiesBindingPostProcessor
 	 */
 	@Deprecated
 	public ConfigurationPropertiesBindingPostProcessor() {
+	}
+
+	/**
+	 * Register a {@link ConfigurationPropertiesBindingPostProcessor} bean if one is not
+	 * already registered.
+	 * @param registry the bean definition registry
+	 * @since 2.2.0
+	 */
+	public static void register(BeanDefinitionRegistry registry) {
+		Assert.notNull(registry, "Registry must not be null");
+		if (!registry.containsBeanDefinition(BEAN_NAME)) {
+			GenericBeanDefinition definition = new GenericBeanDefinition();
+			definition.setBeanClass(ConfigurationPropertiesBindingPostProcessor.class);
+			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			registry.registerBeanDefinition(BEAN_NAME, definition);
+		}
+		ConfigurationPropertiesBinder.register(registry);
 	}
 
 	@Override
@@ -93,10 +113,15 @@ public class ConfigurationPropertiesBindingPostProcessor
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		// 绑定
 		bind(ConfigurationPropertiesBean.get(this.applicationContext, bean, beanName));
 		return bean;
 	}
 
+	/**
+	 * 将配置对象绑定具体数据
+	 * @param bean 配置对象
+	 */
 	private void bind(ConfigurationPropertiesBean bean) {
 		if (bean == null || hasBoundValueObject(bean.getName())) {
 			return;
@@ -104,6 +129,7 @@ public class ConfigurationPropertiesBindingPostProcessor
 		Assert.state(bean.getBindMethod() == BindMethod.JAVA_BEAN, "Cannot bind @ConfigurationProperties for bean '"
 				+ bean.getName() + "'. Ensure that @ConstructorBinding has not been applied to regular bean");
 		try {
+			// 最终的绑定
 			this.binder.bind(bean);
 		}
 		catch (Exception ex) {
@@ -114,23 +140,6 @@ public class ConfigurationPropertiesBindingPostProcessor
 	private boolean hasBoundValueObject(String beanName) {
 		return this.registry.containsBeanDefinition(beanName) && this.registry
 				.getBeanDefinition(beanName) instanceof ConfigurationPropertiesValueObjectBeanDefinition;
-	}
-
-	/**
-	 * Register a {@link ConfigurationPropertiesBindingPostProcessor} bean if one is not
-	 * already registered.
-	 * @param registry the bean definition registry
-	 * @since 2.2.0
-	 */
-	public static void register(BeanDefinitionRegistry registry) {
-		Assert.notNull(registry, "Registry must not be null");
-		if (!registry.containsBeanDefinition(BEAN_NAME)) {
-			GenericBeanDefinition definition = new GenericBeanDefinition();
-			definition.setBeanClass(ConfigurationPropertiesBindingPostProcessor.class);
-			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-			registry.registerBeanDefinition(BEAN_NAME, definition);
-		}
-		ConfigurationPropertiesBinder.register(registry);
 	}
 
 }
