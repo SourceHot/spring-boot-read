@@ -55,6 +55,7 @@ public class JavaLoggingSystem extends AbstractLoggingSystem {
 	private final Set<Logger> configuredLoggers = Collections.synchronizedSet(new HashSet<>());
 
 	static {
+	    // KEY :  springBoot 定义的日志级别, value: jdk 定义的日志级别
 		LEVELS.map(LogLevel.TRACE, Level.FINEST);
 		LEVELS.map(LogLevel.DEBUG, Level.FINE);
 		LEVELS.map(LogLevel.INFO, Level.INFO);

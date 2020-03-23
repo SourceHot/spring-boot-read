@@ -184,8 +184,14 @@ public abstract class AbstractLoggingSystem extends LoggingSystem {
 	 */
 	protected static class LogLevels<T> {
 
+      /**
+       * key ： SpringBoot 中定义的日志级别, value: 其他日志框架的日志级别
+       */
 		private final Map<LogLevel, T> systemToNative;
 
+      /**
+       * key : 其他日志框架的日志级别 , value: springBoot 中定义中定义的日志级别
+       */
 		private final Map<T, LogLevel> nativeToSystem;
 
 		public LogLevels() {

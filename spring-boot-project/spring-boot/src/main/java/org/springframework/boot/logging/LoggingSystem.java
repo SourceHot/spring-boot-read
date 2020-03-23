@@ -56,6 +56,9 @@ public abstract class LoggingSystem {
 	 */
 	public static final String ROOT_LOGGER_NAME = "ROOT";
 
+	/**
+	 * key: 第三方日志框架的类 value: springBoot 中的处理类
+	 */
 	private static final Map<String, String> SYSTEMS;
 
 	static {
@@ -71,11 +74,17 @@ public abstract class LoggingSystem {
 	 * Reset the logging system to be limit output. This method may be called before
 	 * {@link #initialize(LoggingInitializationContext, String, LogFile)} to reduce
 	 * logging noise until the system has been fully initialized.
+	 *
+	 * 初始化之前调用，目的是减少日志输出
+	 *
 	 */
 	public abstract void beforeInitialize();
 
 	/**
 	 * Fully initialize the logging system.
+	 *
+	 * 初始化日志
+	 *
 	 * @param initializationContext the logging initialization context
 	 * @param configLocation a log configuration location or {@code null} if default
 	 * initialization is required
@@ -88,6 +97,8 @@ public abstract class LoggingSystem {
 	/**
 	 * Clean up the logging system. The default implementation does nothing. Subclasses
 	 * should override this method to perform any logging system-specific cleanup.
+	 *
+	 * 清除日志
 	 */
 	public void cleanUp() {
 	}
@@ -105,6 +116,8 @@ public abstract class LoggingSystem {
 	/**
 	 * Returns a set of the {@link LogLevel LogLevels} that are actually supported by the
 	 * logging system.
+	 *
+	 * 获取支持的日志级别
 	 * @return the supported levels
 	 */
 	public Set<LogLevel> getSupportedLogLevels() {
@@ -113,6 +126,8 @@ public abstract class LoggingSystem {
 
 	/**
 	 * Sets the logging level for a given logger.
+	 *
+	 * 设置日志级别
 	 * @param loggerName the name of the logger to set ({@code null} can be used for the
 	 * root logger).
 	 * @param level the log level ({@code null} can be used to remove any custom level for
@@ -125,6 +140,8 @@ public abstract class LoggingSystem {
 	/**
 	 * Returns a collection of the current configuration for all a {@link LoggingSystem}'s
 	 * loggers.
+	 *
+	 * 获取日志配置
 	 * @return the current configurations
 	 * @since 1.5.0
 	 */
@@ -134,6 +151,8 @@ public abstract class LoggingSystem {
 
 	/**
 	 * Returns the current configuration for a {@link LoggingSystem}'s logger.
+	 *
+	 * 获取日志配置
 	 * @param loggerName the name of the logger
 	 * @return the current configuration
 	 * @since 1.5.0
