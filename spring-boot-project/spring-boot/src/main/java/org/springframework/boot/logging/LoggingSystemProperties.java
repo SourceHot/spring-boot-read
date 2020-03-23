@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 /**
  * Utility to set system properties that can later be used by log configuration files.
  *
+ * 日志系统配置信息
  * @author Andy Wilkinson
  * @author Phillip Webb
  * @author Madhura Bhave

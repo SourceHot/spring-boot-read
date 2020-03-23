@@ -40,6 +40,7 @@ public abstract class LoggingSystem {
 
 	/**
 	 * A System property that can be used to indicate the {@link LoggingSystem} to use.
+	 * 系统属性
 	 */
 	public static final String SYSTEM_PROPERTY = LoggingSystem.class.getName();
 
@@ -85,9 +86,10 @@ public abstract class LoggingSystem {
 	 *
 	 * 初始化日志
 	 *
-	 * @param initializationContext the logging initialization context
+	 * @param initializationContext the logging initialization context 日志上下文
 	 * @param configLocation a log configuration location or {@code null} if default
 	 * initialization is required
+	 *                       配置文件地址
 	 * @param logFile the log output file that should be written or {@code null} for
 	 * console only output
 	 */
@@ -167,15 +169,22 @@ public abstract class LoggingSystem {
 	 * @return the logging system
 	 */
 	public static LoggingSystem get(ClassLoader classLoader) {
+	    // 获取系统属性
 		String loggingSystem = System.getProperty(SYSTEM_PROPERTY);
+
 		if (StringUtils.hasLength(loggingSystem)) {
+		    // 是不是NONE
 			if (NONE.equals(loggingSystem)) {
+			    // 空的日志系统
 				return new NoOpLoggingSystem();
 			}
 			return get(classLoader, loggingSystem);
 		}
+		// 循环所有日志,
 		return SYSTEMS.entrySet().stream().filter((entry) -> ClassUtils.isPresent(entry.getKey(), classLoader))
-				.map((entry) -> get(classLoader, entry.getValue())).findFirst()
+				.map((entry) ->
+				// 实例化具体日志
+				 get(classLoader, entry.getValue())).findFirst()
 				.orElseThrow(() -> new IllegalStateException("No suitable logging system located"));
 	}
 
@@ -193,6 +202,7 @@ public abstract class LoggingSystem {
 
 	/**
 	 * {@link LoggingSystem} that does nothing.
+	 * 空日志
 	 */
 	static class NoOpLoggingSystem extends LoggingSystem {
 

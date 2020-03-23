@@ -81,6 +81,9 @@ import org.springframework.util.StringUtils;
  * </li>
  * </ul>
  *
+ *
+ * 日志监听
+ *
  * @author Dave Syer
  * @author Phillip Webb
  * @author Andy Wilkinson
@@ -90,16 +93,6 @@ import org.springframework.util.StringUtils;
  * @see LoggingSystem#get(ClassLoader)
  */
 public class LoggingApplicationListener implements GenericApplicationListener {
-
-	private static final ConfigurationPropertyName LOGGING_LEVEL = ConfigurationPropertyName.of("logging.level");
-
-	private static final ConfigurationPropertyName LOGGING_GROUP = ConfigurationPropertyName.of("logging.group");
-
-	private static final Bindable<Map<String, LogLevel>> STRING_LOGLEVEL_MAP = Bindable.mapOf(String.class,
-			LogLevel.class);
-
-	private static final Bindable<Map<String, List<String>>> STRING_STRINGS_MAP = Bindable
-			.of(ResolvableType.forClassWithGenerics(MultiValueMap.class, String.class, String.class).asMap());
 
 	/**
 	 * The default order for the LoggingApplicationListener.
@@ -143,7 +136,28 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 	@Deprecated
 	public static final String LOGFILE_BEAN_NAME = LOG_FILE_BEAN_NAME;
 
+	private static final ConfigurationPropertyName LOGGING_LEVEL = ConfigurationPropertyName.of("logging.level");
+
+	private static final ConfigurationPropertyName LOGGING_GROUP = ConfigurationPropertyName.of("logging.group");
+
+	private static final Bindable<Map<String, LogLevel>> STRING_LOGLEVEL_MAP = Bindable.mapOf(String.class,
+			LogLevel.class);
+
+	private static final Bindable<Map<String, List<String>>> STRING_STRINGS_MAP = Bindable
+			.of(ResolvableType.forClassWithGenerics(MultiValueMap.class, String.class, String.class).asMap());
+
 	private static final Map<String, List<String>> DEFAULT_GROUP_LOGGERS;
+
+	private static final Map<LogLevel, List<String>> SPRING_BOOT_LOGGING_LOGGERS;
+
+	private static final Class<?>[] EVENT_TYPES = { ApplicationStartingEvent.class,
+			ApplicationEnvironmentPreparedEvent.class, ApplicationPreparedEvent.class, ContextClosedEvent.class,
+			ApplicationFailedEvent.class };
+
+	private static final Class<?>[] SOURCE_TYPES = { SpringApplication.class, ApplicationContext.class };
+
+	private static final AtomicBoolean shutdownHookRegistered = new AtomicBoolean(false);
+
 	static {
 		MultiValueMap<String, String> loggers = new LinkedMultiValueMap<>();
 		loggers.add("web", "org.springframework.core.codec");
@@ -157,7 +171,6 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		DEFAULT_GROUP_LOGGERS = Collections.unmodifiableMap(loggers);
 	}
 
-	private static final Map<LogLevel, List<String>> SPRING_BOOT_LOGGING_LOGGERS;
 	static {
 		MultiValueMap<LogLevel, String> loggers = new LinkedMultiValueMap<>();
 		loggers.add(LogLevel.DEBUG, "sql");
@@ -170,14 +183,6 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		loggers.add(LogLevel.TRACE, "org.hibernate.tool.hbm2ddl");
 		SPRING_BOOT_LOGGING_LOGGERS = Collections.unmodifiableMap(loggers);
 	}
-
-	private static final Class<?>[] EVENT_TYPES = { ApplicationStartingEvent.class,
-			ApplicationEnvironmentPreparedEvent.class, ApplicationPreparedEvent.class, ContextClosedEvent.class,
-			ApplicationFailedEvent.class };
-
-	private static final Class<?>[] SOURCE_TYPES = { SpringApplication.class, ApplicationContext.class };
-
-	private static final AtomicBoolean shutdownHookRegistered = new AtomicBoolean(false);
 
 	private final Log logger = LogFactory.getLog(getClass());
 
@@ -239,6 +244,10 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		this.loggingSystem.beforeInitialize();
 	}
 
+	/**
+	 * 日志系统初始化
+	 * @param event
+	 */
 	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
 		if (this.loggingSystem == null) {
 			this.loggingSystem = LoggingSystem.get(event.getSpringApplication().getClassLoader());
@@ -284,8 +293,11 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 			this.logFile.applyToSystemProperties();
 		}
 		this.loggerGroups = new LoggerGroups(DEFAULT_GROUP_LOGGERS);
+		// 早期 的日志级别
 		initializeEarlyLoggingLevel(environment);
+		// 初始化日志系统
 		initializeSystem(environment, this.loggingSystem, this.logFile);
+		// 初始化日志级别
 		initializeFinalLoggingLevels(environment, this.loggingSystem);
 		registerShutdownHookIfNecessary(environment, this.loggingSystem);
 	}
@@ -306,10 +318,17 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		return (value != null && !value.equals("false"));
 	}
 
+	/**
+	 * 初始化日志系统
+	 * @param environment
+	 * @param system
+	 * @param logFile
+	 */
 	private void initializeSystem(ConfigurableEnvironment environment, LoggingSystem system, LogFile logFile) {
 		LoggingInitializationContext initializationContext = new LoggingInitializationContext(environment);
 		String logConfig = environment.getProperty(CONFIG_PROPERTY);
 		if (ignoreLogConfig(logConfig)) {
+		    // 日志系统初始化
 			system.initialize(initializationContext, null, logFile);
 		}
 		else {
@@ -330,6 +349,11 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		return !StringUtils.hasLength(logConfig) || logConfig.startsWith("-D");
 	}
 
+	/**
+	 * 初始化日志级别
+	 * @param environment
+	 * @param system
+	 */
 	private void initializeFinalLoggingLevels(ConfigurableEnvironment environment, LoggingSystem system) {
 		bindLoggerGroups(environment);
 		if (this.springBootLogging != null) {
@@ -436,13 +460,13 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		Runtime.getRuntime().addShutdownHook(shutdownHook);
 	}
 
-	public void setOrder(int order) {
-		this.order = order;
-	}
-
 	@Override
 	public int getOrder() {
 		return this.order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
 	}
 
 	/**

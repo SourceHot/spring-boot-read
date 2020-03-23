@@ -1,5 +1,6 @@
 package org.sourcehot;
 
+import lombok.extern.slf4j.Slf4j;
 import org.sourcehot.attr.OrgSourceHotAttr;
 import org.sourcehot.service.IHelloService;
 
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @RestController
 @RequestMapping("/")
+@Slf4j
 public class Application {
 
 	@Autowired
@@ -41,9 +43,10 @@ public class Application {
 
 	@RequestMapping("/hh")
 	public Object h() {
-      OrgSourceHotAttr bean = applicationContext.getBean(OrgSourceHotAttr.class);
-      	System.out.println();
-      return helloService.hello();
+		log.info("as");
+		OrgSourceHotAttr bean = applicationContext.getBean(OrgSourceHotAttr.class);
+		System.out.println();
+		return helloService.hello();
 	}
 
 }
