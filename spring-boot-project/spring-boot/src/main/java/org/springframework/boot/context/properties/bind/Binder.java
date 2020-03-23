@@ -486,6 +486,7 @@ public class Binder {
 	 * Create a new {@link Binder} instance from the specified environment.
 	 * @param environment the environment source (must have attached
 	 * {@link ConfigurationPropertySources})
+	 *                    环境
 	 * @return a {@link Binder} instance
 	 */
 	public static Binder get(Environment environment) {
@@ -502,6 +503,7 @@ public class Binder {
 	 * @since 2.2.0
 	 */
 	public static Binder get(Environment environment, BindHandler defaultBindHandler) {
+	    // 配置信息集合
 		Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources.get(environment);
 		PropertySourcesPlaceholdersResolver placeholdersResolver = new PropertySourcesPlaceholdersResolver(environment);
 		return new Binder(sources, placeholdersResolver, null, null, defaultBindHandler);

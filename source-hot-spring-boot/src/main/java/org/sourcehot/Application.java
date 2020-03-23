@@ -9,7 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@SpringBootApplication
+@SpringBootApplication(excludeName =  { "org.sourcehot.service.HelloServiceAutoConfiguration" })
 @RestController
 @RequestMapping("/")
 public class Application {
@@ -29,7 +29,5 @@ public class Application {
 	public Object h() {
 		return helloService.hello();
 	}
-
-
 
 }

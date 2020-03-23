@@ -34,11 +34,17 @@ class ConditionEvaluationReportAutoConfigurationImportListener
 
 	private ConfigurableListableBeanFactory beanFactory;
 
+    /**
+     * 在执行自动配置时触发
+     * @param event the event to respond to 自动装配事件
+     */
 	@Override
 	public void onAutoConfigurationImportEvent(AutoConfigurationImportEvent event) {
 		if (this.beanFactory != null) {
 			ConditionEvaluationReport report = ConditionEvaluationReport.get(this.beanFactory);
+			// 记录需要加载的配置
 			report.recordEvaluationCandidates(event.getCandidateConfigurations());
+			// 记录不需要加载的配置
 			report.recordExclusions(event.getExclusions());
 		}
 	}
