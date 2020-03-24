@@ -57,7 +57,9 @@ public class DataSourceTransactionManagerAutoConfiguration {
 		@ConditionalOnMissingBean(PlatformTransactionManager.class)
 		DataSourceTransactionManager transactionManager(DataSource dataSource,
 				ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
+		    // 创建dataSource 事物管理类
 			DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+			// 定制事务
 			transactionManagerCustomizers.ifAvailable((customizers) -> customizers.customize(transactionManager));
 			return transactionManager;
 		}

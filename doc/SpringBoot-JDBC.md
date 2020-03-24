@@ -283,3 +283,64 @@ class NamedParameterJdbcTemplateConfiguration {
 ## DataSourceTransactionManagerAutoConfiguration
 
 - 数据源事物自动配置
+
+```JAVA
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnClass({ JdbcTemplate.class, PlatformTransactionManager.class })
+@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
+@EnableConfigurationProperties(DataSourceProperties.class)
+public class DataSourceTransactionManagerAutoConfiguration {
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnSingleCandidate(DataSource.class)
+	static class DataSourceTransactionManagerConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean(PlatformTransactionManager.class)
+		DataSourceTransactionManager transactionManager(DataSource dataSource,
+				ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
+		    // 创建dataSource 事物管理类
+			DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+			transactionManagerCustomizers.ifAvailable((customizers) -> customizers.customize(transactionManager));
+			return transactionManager;
+		}
+
+	}
+
+}
+```
+
+
+
+- `DataSourceTransactionManager` spring jdbc 提供
+
+
+
+```JAVA
+	@SuppressWarnings("unchecked")
+	public void customize(PlatformTransactionManager transactionManager) {
+		    // 定制 事物管理
+	    LambdaSafe.callbacks(PlatformTransactionManagerCustomizer.class, this.customizers, transactionManager)
+				.withLogger(TransactionManagerCustomizers.class)
+				.invoke((customizer) -> customizer.customize(transactionManager));
+
+	}
+
+```
+
+- `org.springframework.boot.autoconfigure.transaction.TransactionProperties#customize`
+
+```JAVA
+	@Override
+	public void customize(AbstractPlatformTransactionManager transactionManager) {
+		// 设置默认超时时间
+		if (this.defaultTimeout != null) {
+			transactionManager.setDefaultTimeout((int) this.defaultTimeout.getSeconds());
+		}
+		// 回滚
+		if (this.rollbackOnCommitFailure != null) {
+			transactionManager.setRollbackOnCommitFailure(this.rollbackOnCommitFailure);
+		}
+	}
+```
+

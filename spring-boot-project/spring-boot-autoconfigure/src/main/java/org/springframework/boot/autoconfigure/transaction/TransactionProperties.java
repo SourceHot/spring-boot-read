@@ -64,9 +64,11 @@ public class TransactionProperties implements PlatformTransactionManagerCustomiz
 
 	@Override
 	public void customize(AbstractPlatformTransactionManager transactionManager) {
+		// 设置默认超时时间
 		if (this.defaultTimeout != null) {
 			transactionManager.setDefaultTimeout((int) this.defaultTimeout.getSeconds());
 		}
+		// 回滚
 		if (this.rollbackOnCommitFailure != null) {
 			transactionManager.setRollbackOnCommitFailure(this.rollbackOnCommitFailure);
 		}
