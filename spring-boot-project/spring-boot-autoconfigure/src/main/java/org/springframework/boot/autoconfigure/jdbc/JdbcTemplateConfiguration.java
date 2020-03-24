@@ -34,6 +34,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @ConditionalOnMissingBean(JdbcOperations.class)
 class JdbcTemplateConfiguration {
 
+    /**
+     * 创建 jdbc template
+     * @param dataSource
+     * @param properties
+     * @return
+     */
 	@Bean
 	@Primary
 	JdbcTemplate jdbcTemplate(DataSource dataSource, JdbcProperties properties) {

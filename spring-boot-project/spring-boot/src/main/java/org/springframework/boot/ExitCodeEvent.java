@@ -22,6 +22,8 @@ import org.springframework.context.ApplicationEvent;
  * Event fired when an application exit code has been determined from an
  * {@link ExitCodeGenerator}.
  *
+ *
+ * 退出码事件
  * @author Phillip Webb
  * @since 1.3.2
  */

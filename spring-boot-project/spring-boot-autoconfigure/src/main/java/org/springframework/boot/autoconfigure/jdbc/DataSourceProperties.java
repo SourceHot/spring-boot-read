@@ -53,6 +53,7 @@ public class DataSourceProperties implements BeanClassLoaderAware, InitializingB
 
 	/**
 	 * Name of the datasource. Default to "testdb" when using an embedded database.
+	 * 数据源名称
 	 */
 	private String name;
 
@@ -69,21 +70,25 @@ public class DataSourceProperties implements BeanClassLoaderAware, InitializingB
 
 	/**
 	 * Fully qualified name of the JDBC driver. Auto-detected based on the URL by default.
+	 * 驱动名称
 	 */
 	private String driverClassName;
 
 	/**
 	 * JDBC URL of the database.
+	 * jdbc url
 	 */
 	private String url;
 
 	/**
 	 * Login username of the database.
+	 * 用户名
 	 */
 	private String username;
 
 	/**
 	 * Login password of the database.
+	 * 密码
 	 */
 	private String password;
 
@@ -166,11 +171,12 @@ public class DataSourceProperties implements BeanClassLoaderAware, InitializingB
 	}
 
 	/**
-	 * Initialize a {@link DataSourceBuilder} with the state of this instance.
+	 * Initialize a {@link DataSourceBuilder} with the state of this instance. 创建数据源构造器
 	 * @return a {@link DataSourceBuilder} initialized with the customizations defined on
 	 * this instance
 	 */
 	public DataSourceBuilder<?> initializeDataSourceBuilder() {
+	    // 链式设置属性
 		return DataSourceBuilder.create(getClassLoader()).type(getType()).driverClassName(determineDriverClassName())
 				.url(determineUrl()).username(determineUsername()).password(determinePassword());
 	}

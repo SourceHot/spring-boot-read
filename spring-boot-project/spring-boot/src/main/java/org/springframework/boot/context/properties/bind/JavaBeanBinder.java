@@ -92,6 +92,7 @@ class JavaBeanBinder implements DataObjectBinder {
 		if (bound == null) {
 			return false;
 		}
+		// 是不是set方法
 		if (property.isSettable()) {
 			property.setValue(beanSupplier, bound);
 		}
@@ -340,6 +341,11 @@ class JavaBeanBinder implements DataObjectBinder {
 			return this.setter != null;
 		}
 
+      /**
+       * 设置属性值
+       * @param instance
+       * @param value
+       */
 		void setValue(Supplier<?> instance, Object value) {
 			try {
 				this.setter.setAccessible(true);

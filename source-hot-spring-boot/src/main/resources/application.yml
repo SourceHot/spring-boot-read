@@ -4,3 +4,10 @@ server:
 org.sourcehout:
   describe: Open source organization
   initiator: huifer
+
+spring:
+  datasource:
+    username: root
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&useSSL=false
