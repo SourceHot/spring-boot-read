@@ -38,6 +38,7 @@ import org.springframework.core.env.Environment;
  * {@link EnableAutoConfiguration Auto-configuration} for embedded servlet and reactive
  * web servers customizations.
  *
+ * 嵌入式Web服务器出厂自定义程序自动配置
  * @author Phillip Webb
  * @since 2.0.0
  */
