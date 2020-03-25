@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 /**
  * Abstract base class for {@link ConfigurableWebServerFactory} implementations.
  *
+ * web服务的基本对象
  * @author Phillip Webb
  * @author Dave Syer
  * @author Andy Wilkinson
@@ -39,6 +40,9 @@ import org.springframework.util.Assert;
  */
 public abstract class AbstractConfigurableWebServerFactory implements ConfigurableWebServerFactory {
 
+    /**
+     * 默认端口
+     */
 	private int port = 8080;
 
 	private InetAddress address;

@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 /**
  * Configuration properties for web error handling.
  *
+ * 异常配置
  * @author Michael Stummvoll
  * @author Stephane Nicoll
  * @author Vedran Pavic

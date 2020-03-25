@@ -57,6 +57,9 @@ public final class PropertyMapper {
 
 	private static final Predicate<?> ALWAYS = (t) -> true;
 
+	/**
+	 * 空的配置属性
+	 */
 	private static final PropertyMapper INSTANCE = new PropertyMapper(null, null);
 
 	private final PropertyMapper parent;
@@ -66,6 +69,14 @@ public final class PropertyMapper {
 	private PropertyMapper(PropertyMapper parent, SourceOperator sourceOperator) {
 		this.parent = parent;
 		this.sourceOperator = sourceOperator;
+	}
+
+	/**
+	 * 返回配置信息
+	 * @return the property mapper
+	 */
+	public static PropertyMapper get() {
+		return INSTANCE;
 	}
 
 	/**
@@ -129,11 +140,19 @@ public final class PropertyMapper {
 	}
 
 	/**
-	 * Return the property mapper.
-	 * @return the property mapper
+	 * An operation that can be applied to a {@link Source}.
 	 */
-	public static PropertyMapper get() {
-		return INSTANCE;
+	@FunctionalInterface
+	public interface SourceOperator {
+
+		/**
+		 * Apply the operation to the given source.
+		 * @param <T> the source type
+		 * @param source the source to operate on
+		 * @return the updated source
+		 */
+		<T> Source<T> apply(Source<T> source);
+
 	}
 
 	/**
@@ -159,22 +178,6 @@ public final class PropertyMapper {
 			}
 			return this.result;
 		}
-
-	}
-
-	/**
-	 * An operation that can be applied to a {@link Source}.
-	 */
-	@FunctionalInterface
-	public interface SourceOperator {
-
-		/**
-		 * Apply the operation to the given source.
-		 * @param <T> the source type
-		 * @param source the source to operate on
-		 * @return the updated source
-		 */
-		<T> Source<T> apply(Source<T> source);
 
 	}
 

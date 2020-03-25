@@ -111,3 +111,190 @@ server:
     max-connections: 1000
 ```
 
+
+
+调用链路
+
+![image-20200325093238025](assets/image-20200325093238025.png)
+
+
+
+- 关注**`serverProperties`**属性
+
+  ![image-20200325093319391](assets/image-20200325093319391.png)
+
+
+
+
+
+```JAVA
+		@Bean
+		public TomcatWebServerFactoryCustomizer tomcatWebServerFactoryCustomizer(Environment environment,
+				ServerProperties serverProperties) {
+			return new TomcatWebServerFactoryCustomizer(environment, serverProperties);
+		}
+```
+
+
+
+- 创建bean 默认单例
+
+  后续流程中在spring体系中执行bean的生命周期相关的操作
+
+  ![image-20200325094344562](assets/image-20200325094344562.png)
+
+
+
+
+
+一些流程的查看
+
+
+
+
+
+### WebServerFactoryCustomizerBeanPostProcessor
+
+- web服务定制工厂的生命周期相关操作
+
+- `org.springframework.boot.web.server.WebServerFactoryCustomizerBeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)`
+
+
+
+![image-20200325094421008](assets/image-20200325094421008.png)
+
+
+
+```JAVA
+	@Override
+	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		if (bean instanceof WebServerFactory) {
+			postProcessBeforeInitialization((WebServerFactory) bean);
+		}
+		return bean;
+	}
+
+```
+
+
+
+```JAVA
+	@SuppressWarnings("unchecked")
+	private void postProcessBeforeInitialization(WebServerFactory webServerFactory) {
+		LambdaSafe.callbacks(WebServerFactoryCustomizer.class, getCustomizers(), webServerFactory)
+				.withLogger(WebServerFactoryCustomizerBeanPostProcessor.class)
+				.invoke((customizer) -> customizer.customize(webServerFactory));
+	}
+
+```
+
+
+
+![image-20200325095208523](assets/image-20200325095208523.png)
+
+
+
+
+
+- 最终到了：`org.springframework.boot.autoconfigure.web.embedded.TomcatWebServerFactoryCustomizer#customize`
+
+
+
+```java
+	@Override
+	public void customize(ConfigurableTomcatWebServerFactory factory) {
+		ServerProperties properties = this.serverProperties;
+		ServerProperties.Tomcat tomcatProperties = properties.getTomcat();
+		PropertyMapper propertyMapper = PropertyMapper.get();
+		propertyMapper.from(tomcatProperties::getBasedir).whenNonNull().to(factory::setBaseDirectory);
+		propertyMapper.from(tomcatProperties::getBackgroundProcessorDelay).whenNonNull().as(Duration::getSeconds)
+				.as(Long::intValue).to(factory::setBackgroundProcessorDelay);
+		customizeRemoteIpValve(factory);
+		propertyMapper.from(tomcatProperties::getMaxThreads).when(this::isPositive)
+				.to((maxThreads) -> customizeMaxThreads(factory, tomcatProperties.getMaxThreads()));
+		propertyMapper.from(tomcatProperties::getMinSpareThreads).when(this::isPositive)
+				.to((minSpareThreads) -> customizeMinThreads(factory, minSpareThreads));
+		propertyMapper.from(this.serverProperties.getMaxHttpHeaderSize()).whenNonNull().asInt(DataSize::toBytes)
+				.when(this::isPositive)
+				.to((maxHttpHeaderSize) -> customizeMaxHttpHeaderSize(factory, maxHttpHeaderSize));
+		propertyMapper.from(tomcatProperties::getMaxSwallowSize).whenNonNull().asInt(DataSize::toBytes)
+				.to((maxSwallowSize) -> customizeMaxSwallowSize(factory, maxSwallowSize));
+		propertyMapper.from(tomcatProperties::getMaxHttpFormPostSize).asInt(DataSize::toBytes)
+				.when((maxHttpFormPostSize) -> maxHttpFormPostSize != 0)
+				.to((maxHttpFormPostSize) -> customizeMaxHttpFormPostSize(factory, maxHttpFormPostSize));
+		propertyMapper.from(tomcatProperties::getAccesslog).when(ServerProperties.Tomcat.Accesslog::isEnabled)
+				.to((enabled) -> customizeAccessLog(factory));
+		propertyMapper.from(tomcatProperties::getUriEncoding).whenNonNull().to(factory::setUriEncoding);
+		propertyMapper.from(properties::getConnectionTimeout).whenNonNull()
+				.to((connectionTimeout) -> customizeConnectionTimeout(factory, connectionTimeout));
+		propertyMapper.from(tomcatProperties::getConnectionTimeout).whenNonNull()
+				.to((connectionTimeout) -> customizeConnectionTimeout(factory, connectionTimeout));
+		propertyMapper.from(tomcatProperties::getMaxConnections).when(this::isPositive)
+				.to((maxConnections) -> customizeMaxConnections(factory, maxConnections));
+		propertyMapper.from(tomcatProperties::getAcceptCount).when(this::isPositive)
+				.to((acceptCount) -> customizeAcceptCount(factory, acceptCount));
+		propertyMapper.from(tomcatProperties::getProcessorCache)
+				.to((processorCache) -> customizeProcessorCache(factory, processorCache));
+		propertyMapper.from(tomcatProperties::getRelaxedPathChars).as(this::joinCharacters).whenHasText()
+				.to((relaxedChars) -> customizeRelaxedPathChars(factory, relaxedChars));
+		propertyMapper.from(tomcatProperties::getRelaxedQueryChars).as(this::joinCharacters).whenHasText()
+				.to((relaxedChars) -> customizeRelaxedQueryChars(factory, relaxedChars));
+		customizeStaticResources(factory);
+		customizeErrorReportValve(properties.getError(), factory);
+	}
+
+```
+
+
+
+- 该方法就是赋值 `factory`
+
+- 设置具体的值
+
+![image-20200325101605773](assets/image-20200325101605773.png)
+
+
+
+
+
+
+
+### ServletWebServerApplicationContext	
+
+
+
+#### createWebServer
+
+```JAVA
+	private void createWebServer() {
+		WebServer webServer = this.webServer;
+		ServletContext servletContext = getServletContext();
+		if (webServer == null && servletContext == null) {
+		    // 创建 工厂
+			ServletWebServerFactory factory = getWebServerFactory();
+			// 初始化webServer
+			this.webServer = factory.getWebServer(getSelfInitializer());
+		}
+		else if (servletContext != null) {
+			try {
+			    // 启动服务
+				getSelfInitializer().onStartup(servletContext);
+			}
+			catch (ServletException ex) {
+				throw new ApplicationContextException("Cannot initialize servlet context", ex);
+			}
+		}
+		initPropertySources();
+	}
+
+```
+
+
+
+![image-20200325102045939](assets/image-20200325102045939.png)
+
+
+
+
+
+- 剩下的代码在spring中执行不再继续追踪
