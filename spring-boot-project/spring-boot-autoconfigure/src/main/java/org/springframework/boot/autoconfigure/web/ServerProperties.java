@@ -291,6 +291,8 @@ public class ServerProperties {
 
 	/**
 	 * Tomcat properties.
+	 *
+	 * tomcat 配置信息
 	 */
 	public static class Tomcat {
 
@@ -929,6 +931,8 @@ public class ServerProperties {
 
 	/**
 	 * Jetty properties.
+	 *
+	 * jetty 配置信息
 	 */
 	public static class Jetty {
 
@@ -1179,6 +1183,7 @@ public class ServerProperties {
 
 	/**
 	 * Netty properties.
+	 * netty 配置信息
 	 */
 	public static class Netty {
 
@@ -1199,6 +1204,7 @@ public class ServerProperties {
 
 	/**
 	 * Undertow properties.
+	 * Undertow 配置信息
 	 */
 	public static class Undertow {
 
@@ -1514,6 +1520,7 @@ public class ServerProperties {
 
 	/**
 	 * Strategies for supporting forward headers.
+	 * 转发策略的头
 	 */
 	public enum ForwardHeadersStrategy {
 

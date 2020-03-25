@@ -81,3 +81,33 @@
 
       - 几个web服务容器都在了可以正式开始了，这个就是**入口**
 
+
+
+
+
+
+
+## 源码
+
+- 断点打上开始了
+
+![image-20200325091434110](assets/image-20200325091434110.png)
+
+
+
+配置信息：
+
+```YAML
+server:
+  port: 9999
+  tomcat:
+    # 最大线程数
+    max-threads: 6
+    # 最小线程数
+    min-spare-threads: 3
+    # 队列长度
+    accept-count: 10
+    # 最大链接数
+    max-connections: 1000
+```
+
