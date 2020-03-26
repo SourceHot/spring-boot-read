@@ -34,6 +34,8 @@ public interface JsonParser {
 
 	/**
 	 * Parse the specified JSON string into a Map.
+	 *
+	 * json 字符串转换成map对象
 	 * @param json the JSON to parse
 	 * @return the parsed JSON as a map
 	 * @throws JsonParseException if the JSON cannot be parsed
@@ -42,6 +44,7 @@ public interface JsonParser {
 
 	/**
 	 * Parse the specified JSON string into a List.
+	 * json 字符串转换成 数组对象
 	 * @param json the JSON to parse
 	 * @return the parsed JSON as a list
 	 * @throws JsonParseException if the JSON cannot be parsed

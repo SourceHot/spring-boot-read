@@ -26,12 +26,20 @@ import org.springframework.util.ReflectionUtils;
 /**
  * Base class for parsers wrapped or implemented in this package.
  *
+ * @see GsonJsonParser
+ * @see BasicJsonParser
+ * @see JacksonJsonParser
+ *
  * @author Anton Telechev
  * @author Phillip Webb
  * @since 2.0.1
  */
 public abstract class AbstractJsonParser implements JsonParser {
 
+	/**
+	 * @param json json
+	 * @param parser 转换方式 ， 子类实现
+	 */
 	protected final Map<String, Object> parseMap(String json, Function<String, Map<String, Object>> parser) {
 		return trimParse(json, "{", parser);
 	}
@@ -43,6 +51,7 @@ public abstract class AbstractJsonParser implements JsonParser {
 	protected final <T> T trimParse(String json, String prefix, Function<String, T> parser) {
 		String trimmed = (json != null) ? json.trim() : "";
 		if (trimmed.startsWith(prefix)) {
+		    // 具体转换的执行在外部定义
 			return parser.apply(trimmed);
 		}
 		throw new JsonParseException();
