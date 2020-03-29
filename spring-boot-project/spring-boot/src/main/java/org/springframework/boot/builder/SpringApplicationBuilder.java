@@ -125,6 +125,8 @@ public class SpringApplicationBuilder {
 	 * Create an application context (and its parent if specified) with the command line
 	 * args provided. The parent is run first with the same arguments if has not yet been
 	 * started.
+	 *
+	 * 创建 应用上下文 并且启动项目
 	 * @param args the command line arguments
 	 * @return an application context created from the current state
 	 */
@@ -529,6 +531,7 @@ public class SpringApplicationBuilder {
 	 * @return the current builder
 	 */
 	public SpringApplicationBuilder listeners(ApplicationListener<?>... listeners) {
+		// 添加监听器
 		this.application.addListeners(listeners);
 		return this;
 	}
