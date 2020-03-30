@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
 /**
  * Base class for configuration of a data source.
  *
+ * 数据源配置信息
  * @author Dave Syer
  * @author Maciej Walkowiak
  * @author Stephane Nicoll

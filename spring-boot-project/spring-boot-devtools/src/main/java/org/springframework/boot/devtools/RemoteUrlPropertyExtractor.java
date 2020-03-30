@@ -45,6 +45,7 @@ class RemoteUrlPropertyExtractor implements ApplicationListener<ApplicationEnvir
 	@Override
 	public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
 		ConfigurableEnvironment environment = event.getEnvironment();
+		// 清除远程url
 		String url = cleanRemoteUrl(environment.getProperty(NON_OPTION_ARGS));
 		Assert.state(StringUtils.hasLength(url), "No remote URL specified");
 		Assert.state(url.indexOf(',') == -1, "Multiple URLs specified");
@@ -59,6 +60,11 @@ class RemoteUrlPropertyExtractor implements ApplicationListener<ApplicationEnvir
 		environment.getPropertySources().addLast(propertySource);
 	}
 
+	/**
+	 * 清除远程url
+	 * @param url url
+	 * @return 删除的url
+	 */
 	private String cleanRemoteUrl(String url) {
 		if (StringUtils.hasText(url) && url.endsWith("/")) {
 			return url.substring(0, url.length() - 1);

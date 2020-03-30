@@ -37,10 +37,17 @@ import org.springframework.context.ApplicationListener;
 class ConditionEvaluationDeltaLoggingListener
 		implements ApplicationListener<ApplicationReadyEvent>, ApplicationContextAware {
 
+	/**
+	 * key: 应用id
+	 * value: {@link ConditionEvaluationReport}
+	 */
 	private static final ConcurrentHashMap<String, ConditionEvaluationReport> previousReports = new ConcurrentHashMap<>();
 
 	private static final Log logger = LogFactory.getLog(ConditionEvaluationDeltaLoggingListener.class);
 
+	/**
+	 * 应用上下文
+	 */
 	private volatile ApplicationContext context;
 
 	@Override
@@ -48,8 +55,11 @@ class ConditionEvaluationDeltaLoggingListener
 		if (!event.getApplicationContext().equals(this.context)) {
 			return;
 		}
+		// 获取bean对象
 		ConditionEvaluationReport report = event.getApplicationContext().getBean(ConditionEvaluationReport.class);
+		// 从本地尝试性获取
 		ConditionEvaluationReport previousReport = previousReports.get(event.getApplicationContext().getId());
+		// 如果不存在
 		if (previousReport != null) {
 			ConditionEvaluationReport delta = report.getDelta(previousReport);
 			if (!delta.getConditionAndOutcomesBySource().isEmpty() || !delta.getExclusions().isEmpty()
@@ -63,6 +73,7 @@ class ConditionEvaluationDeltaLoggingListener
 				logger.info("Condition evaluation unchanged");
 			}
 		}
+		// 设置数据
 		previousReports.put(event.getApplicationContext().getId(), report);
 	}
 

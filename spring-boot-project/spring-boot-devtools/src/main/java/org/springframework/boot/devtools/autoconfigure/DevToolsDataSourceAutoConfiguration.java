@@ -98,16 +98,25 @@ public class DevToolsDataSourceAutoConfiguration {
 			this.dataSourceProperties = dataSourceProperties;
 		}
 
+		/**
+		 * 摧毁方法
+		 * @throws Exception
+		 */
 		@Override
 		public void destroy() throws Exception {
 			for (InMemoryDatabase inMemoryDatabase : InMemoryDatabase.values()) {
+				// 判断是否匹配
 				if (inMemoryDatabase.matches(this.dataSourceProperties)) {
+					// 关闭 数据源
 					inMemoryDatabase.shutdown(this.dataSource);
 					return;
 				}
 			}
 		}
 
+		/**
+		 * 内存数据库
+		 */
 		private enum InMemoryDatabase {
 
 			DERBY(null, new HashSet<>(Arrays.asList("org.apache.derby.jdbc.EmbeddedDriver")), (dataSource) -> {
@@ -129,10 +138,21 @@ public class DevToolsDataSourceAutoConfiguration {
 
 			private final String urlPrefix;
 
+			/**
+			 * 关闭处理器
+			 */
 			private final ShutdownHandler shutdownHandler;
 
+			/**
+			 * 驱动名
+			 */
 			private final Set<String> driverClassNames;
 
+			/**
+			 * 初始化枚举对象
+			 * @param urlPrefix url前缀
+			 * @param driverClassNames 驱动名称
+			 */
 			InMemoryDatabase(String urlPrefix, Set<String> driverClassNames) {
 				this(urlPrefix, driverClassNames, (dataSource) -> {
 					try (Connection connection = dataSource.getConnection()) {

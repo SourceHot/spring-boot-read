@@ -27,6 +27,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Configuration properties for developer tools.
+ * spring dev tools 配置实体
  *
  * @author Phillip Webb
  * @author Stephane Nicoll
@@ -59,6 +60,9 @@ public class DevToolsProperties {
 	 */
 	public static class Restart {
 
+		/**
+		 * 忽略的一些配置
+		 */
 		private static final String DEFAULT_RESTART_EXCLUDES = "META-INF/maven/**,"
 				+ "META-INF/resources/**,resources/**,static/**,public/**,templates/**,"
 				+ "**/*Test.class,**/*Tests.class,git.properties,META-INF/build-info.properties";

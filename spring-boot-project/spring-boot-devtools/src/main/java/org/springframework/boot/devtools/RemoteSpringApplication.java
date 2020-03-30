@@ -42,6 +42,7 @@ import org.springframework.core.io.ClassPathResource;
  * and should have the same classpath configuration as the locally developed application.
  * The remote URL of the application should be provided as a non-option argument.
  *
+ * 远程spring 应用
  * @author Phillip Webb
  * @since 1.3.0
  * @see RemoteClientConfiguration
@@ -51,6 +52,10 @@ public final class RemoteSpringApplication {
 	private RemoteSpringApplication() {
 	}
 
+
+	/**
+	 * 启动方法
+	 */
 	private void run(String[] args) {
 		Restarter.initialize(args, RestartInitializer.NONE);
 		SpringApplication application = new SpringApplication(RemoteClientConfiguration.class);
@@ -68,6 +73,10 @@ public final class RemoteSpringApplication {
 		return initializers;
 	}
 
+	/**
+	 * 获取监听器列表
+	 * @return
+	 */
 	private Collection<ApplicationListener<?>> getListeners() {
 		List<ApplicationListener<?>> listeners = new ArrayList<>();
 		listeners.add(new AnsiOutputApplicationListener());
@@ -78,6 +87,10 @@ public final class RemoteSpringApplication {
 		return listeners;
 	}
 
+	/**
+	 * 获取banner
+	 * @return
+	 */
 	private Banner getBanner() {
 		ClassPathResource banner = new ClassPathResource("remote-banner.txt", RemoteSpringApplication.class);
 		return new ResourceBanner(banner);
