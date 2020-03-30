@@ -62,6 +62,7 @@ import org.springframework.util.StringUtils;
  * If your needs are simpler, consider using the static convenience methods in
  * SpringApplication instead.
  *
+ * Spring 应用构造器
  * @author Dave Syer
  * @author Andy Wilkinson
  * @since 1.0.0
@@ -69,18 +70,32 @@ import org.springframework.util.StringUtils;
  */
 public class SpringApplicationBuilder {
 
+	/**
+	 * spring 应用上下文
+	 */
 	private final SpringApplication application;
 
 	private ConfigurableApplicationContext context;
 
+	/**
+	 * 父构造器
+	 */
 	private SpringApplicationBuilder parent;
 
+	/**
+	 * 运行标记
+	 */
 	private final AtomicBoolean running = new AtomicBoolean(false);
 
 	private final Set<Class<?>> sources = new LinkedHashSet<>();
 
+	/**
+	 * 默认配置
+	 */
 	private final Map<String, Object> defaultProperties = new LinkedHashMap<>();
-
+	/**
+	 * 环境配置
+	 */
 	private ConfigurableEnvironment environment;
 
 	private Set<String> additionalProfiles = new LinkedHashSet<>();
@@ -131,13 +146,16 @@ public class SpringApplicationBuilder {
 	 * @return an application context created from the current state
 	 */
 	public ConfigurableApplicationContext run(String... args) {
+		// 判断是否已经运行
 		if (this.running.get()) {
 			// If already created we just return the existing context
 			return this.context;
 		}
 		configureAsChildIfNecessary(args);
+		// 设置运行状态
 		if (this.running.compareAndSet(false, true)) {
 			synchronized (this.running) {
+				// SpringApplication 启动
 				// If not already running copy the sources over and then run.
 				this.context = build().run(args);
 			}
@@ -429,6 +447,8 @@ public class SpringApplicationBuilder {
 	/**
 	 * Default properties for the environment in the form {@code key=value} or
 	 * {@code key:value}.
+	 *
+	 *
 	 * @param defaultProperties the properties to set.
 	 * @return the current builder
 	 */
@@ -436,6 +456,11 @@ public class SpringApplicationBuilder {
 		return properties(getMapFromProperties(defaultProperties));
 	}
 
+	/**
+	 * 配置信息转换成map对象
+	 * @param properties 配置信息
+	 * @return
+	 */
 	private Map<String, Object> getMapFromProperties(Properties properties) {
 		Map<String, Object> map = new HashMap<>();
 		for (Object key : Collections.list(properties.propertyNames())) {

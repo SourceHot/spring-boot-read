@@ -87,6 +87,7 @@ public @interface EnableAutoConfiguration {
 
 	/**
 	 * Exclude specific auto-configuration classes such that they will never be applied.
+	 * 忽略的类
 	 * @return the classes to exclude
 	 */
 	Class<?>[] exclude() default {};
@@ -94,6 +95,7 @@ public @interface EnableAutoConfiguration {
 	/**
 	 * Exclude specific auto-configuration class names such that they will never be
 	 * applied.
+	 * 忽略的类名
 	 * @return the class names to exclude
 	 * @since 1.3.0
 	 */
