@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * A single file that has changed.
+ * 变动文件
  *
  * @author Phillip Webb
  * @since 1.3.0
@@ -108,21 +109,25 @@ public final class ChangedFile {
 
 	/**
 	 * Change types.
+	 * 文件变动的类型
 	 */
 	public enum Type {
 
 		/**
 		 * A new file has been added.
+		 * 新增文件
 		 */
 		ADD,
 
 		/**
 		 * An existing file has been modified.
+		 * 变动文件
 		 */
 		MODIFY,
 
 		/**
 		 * An existing file has been deleted.
+		 * 删除文件
 		 */
 		DELETE
 

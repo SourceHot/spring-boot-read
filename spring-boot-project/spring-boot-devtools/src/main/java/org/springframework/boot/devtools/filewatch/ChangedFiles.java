@@ -24,6 +24,8 @@ import java.util.Set;
 /**
  * A collections of files from a specific source folder that have changed.
  *
+ *
+ * 有变动的文件 这是一个集合
  * @author Phillip Webb
  * @since 1.3.0
  * @see FileChangeListener

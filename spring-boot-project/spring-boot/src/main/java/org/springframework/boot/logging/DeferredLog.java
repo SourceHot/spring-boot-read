@@ -213,6 +213,9 @@ public class DeferredLog implements Log {
 		return destination;
 	}
 
+	/**
+	 * 日志转换
+	 */
 	private static void logTo(Log log, LogLevel level, Object message, Throwable throwable) {
 		switch (level) {
 		case TRACE:

@@ -21,6 +21,7 @@ import java.util.Set;
 /**
  * Callback interface when file changes are detected.
  *
+ * 文件变动监听器
  * @author Andy Clement
  * @author Phillip Webb
  * @since 1.3.0
@@ -30,6 +31,8 @@ public interface FileChangeListener {
 
 	/**
 	 * Called when files have been changed.
+	 *
+	 * 在文件变动的时候执行该函数
 	 * @param changeSet a set of the {@link ChangedFiles}
 	 */
 	void onChange(Set<ChangedFiles> changeSet);

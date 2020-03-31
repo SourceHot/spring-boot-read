@@ -48,6 +48,7 @@ import org.springframework.util.StringUtils;
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for local development support.
  *
+ * devtools 自动配置类
  * @author Phillip Webb
  * @author Andy Wilkinson
  * @author Vladimir Tsanev
@@ -60,11 +61,18 @@ public class LocalDevToolsAutoConfiguration {
 
 	/**
 	 * Local LiveReload configuration.
+	 * 实时重新加载配置，
+	 * 注册bean
 	 */
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnProperty(prefix = "spring.devtools.livereload", name = "enabled", matchIfMissing = true)
 	static class LiveReloadConfiguration {
 
+		/**
+		 * 实时重启服务(应用)
+		 * @param properties devtools 配置信息
+		 * @return {@link LiveReloadServer}
+		 */
 		@Bean
 		@RestartScope
 		@ConditionalOnMissingBean
@@ -87,18 +95,27 @@ public class LocalDevToolsAutoConfiguration {
 
 	/**
 	 * Local Restart Configuration.
+	 *
+	 * 重启配置
 	 */
 	@Lazy(false)
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnProperty(prefix = "spring.devtools.restart", name = "enabled", matchIfMissing = true)
 	static class RestartConfiguration {
 
+		/**
+		 * devtools 的配置信息
+		 */
 		private final DevToolsProperties properties;
 
 		RestartConfiguration(DevToolsProperties properties) {
 			this.properties = properties;
 		}
 
+		/**
+		 * 监听 变动时间
+		 * @param fileSystemWatcherFactory 文件系统观察工厂
+		 */
 		@Bean
 		ApplicationListener<ClassPathChangedEvent> restartingClassPathChangedEventListener(
 				FileSystemWatcherFactory fileSystemWatcherFactory) {
@@ -109,6 +126,12 @@ public class LocalDevToolsAutoConfiguration {
 			};
 		}
 
+		/**
+		 * bean {@link ClassPathFileSystemWatcher}
+		 * @param fileSystemWatcherFactory
+		 * @param classPathRestartStrategy
+		 * @return
+		 */
 		@Bean
 		@ConditionalOnMissingBean
 		ClassPathFileSystemWatcher classPathFileSystemWatcher(FileSystemWatcherFactory fileSystemWatcherFactory,
@@ -117,6 +140,7 @@ public class LocalDevToolsAutoConfiguration {
 			ClassPathFileSystemWatcher watcher = new ClassPathFileSystemWatcher(fileSystemWatcherFactory,
 					classPathRestartStrategy, urls);
 			watcher.setStopWatcherOnRestart(true);
+			// 实例化后调用 org.springframework.boot.devtools.classpath.ClassPathFileSystemWatcher.afterPropertiesSet
 			return watcher;
 		}
 
@@ -155,6 +179,9 @@ public class LocalDevToolsAutoConfiguration {
 
 	}
 
+	/**
+	 * 实时重载监听事件
+	 */
 	static class LiveReloadServerEventListener implements GenericApplicationListener {
 
 		private final OptionalLiveReloadServer liveReloadServer;
@@ -163,6 +190,11 @@ public class LocalDevToolsAutoConfiguration {
 			this.liveReloadServer = liveReloadServer;
 		}
 
+		/**
+		 * 是否支持事件
+		 * @param eventType 事件类型
+		 * @return 是,否
+		 */
 		@Override
 		public boolean supportsEventType(ResolvableType eventType) {
 			Class<?> type = eventType.getRawClass();

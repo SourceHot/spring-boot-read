@@ -74,6 +74,9 @@ public class ClassPathFileSystemWatcher implements InitializingBean, DisposableB
 		this.applicationContext = applicationContext;
 	}
 
+	/**
+	 * 在属性设置后做什么
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (this.restartStrategy != null) {

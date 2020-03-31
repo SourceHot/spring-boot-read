@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
  * to {@code DispatchServlet} in Spring MVC but separate to ensure that remote support can
  * be used regardless of any web framework.
  *
+ * 调度者
  * @author Phillip Webb
  * @since 1.3.0
  * @see HandlerMapper

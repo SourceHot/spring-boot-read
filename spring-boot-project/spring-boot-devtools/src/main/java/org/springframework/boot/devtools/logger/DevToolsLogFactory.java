@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationListener;
 /**
  * Devtools deferred logging support.
  *
+ * devtools 日志工厂
  * @author Phillip Webb
  * @since 2.1.0
  */
@@ -55,6 +56,7 @@ public final class DevToolsLogFactory {
 
 	/**
 	 * Listener used to log and switch when the context is ready.
+	 * 申请事件
 	 */
 	static class Listener implements ApplicationListener<ApplicationPreparedEvent> {
 
