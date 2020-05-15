@@ -52,6 +52,7 @@ class RestartLauncher extends Thread {
 	@Override
 	public void run() {
 		try {
+			// 加载 main 方法所在的类 并且启动
 			Class<?> mainClass = getContextClassLoader().loadClass(this.mainClassName);
 			Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
 			mainMethod.invoke(null, new Object[]{this.args});

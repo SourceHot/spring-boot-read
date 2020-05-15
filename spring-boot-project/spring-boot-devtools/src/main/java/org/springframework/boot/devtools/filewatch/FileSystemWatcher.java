@@ -16,6 +16,8 @@
 
 package org.springframework.boot.devtools.filewatch;
 
+import org.springframework.util.Assert;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.time.Duration;
@@ -30,15 +32,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.util.Assert;
-
 /**
  * Watches specific folders for file changes.
  *
  * @author Andy Clement
  * @author Phillip Webb
- * @since 1.3.0
  * @see FileChangeListener
+ * @since 1.3.0
  */
 public class FileSystemWatcher {
 
@@ -57,12 +57,9 @@ public class FileSystemWatcher {
 	private final AtomicInteger remainingScans = new AtomicInteger(-1);
 
 	private final Map<File, FolderSnapshot> folders = new HashMap<>();
-
-	private Thread watchThread;
-
-	private FileFilter triggerFilter;
-
 	private final Object monitor = new Object();
+	private Thread watchThread;
+	private FileFilter triggerFilter;
 
 	/**
 	 * Create a new {@link FileSystemWatcher} instance.
@@ -73,26 +70,30 @@ public class FileSystemWatcher {
 
 	/**
 	 * Create a new {@link FileSystemWatcher} instance.
-	 * @param daemon if a daemon thread used to monitor changes
+	 *
+	 * @param daemon       if a daemon thread used to monitor changes
 	 * @param pollInterval the amount of time to wait between checking for changes
-	 * @param quietPeriod the amount of time required after a change has been detected to
-	 * ensure that updates have completed
+	 * @param quietPeriod  the amount of time required after a change has been detected to ensure
+	 *                     that updates have completed
 	 */
 	public FileSystemWatcher(boolean daemon, Duration pollInterval, Duration quietPeriod) {
 		Assert.notNull(pollInterval, "PollInterval must not be null");
 		Assert.notNull(quietPeriod, "QuietPeriod must not be null");
 		Assert.isTrue(pollInterval.toMillis() > 0, "PollInterval must be positive");
 		Assert.isTrue(quietPeriod.toMillis() > 0, "QuietPeriod must be positive");
-		Assert.isTrue(pollInterval.toMillis() > quietPeriod.toMillis(),
-				"PollInterval must be greater than QuietPeriod");
+		Assert.isTrue(
+				pollInterval.toMillis() > quietPeriod.toMillis(),
+				"PollInterval must be greater than QuietPeriod"
+		);
 		this.daemon = daemon;
 		this.pollInterval = pollInterval.toMillis();
 		this.quietPeriod = quietPeriod.toMillis();
 	}
 
 	/**
-	 * Add listener for file change events. Cannot be called after the watcher has been
-	 * {@link #start() started}.
+	 * Add listener for file change events. Cannot be called after the watcher has been {@link
+	 * #start() started}.
+	 *
 	 * @param fileChangeListener the listener to add
 	 */
 	public void addListener(FileChangeListener fileChangeListener) {
@@ -104,8 +105,9 @@ public class FileSystemWatcher {
 	}
 
 	/**
-	 * Add source folders to monitor. Cannot be called after the watcher has been
-	 * {@link #start() started}.
+	 * Add source folders to monitor. Cannot be called after the watcher has been {@link #start()
+	 * started}.
+	 *
 	 * @param folders the folders to monitor
 	 */
 	public void addSourceFolders(Iterable<File> folders) {
@@ -118,8 +120,9 @@ public class FileSystemWatcher {
 	}
 
 	/**
-	 * Add a source folder to monitor. Cannot be called after the watcher has been
-	 * {@link #start() started}.
+	 * Add a source folder to monitor. Cannot be called after the watcher has been {@link #start()
+	 * started}.
+	 *
 	 * @param folder the folder to monitor
 	 */
 	public void addSourceFolder(File folder) {
@@ -133,6 +136,7 @@ public class FileSystemWatcher {
 
 	/**
 	 * Set an optional {@link FileFilter} used to limit the files that trigger a change.
+	 *
 	 * @param triggerFilter a trigger filter or null
 	 */
 	public void setTriggerFilter(FileFilter triggerFilter) {
@@ -156,7 +160,8 @@ public class FileSystemWatcher {
 			if (this.watchThread == null) {
 				Map<File, FolderSnapshot> localFolders = new HashMap<>(this.folders);
 				this.watchThread = new Thread(new Watcher(this.remainingScans, new ArrayList<>(this.listeners),
-						this.triggerFilter, this.pollInterval, this.quietPeriod, localFolders));
+														  this.triggerFilter, this.pollInterval, this.quietPeriod, localFolders
+				));
 				this.watchThread.setName("File Watcher");
 				this.watchThread.setDaemon(this.daemon);
 				this.watchThread.start();
@@ -177,6 +182,7 @@ public class FileSystemWatcher {
 
 	/**
 	 * Stop monitoring the source folders.
+	 *
 	 * @param remainingScans the number of remaining scans
 	 */
 	void stopAfter(int remainingScans) {
@@ -216,7 +222,7 @@ public class FileSystemWatcher {
 		private Map<File, FolderSnapshot> folders;
 
 		private Watcher(AtomicInteger remainingScans, List<FileChangeListener> listeners, FileFilter triggerFilter,
-				long pollInterval, long quietPeriod, Map<File, FolderSnapshot> folders) {
+						long pollInterval, long quietPeriod, Map<File, FolderSnapshot> folders) {
 			this.remainingScans = remainingScans;
 			this.listeners = listeners;
 			this.triggerFilter = triggerFilter;
@@ -233,6 +239,7 @@ public class FileSystemWatcher {
 					if (remainingScans > 0) {
 						this.remainingScans.decrementAndGet();
 					}
+					// 对比
 					scan();
 				}
 				catch (InterruptedException ex) {
@@ -251,6 +258,7 @@ public class FileSystemWatcher {
 				current = getCurrentSnapshots();
 				Thread.sleep(this.quietPeriod);
 			}
+			// 差异对比
 			while (isDifferent(previous, current));
 			if (isDifferent(this.folders, current)) {
 				updateSnapshots(current.values());
@@ -291,6 +299,7 @@ public class FileSystemWatcher {
 				}
 			}
 			if (!changeSet.isEmpty()) {
+				// 发送事件
 				fireListeners(Collections.unmodifiableSet(changeSet));
 			}
 			this.folders = updated;
