@@ -16,10 +16,10 @@
 
 package org.springframework.boot.devtools.restart;
 
+import org.springframework.util.Assert;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
-import org.springframework.util.Assert;
 
 /**
  * The "main" method located from a running thread.
@@ -34,11 +34,23 @@ class MainMethod {
 		this(Thread.currentThread());
 	}
 
+	/**
+	 * 构造
+	 * @param thread
+	 */
 	MainMethod(Thread thread) {
 		Assert.notNull(thread, "Thread must not be null");
+		// 获取 main method
 		this.method = getMainMethod(thread);
 	}
 
+	/**
+	 * 循环线程堆栈找到 main method
+	 *
+	 * @param thread
+	 *
+	 * @return
+	 */
 	private Method getMainMethod(Thread thread) {
 		for (StackTraceElement element : thread.getStackTrace()) {
 			if ("main".equals(element.getMethodName())) {
@@ -67,6 +79,7 @@ class MainMethod {
 
 	/**
 	 * Returns the actual main method.
+	 *
 	 * @return the main method
 	 */
 	Method getMethod() {
@@ -75,6 +88,9 @@ class MainMethod {
 
 	/**
 	 * Return the name of the declaring class.
+	 * <p>
+	 * 将 method 所在的类名找出来
+	 *
 	 * @return the declaring class name
 	 */
 	String getDeclaringClassName() {

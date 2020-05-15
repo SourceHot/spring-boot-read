@@ -71,6 +71,7 @@ public class RestartApplicationListener implements ApplicationListener<Applicati
 			if (!restartOnInitialize) {
 				logger.info("Restart disabled due to an agent-based reloader being active");
 			}
+			// 实例化 Restarter 对象
 			Restarter.initialize(args, false, initializer, restartOnInitialize);
 		}
 		else {

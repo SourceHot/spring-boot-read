@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
 /**
  * {@link ApplicationEvent} containing details of a classpath change.
  *
+ * classPath 变动事件
  * @author Phillip Webb
  * @since 1.3.0
  * @see ClassPathFileChangeListener
@@ -58,6 +59,7 @@ public class ClassPathChangedEvent extends ApplicationEvent {
 
 	/**
 	 * Return if an application restart is required due to the change.
+	 * 是否改动 true 重启 false 不作操作
 	 * @return if an application restart is required
 	 */
 	public boolean isRestartRequired() {

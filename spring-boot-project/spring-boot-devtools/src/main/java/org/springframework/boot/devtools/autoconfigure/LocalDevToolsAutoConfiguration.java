@@ -119,6 +119,7 @@ public class LocalDevToolsAutoConfiguration {
 		@Bean
 		ApplicationListener<ClassPathChangedEvent> restartingClassPathChangedEventListener(
 				FileSystemWatcherFactory fileSystemWatcherFactory) {
+			// classPath 变动事件
 			return (event) -> {
 				if (event.isRestartRequired()) {
 					Restarter.getInstance().restart(new FileWatchingFailureHandler(fileSystemWatcherFactory));
@@ -136,6 +137,7 @@ public class LocalDevToolsAutoConfiguration {
 		@ConditionalOnMissingBean
 		ClassPathFileSystemWatcher classPathFileSystemWatcher(FileSystemWatcherFactory fileSystemWatcherFactory,
 				ClassPathRestartStrategy classPathRestartStrategy) {
+			// urls = 编译后的文件存放地址
 			URL[] urls = Restarter.getInstance().getInitialUrls();
 			ClassPathFileSystemWatcher watcher = new ClassPathFileSystemWatcher(fileSystemWatcherFactory,
 					classPathRestartStrategy, urls);

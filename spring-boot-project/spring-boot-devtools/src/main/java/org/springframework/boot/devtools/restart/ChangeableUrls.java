@@ -16,6 +16,12 @@
 
 package org.springframework.boot.devtools.restart;
 
+import org.apache.commons.logging.Log;
+import org.springframework.boot.devtools.logger.DevToolsLogFactory;
+import org.springframework.boot.devtools.settings.DevToolsSettings;
+import org.springframework.core.log.LogMessage;
+import org.springframework.util.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -33,15 +39,10 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
 
-import org.apache.commons.logging.Log;
-
-import org.springframework.boot.devtools.logger.DevToolsLogFactory;
-import org.springframework.boot.devtools.settings.DevToolsSettings;
-import org.springframework.core.log.LogMessage;
-import org.springframework.util.StringUtils;
-
 /**
  * A filtered collection of URLs which can change after the application has started.
+ * <p>
+ * 过滤变化的url
  *
  * @author Phillip Webb
  * @author Andy Wilkinson
@@ -66,32 +67,13 @@ final class ChangeableUrls implements Iterable<URL> {
 		this.urls = Collections.unmodifiableList(reloadableUrls);
 	}
 
-	private boolean isFolderUrl(String urlString) {
-		return urlString.startsWith("file:") && urlString.endsWith("/");
-	}
-
-	@Override
-	public Iterator<URL> iterator() {
-		return this.urls.iterator();
-	}
-
-	int size() {
-		return this.urls.size();
-	}
-
-	URL[] toArray() {
-		return this.urls.toArray(new URL[0]);
-	}
-
-	List<URL> toList() {
-		return Collections.unmodifiableList(this.urls);
-	}
-
-	@Override
-	public String toString() {
-		return this.urls.toString();
-	}
-
+	/**
+	 * 从类加载获取 变化的url
+	 *
+	 * @param classLoader
+	 *
+	 * @return
+	 */
 	static ChangeableUrls fromClassLoader(ClassLoader classLoader) {
 		List<URL> urls = new ArrayList<>();
 		for (URL url : urlsFromClassLoader(classLoader)) {
@@ -101,6 +83,13 @@ final class ChangeableUrls implements Iterable<URL> {
 		return fromUrls(urls);
 	}
 
+	/**
+	 * 从类加载器中获取url
+	 *
+	 * @param classLoader 类加载器
+	 *
+	 * @return
+	 */
 	private static URL[] urlsFromClassLoader(ClassLoader classLoader) {
 		if (classLoader instanceof URLClassLoader) {
 			return ((URLClassLoader) classLoader).getURLs();
@@ -185,6 +174,32 @@ final class ChangeableUrls implements Iterable<URL> {
 
 	static ChangeableUrls fromUrls(URL... urls) {
 		return new ChangeableUrls(urls);
+	}
+
+	private boolean isFolderUrl(String urlString) {
+		return urlString.startsWith("file:") && urlString.endsWith("/");
+	}
+
+	@Override
+	public Iterator<URL> iterator() {
+		return this.urls.iterator();
+	}
+
+	int size() {
+		return this.urls.size();
+	}
+
+	URL[] toArray() {
+		return this.urls.toArray(new URL[0]);
+	}
+
+	List<URL> toList() {
+		return Collections.unmodifiableList(this.urls);
+	}
+
+	@Override
+	public String toString() {
+		return this.urls.toString();
 	}
 
 }

@@ -16,6 +16,25 @@
 
 package org.springframework.boot.devtools.restart;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.CachedIntrospectionResults;
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.devtools.restart.FailureHandler.Outcome;
+import org.springframework.boot.devtools.restart.classloader.ClassLoaderFiles;
+import org.springframework.boot.devtools.restart.classloader.RestartClassLoader;
+import org.springframework.boot.logging.DeferredLog;
+import org.springframework.boot.system.JavaVersion;
+import org.springframework.cglib.core.ClassNameReader;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
+
 import java.beans.Introspector;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Field;
@@ -36,50 +55,30 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.springframework.beans.CachedIntrospectionResults;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.devtools.restart.FailureHandler.Outcome;
-import org.springframework.boot.devtools.restart.classloader.ClassLoaderFiles;
-import org.springframework.boot.devtools.restart.classloader.RestartClassLoader;
-import org.springframework.boot.logging.DeferredLog;
-import org.springframework.boot.system.JavaVersion;
-import org.springframework.cglib.core.ClassNameReader;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.core.ResolvableType;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
-
 /**
- * Allows a running application to be restarted with an updated classpath. The restarter
- * works by creating a new application ClassLoader that is split into two parts. The top
- * part contains static URLs that don't change (for example 3rd party libraries and Spring
- * Boot itself) and the bottom part contains URLs where classes and resources might be
- * updated.
+ * Allows a running application to be restarted with an updated classpath. The restarter works by
+ * creating a new application ClassLoader that is split into two parts. The top part contains static
+ * URLs that don't change (for example 3rd party libraries and Spring Boot itself) and the bottom
+ * part contains URLs where classes and resources might be updated.
  * <p>
- * The Restarter should be {@link #initialize(String[]) initialized} early to ensure that
- * classes are loaded multiple times. Mostly the {@link RestartApplicationListener} can be
- * relied upon to perform initialization, however, you may need to call
- * {@link #initialize(String[])} directly if your SpringApplication arguments are not
- * identical to your main method arguments.
+ * The Restarter should be {@link #initialize(String[]) initialized} early to ensure that classes
+ * are loaded multiple times. Mostly the {@link RestartApplicationListener} can be relied upon to
+ * perform initialization, however, you may need to call {@link #initialize(String[])} directly if
+ * your SpringApplication arguments are not identical to your main method arguments.
  * <p>
  * By default, applications running in an IDE (i.e. those not packaged as "fat jars") will
- * automatically detect URLs that can change. It's also possible to manually configure
- * URLs or class file updates for remote restart scenarios.
+ * automatically detect URLs that can change. It's also possible to manually configure URLs or class
+ * file updates for remote restart scenarios.
+ * <p>
+ * 重启方法
  *
  * @author Phillip Webb
  * @author Andy Wilkinson
- * @since 1.3.0
  * @see RestartApplicationListener
  * @see #initialize(String[])
  * @see #getInstance()
  * @see #restart()
+ * @since 1.3.0
  */
 public class Restarter {
 
@@ -100,33 +99,27 @@ public class Restarter {
 	private final Lock stopLock = new ReentrantLock();
 
 	private final Object monitor = new Object();
-
-	private Log logger = new DeferredLog();
-
 	private final boolean forceReferenceCleanup;
-
-	private boolean enabled = true;
-
-	private URL[] initialUrls;
-
 	private final String mainClassName;
-
 	private final ClassLoader applicationClassLoader;
-
 	private final String[] args;
-
 	private final UncaughtExceptionHandler exceptionHandler;
-
-	private boolean finished = false;
-
 	private final List<ConfigurableApplicationContext> rootContexts = new CopyOnWriteArrayList<>();
+	private final URL[] initialUrls;
+	private Log logger = new DeferredLog();
+	private boolean enabled = true;
+	private boolean finished = false;
 
 	/**
 	 * Internal constructor to create a new {@link Restarter} instance.
-	 * @param thread the source thread
-	 * @param args the application arguments
+	 * <p>
+	 * 构造方法
+	 *
+	 * @param thread                the source thread
+	 * @param args                  the application arguments
 	 * @param forceReferenceCleanup if soft/weak reference cleanup should be forced
-	 * @param initializer the restart initializer
+	 * @param initializer           the restart initializer
+	 *
 	 * @see #initialize(String[])
 	 */
 	protected Restarter(Thread thread, String[] args, boolean forceReferenceCleanup, RestartInitializer initializer) {
@@ -146,8 +139,136 @@ public class Restarter {
 		this.leakSafeThreads.add(new LeakSafeThread());
 	}
 
+	/**
+	 * Initialize and disable restart support.
+	 */
+	public static void disable() {
+		initialize(NO_ARGS, false, RestartInitializer.NONE);
+		getInstance().setEnabled(false);
+	}
+
+	/**
+	 * Initialize restart support. See {@link #initialize(String[], boolean, RestartInitializer)}
+	 * for details.
+	 *
+	 * @param args main application arguments
+	 *
+	 * @see #initialize(String[], boolean, RestartInitializer)
+	 */
+	public static void initialize(String[] args) {
+		initialize(args, false, new DefaultRestartInitializer());
+	}
+
+	/**
+	 * Initialize restart support. See {@link #initialize(String[], boolean, RestartInitializer)}
+	 * for details.
+	 *
+	 * @param args        main application arguments
+	 * @param initializer the restart initializer
+	 *
+	 * @see #initialize(String[], boolean, RestartInitializer)
+	 */
+	public static void initialize(String[] args, RestartInitializer initializer) {
+		initialize(args, false, initializer, true);
+	}
+
+	/**
+	 * Initialize restart support. See {@link #initialize(String[], boolean, RestartInitializer)}
+	 * for details.
+	 *
+	 * @param args                  main application arguments
+	 * @param forceReferenceCleanup if forcing of soft/weak reference should happen on
+	 *
+	 * @see #initialize(String[], boolean, RestartInitializer)
+	 */
+	public static void initialize(String[] args, boolean forceReferenceCleanup) {
+		initialize(args, forceReferenceCleanup, new DefaultRestartInitializer());
+	}
+
+	/**
+	 * Initialize restart support. See {@link #initialize(String[], boolean, RestartInitializer,
+	 * boolean)} for details.
+	 *
+	 * @param args                  main application arguments
+	 * @param forceReferenceCleanup if forcing of soft/weak reference should happen on
+	 * @param initializer           the restart initializer
+	 *
+	 * @see #initialize(String[], boolean, RestartInitializer)
+	 */
+	public static void initialize(String[] args, boolean forceReferenceCleanup, RestartInitializer initializer) {
+		initialize(args, forceReferenceCleanup, initializer, true);
+	}
+
+	/**
+	 * Initialize restart support for the current application. Called automatically by {@link
+	 * RestartApplicationListener} but can also be called directly if main application arguments are
+	 * not the same as those passed to the {@link SpringApplication}.
+	 * <p>
+	 * 实例化重启类
+	 *
+	 * @param args                  main application arguments
+	 * @param forceReferenceCleanup if forcing of soft/weak reference should happen on each restart.
+	 *                              This will slow down restarts and is intended primarily for
+	 *                              testing
+	 * @param initializer           the restart initializer
+	 * @param restartOnInitialize   if the restarter should be restarted immediately when the {@link
+	 *                              RestartInitializer} returns non {@code null} results
+	 */
+	public static void initialize(String[] args, boolean forceReferenceCleanup, RestartInitializer initializer,
+								  boolean restartOnInitialize) {
+		Restarter localInstance = null;
+		synchronized (INSTANCE_MONITOR) {
+			if (instance == null) {
+				localInstance = new Restarter(Thread.currentThread(), args, forceReferenceCleanup, initializer);
+				instance = localInstance;
+			}
+		}
+		if (localInstance != null) {
+			localInstance.initialize(restartOnInitialize);
+		}
+	}
+
+	/**
+	 * Return the active {@link Restarter} instance. Cannot be called before {@link
+	 * #initialize(String[]) initialization}.
+	 *
+	 * @return the restarter
+	 */
+	public static Restarter getInstance() {
+		synchronized (INSTANCE_MONITOR) {
+			Assert.state(instance != null, "Restarter has not been initialized");
+			return instance;
+		}
+	}
+
+	/**
+	 * Set the restarter instance (useful for testing).
+	 *
+	 * @param instance the instance to set
+	 */
+	static void setInstance(Restarter instance) {
+		synchronized (INSTANCE_MONITOR) {
+			Restarter.instance = instance;
+		}
+	}
+
+	/**
+	 * Clear the instance. Primarily provided for tests and not usually used in application code.
+	 */
+	public static void clearInstance() {
+		synchronized (INSTANCE_MONITOR) {
+			instance = null;
+		}
+	}
+
+	/**
+	 * 获取 mainClassName
+	 * @param thread
+	 * @return
+	 */
 	private String getMainClassName(Thread thread) {
 		try {
+			// 创建对象获取类名
 			return new MainMethod(thread).getDeclaringClassName();
 		}
 		catch (Exception ex) {
@@ -181,8 +302,8 @@ public class Restarter {
 	}
 
 	/**
-	 * CGLIB has a private exception field which needs to initialized early to ensure that
-	 * the stacktrace doesn't retain a reference to the RestartClassLoader.
+	 * CGLIB has a private exception field which needs to initialized early to ensure that the
+	 * stacktrace doesn't retain a reference to the RestartClassLoader.
 	 */
 	private void preInitializeLeakyClasses() {
 		try {
@@ -198,6 +319,7 @@ public class Restarter {
 
 	/**
 	 * Set if restart support is enabled.
+	 *
 	 * @param enabled if restart support is enabled
 	 */
 	private void setEnabled(boolean enabled) {
@@ -206,6 +328,7 @@ public class Restarter {
 
 	/**
 	 * Add additional URLs to be includes in the next restart.
+	 *
 	 * @param urls the urls to add
 	 */
 	public void addUrls(Collection<URL> urls) {
@@ -215,6 +338,7 @@ public class Restarter {
 
 	/**
 	 * Add additional {@link ClassLoaderFiles} to be included in the next restart.
+	 *
 	 * @param classLoaderFiles the files to add
 	 */
 	public void addClassLoaderFiles(ClassLoaderFiles classLoaderFiles) {
@@ -224,6 +348,7 @@ public class Restarter {
 
 	/**
 	 * Return a {@link ThreadFactory} that can be used to create leak safe threads.
+	 *
 	 * @return a leak safe thread factory
 	 */
 	public ThreadFactory getThreadFactory() {
@@ -239,6 +364,7 @@ public class Restarter {
 
 	/**
 	 * Restart the running application.
+	 *
 	 * @param failureHandler a failure handler to deal with application that doesn't start
 	 */
 	public void restart(FailureHandler failureHandler) {
@@ -256,7 +382,9 @@ public class Restarter {
 
 	/**
 	 * Start the application.
+	 *
 	 * @param failureHandler a failure handler for application that won't start
+	 *
 	 * @throws Exception in case of errors
 	 */
 	protected void start(FailureHandler failureHandler) throws Exception {
@@ -285,13 +413,17 @@ public class Restarter {
 
 	/**
 	 * Relaunch the application using the specified classloader.
+	 *
 	 * @param classLoader the classloader to use
+	 *
 	 * @return any exception that caused the launch to fail or {@code null}
+	 *
 	 * @throws Exception in case of errors
 	 */
 	protected Throwable relaunch(ClassLoader classLoader) throws Exception {
 		RestartLauncher launcher = new RestartLauncher(classLoader, this.mainClassName, this.args,
-				this.exceptionHandler);
+													   this.exceptionHandler
+		);
 		launcher.start();
 		launcher.join();
 		return launcher.getError();
@@ -299,6 +431,7 @@ public class Restarter {
 
 	/**
 	 * Stop the application.
+	 *
 	 * @throws Exception in case of errors
 	 */
 	protected void stop() throws Exception {
@@ -404,8 +537,7 @@ public class Restarter {
 	}
 
 	/**
-	 * Called to finish {@link Restarter} initialization when application logging is
-	 * available.
+	 * Called to finish {@link Restarter} initialization when application logging is available.
 	 */
 	void finish() {
 		synchronized (this.monitor) {
@@ -439,8 +571,10 @@ public class Restarter {
 	}
 
 	private void prepare(GenericApplicationContext applicationContext) {
-		ResourceLoader resourceLoader = new ClassLoaderFilesResourcePatternResolver(applicationContext,
-				this.classLoaderFiles);
+		ResourceLoader resourceLoader = new ClassLoaderFilesResourcePatternResolver(
+				applicationContext,
+				this.classLoaderFiles
+		);
 		applicationContext.setResourceLoader(resourceLoader);
 	}
 
@@ -471,120 +605,11 @@ public class Restarter {
 
 	/**
 	 * Return the initial set of URLs as configured by the {@link RestartInitializer}.
+	 *
 	 * @return the initial URLs or {@code null}
 	 */
 	public URL[] getInitialUrls() {
 		return this.initialUrls;
-	}
-
-	/**
-	 * Initialize and disable restart support.
-	 */
-	public static void disable() {
-		initialize(NO_ARGS, false, RestartInitializer.NONE);
-		getInstance().setEnabled(false);
-	}
-
-	/**
-	 * Initialize restart support. See
-	 * {@link #initialize(String[], boolean, RestartInitializer)} for details.
-	 * @param args main application arguments
-	 * @see #initialize(String[], boolean, RestartInitializer)
-	 */
-	public static void initialize(String[] args) {
-		initialize(args, false, new DefaultRestartInitializer());
-	}
-
-	/**
-	 * Initialize restart support. See
-	 * {@link #initialize(String[], boolean, RestartInitializer)} for details.
-	 * @param args main application arguments
-	 * @param initializer the restart initializer
-	 * @see #initialize(String[], boolean, RestartInitializer)
-	 */
-	public static void initialize(String[] args, RestartInitializer initializer) {
-		initialize(args, false, initializer, true);
-	}
-
-	/**
-	 * Initialize restart support. See
-	 * {@link #initialize(String[], boolean, RestartInitializer)} for details.
-	 * @param args main application arguments
-	 * @param forceReferenceCleanup if forcing of soft/weak reference should happen on
-	 * @see #initialize(String[], boolean, RestartInitializer)
-	 */
-	public static void initialize(String[] args, boolean forceReferenceCleanup) {
-		initialize(args, forceReferenceCleanup, new DefaultRestartInitializer());
-	}
-
-	/**
-	 * Initialize restart support. See
-	 * {@link #initialize(String[], boolean, RestartInitializer, boolean)} for details.
-	 * @param args main application arguments
-	 * @param forceReferenceCleanup if forcing of soft/weak reference should happen on
-	 * @param initializer the restart initializer
-	 * @see #initialize(String[], boolean, RestartInitializer)
-	 */
-	public static void initialize(String[] args, boolean forceReferenceCleanup, RestartInitializer initializer) {
-		initialize(args, forceReferenceCleanup, initializer, true);
-	}
-
-	/**
-	 * Initialize restart support for the current application. Called automatically by
-	 * {@link RestartApplicationListener} but can also be called directly if main
-	 * application arguments are not the same as those passed to the
-	 * {@link SpringApplication}.
-	 * @param args main application arguments
-	 * @param forceReferenceCleanup if forcing of soft/weak reference should happen on
-	 * each restart. This will slow down restarts and is intended primarily for testing
-	 * @param initializer the restart initializer
-	 * @param restartOnInitialize if the restarter should be restarted immediately when
-	 * the {@link RestartInitializer} returns non {@code null} results
-	 */
-	public static void initialize(String[] args, boolean forceReferenceCleanup, RestartInitializer initializer,
-			boolean restartOnInitialize) {
-		Restarter localInstance = null;
-		synchronized (INSTANCE_MONITOR) {
-			if (instance == null) {
-				localInstance = new Restarter(Thread.currentThread(), args, forceReferenceCleanup, initializer);
-				instance = localInstance;
-			}
-		}
-		if (localInstance != null) {
-			localInstance.initialize(restartOnInitialize);
-		}
-	}
-
-	/**
-	 * Return the active {@link Restarter} instance. Cannot be called before
-	 * {@link #initialize(String[]) initialization}.
-	 * @return the restarter
-	 */
-	public static Restarter getInstance() {
-		synchronized (INSTANCE_MONITOR) {
-			Assert.state(instance != null, "Restarter has not been initialized");
-			return instance;
-		}
-	}
-
-	/**
-	 * Set the restarter instance (useful for testing).
-	 * @param instance the instance to set
-	 */
-	static void setInstance(Restarter instance) {
-		synchronized (INSTANCE_MONITOR) {
-			Restarter.instance = instance;
-		}
-	}
-
-	/**
-	 * Clear the instance. Primarily provided for tests and not usually used in
-	 * application code.
-	 */
-	public static void clearInstance() {
-		synchronized (INSTANCE_MONITOR) {
-			instance = null;
-		}
 	}
 
 	/**
