@@ -59,10 +59,16 @@ class ClassPathFileChangeListener implements FileChangeListener {
 
 	@Override
 	public void onChange(Set<ChangedFiles> changeSet) {
+		// 是否需要重启
 		boolean restart = isRestartRequired(changeSet);
+		// 发布事件
 		publishEvent(new ClassPathChangedEvent(this, changeSet, restart));
 	}
 
+	/**
+	 * 发布文件变化事件
+	 * @param event 文件变化事件
+	 */
 	private void publishEvent(ClassPathChangedEvent event) {
 		this.eventPublisher.publishEvent(event);
 		if (event.isRestartRequired() && this.fileSystemWatcherToStop != null) {
@@ -70,6 +76,11 @@ class ClassPathFileChangeListener implements FileChangeListener {
 		}
 	}
 
+	/**
+	 * 是否需要重启
+	 * @param changeSet 变动的文件列表
+	 * @return
+	 */
 	private boolean isRestartRequired(Set<ChangedFiles> changeSet) {
 		if (AgentReloader.isActive()) {
 			return false;

@@ -295,6 +295,10 @@ Connected to the target VM, address: '127.0.0.1:53900', transport: 'socket'
 
 
 
+### FileSystemWatcher
+
+
+
 - `org.springframework.boot.devtools.filewatch.FileSystemWatcher#start`
 
 ```java
@@ -400,5 +404,28 @@ public interface FileChangeListener {
    void onChange(Set<ChangedFiles> changeSet);
 
 }
+```
+
+
+
+
+
+![image-20200518111931477](assets/image-20200518111931477.png)
+
+
+
+
+
+#### ClassPathFileChangeListener
+
+```java
+	@Override
+	public void onChange(Set<ChangedFiles> changeSet) {
+		// 是否需要重启
+		boolean restart = isRestartRequired(changeSet);
+		// 发布事件
+		publishEvent(new ClassPathChangedEvent(this, changeSet, restart));
+	}
+
 ```
 

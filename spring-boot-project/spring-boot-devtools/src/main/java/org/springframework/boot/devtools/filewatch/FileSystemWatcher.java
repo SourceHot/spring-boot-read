@@ -46,6 +46,9 @@ public class FileSystemWatcher {
 
 	private static final Duration DEFAULT_QUIET_PERIOD = Duration.ofMillis(400);
 
+	/**
+	 * 文件变更监听器
+	 */
 	private final List<FileChangeListener> listeners = new ArrayList<>();
 
 	private final boolean daemon;
@@ -56,7 +59,13 @@ public class FileSystemWatcher {
 
 	private final AtomicInteger remainingScans = new AtomicInteger(-1);
 
+	/**
+	 * 文件快照缓存
+	 */
 	private final Map<File, FolderSnapshot> folders = new HashMap<>();
+	/**
+	 * synchronized 同步锁用
+	 */
 	private final Object monitor = new Object();
 	private Thread watchThread;
 	private FileFilter triggerFilter;
@@ -94,12 +103,14 @@ public class FileSystemWatcher {
 	 * Add listener for file change events. Cannot be called after the watcher has been {@link
 	 * #start() started}.
 	 *
+	 * 添加监听器: {@link FileChangeListener} 文件变更监听
 	 * @param fileChangeListener the listener to add
 	 */
 	public void addListener(FileChangeListener fileChangeListener) {
 		Assert.notNull(fileChangeListener, "FileChangeListener must not be null");
 		synchronized (this.monitor) {
 			checkNotStarted();
+			// 添加方法
 			this.listeners.add(fileChangeListener);
 		}
 	}
@@ -123,6 +134,7 @@ public class FileSystemWatcher {
 	 * Add a source folder to monitor. Cannot be called after the watcher has been {@link #start()
 	 * started}.
 	 *
+	 * 添加源码文件夹
 	 * @param folder the folder to monitor
 	 */
 	public void addSourceFolder(File folder) {
@@ -130,6 +142,7 @@ public class FileSystemWatcher {
 		Assert.isTrue(!folder.isFile(), "Folder '" + folder + "' must not be a file");
 		synchronized (this.monitor) {
 			checkNotStarted();
+			// 快照还是空的
 			this.folders.put(folder, null);
 		}
 	}
@@ -169,6 +182,11 @@ public class FileSystemWatcher {
 		}
 	}
 
+	/**
+	 * 初始化快照
+	 * 该方法将快照进行了替换, 没调用之前 value 是 null
+	 *
+	 */
 	private void saveInitialSnapshots() {
 		this.folders.replaceAll((f, v) -> new FolderSnapshot(f));
 	}
@@ -287,6 +305,10 @@ public class FileSystemWatcher {
 			return snapshots;
 		}
 
+		/**
+		 * 更新快照
+		 * @param snapshots 快照列表
+		 */
 		private void updateSnapshots(Collection<FolderSnapshot> snapshots) {
 			Map<File, FolderSnapshot> updated = new LinkedHashMap<>();
 			Set<ChangedFiles> changeSet = new LinkedHashSet<>();

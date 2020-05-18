@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
 /**
  * A snapshot of a folder at a given point in time.
  *
+ * 文件夹快照
  * @author Phillip Webb
  */
 class FolderSnapshot {
@@ -47,6 +48,8 @@ class FolderSnapshot {
 
 	/**
 	 * Create a new {@link FolderSnapshot} for the given folder.
+	 *
+	 * 创建文件夹快照
 	 * @param folder the source folder
 	 */
 	FolderSnapshot(File folder) {
@@ -59,6 +62,11 @@ class FolderSnapshot {
 		this.files = Collections.unmodifiableSet(files);
 	}
 
+	/**
+	 * 文件集合 , 将 {@link File} 转换成为 {@link FileSnapshot}
+	 * @param source
+	 * @param result
+	 */
 	private void collectFiles(File source, Set<FileSnapshot> result) {
 		File[] children = source.listFiles();
 		if (children != null) {
@@ -67,6 +75,7 @@ class FolderSnapshot {
 					collectFiles(child, result);
 				}
 				else if (child.isFile()) {
+					// 是文件的时候 做快照
 					result.add(new FileSnapshot(child));
 				}
 			}
@@ -133,12 +142,20 @@ class FolderSnapshot {
 		return false;
 	}
 
+	/**
+	 * 过滤快照
+	 *
+	 * @param source
+	 * @param filter
+	 * @return
+	 */
 	private Set<FileSnapshot> filter(Set<FileSnapshot> source, FileFilter filter) {
 		if (filter == null) {
 			return source;
 		}
 		Set<FileSnapshot> filtered = new LinkedHashSet<>();
 		for (FileSnapshot file : source) {
+			// 过滤规则
 			if (filter.accept(file.getFile())) {
 				filtered.add(file);
 			}

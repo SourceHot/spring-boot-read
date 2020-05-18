@@ -560,6 +560,12 @@ public class SpringApplication {
 				getSpringFactoriesInstances(SpringApplicationRunListener.class, types, this, args));
 	}
 
+	/**
+	 * 获取 spring 工厂接口
+	 * @param type 接口类型
+	 * @param <T>
+	 * @return
+	 */
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type) {
 		return getSpringFactoriesInstances(type, new Class<?>[] {});
 	}

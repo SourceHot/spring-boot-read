@@ -220,6 +220,10 @@ public class LocalDevToolsAutoConfiguration {
 			}
 		}
 
+		/**
+		 * spring 的加载顺序
+		 * @return
+		 */
 		@Override
 		public int getOrder() {
 			return 0;
