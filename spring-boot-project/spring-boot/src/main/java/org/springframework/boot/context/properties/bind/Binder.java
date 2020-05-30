@@ -216,8 +216,11 @@ public class Binder {
 	 * Bind the specified target {@link Bindable} using this binder's
 	 * {@link ConfigurationPropertySource property sources}.
 	 * @param name the configuration property name to bind
+	 *             配置属性名称
 	 * @param target the target bindable
+	 *               绑定对象
 	 * @param handler the bind handler (may be {@code null})
+	 *                处理器
 	 * @param <T> the bound type
 	 * @return the binding result (never {@code null})
 	 */
@@ -310,13 +313,17 @@ public class Binder {
 
 	private <T> T bind(ConfigurationPropertyName name, Bindable<T> target, BindHandler handler, Context context,
 			boolean allowRecursiveBinding, boolean create) {
+	    // 清空配置信息
 		context.clearConfigurationProperty();
 		try {
+		    // handler 开始处理
 			Bindable<T> replacementTarget = handler.onStart(name, target, context);
 			if (replacementTarget == null) {
+			    // 返回
 				return handleBindResult(name, target, handler, context, null, create);
 			}
 			target = replacementTarget;
+			// 配置文件中的值
 			Object bound = bindObject(name, target, handler, context, allowRecursiveBinding);
 			return handleBindResult(name, target, handler, context, bound, create);
 		}
@@ -365,18 +372,31 @@ public class Binder {
 		}
 	}
 
+    /**
+	 * 数据绑定
+	 * @param name
+	 * @param target
+	 * @param handler
+	 * @param context
+	 * @param allowRecursiveBinding
+	 * @param <T>
+	 * @return
+	 */
 	private <T> Object bindObject(ConfigurationPropertyName name, Bindable<T> target, BindHandler handler,
 			Context context, boolean allowRecursiveBinding) {
+	    // 获取属性
 		ConfigurationProperty property = findProperty(name, context);
 		if (property == null && containsNoDescendantOf(context.getSources(), name) && context.depth != 0) {
 			return null;
 		}
+		// 聚合对象转换
 		AggregateBinder<?> aggregateBinder = getAggregateBinder(target, context);
 		if (aggregateBinder != null) {
 			return bindAggregate(name, target, handler, context, aggregateBinder);
 		}
 		if (property != null) {
 			try {
+			    // 绑定数据信息
 				return bindProperty(target, context, property);
 			}
 			catch (ConverterNotFoundException ex) {
@@ -391,6 +411,12 @@ public class Binder {
 		return bindDataObject(name, target, handler, context, allowRecursiveBinding);
 	}
 
+    /**
+     * 聚类绑定
+     * @param target
+     * @param context
+     * @return
+     */
 	private AggregateBinder<?> getAggregateBinder(Bindable<?> target, Context context) {
 		Class<?> resolvedType = target.getType().resolve(Object.class);
 		if (Map.class.isAssignableFrom(resolvedType)) {
@@ -415,11 +441,18 @@ public class Binder {
 		return context.withIncreasedDepth(() -> aggregateBinder.bind(name, target, elementBinder));
 	}
 
+    /**
+     * 获取属性
+     * @param name 属性名称
+     * @param context
+     * @return
+     */
 	private ConfigurationProperty findProperty(ConfigurationPropertyName name, Context context) {
 		if (name.isEmpty()) {
 			return null;
 		}
 		for (ConfigurationPropertySource source : context.getSources()) {
+		    // 获取具体的一个属性值
 			ConfigurationProperty property = source.getConfigurationProperty(name);
 			if (property != null) {
 				return property;
@@ -428,6 +461,9 @@ public class Binder {
 		return null;
 	}
 
+    /**
+     * 绑定配置信息
+     */
 	private <T> Object bindProperty(Bindable<T> target, Context context, ConfigurationProperty property) {
 		context.setConfigurationProperty(property);
 		Object result = property.getValue();
@@ -486,6 +522,7 @@ public class Binder {
 	 * Create a new {@link Binder} instance from the specified environment.
 	 * @param environment the environment source (must have attached
 	 * {@link ConfigurationPropertySources})
+	 *                    环境
 	 * @return a {@link Binder} instance
 	 */
 	public static Binder get(Environment environment) {
@@ -502,6 +539,7 @@ public class Binder {
 	 * @since 2.2.0
 	 */
 	public static Binder get(Environment environment, BindHandler defaultBindHandler) {
+	    // 配置信息集合
 		Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources.get(environment);
 		PropertySourcesPlaceholdersResolver placeholdersResolver = new PropertySourcesPlaceholdersResolver(environment);
 		return new Binder(sources, placeholdersResolver, null, null, defaultBindHandler);
@@ -580,6 +618,9 @@ public class Binder {
 			this.configurationProperty = configurationProperty;
 		}
 
+      /**
+       * 清空配置信息
+       */
 		void clearConfigurationProperty() {
 			this.configurationProperty = null;
 		}

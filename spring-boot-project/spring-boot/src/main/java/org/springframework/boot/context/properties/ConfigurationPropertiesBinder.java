@@ -52,6 +52,8 @@ import org.springframework.validation.annotation.Validated;
  * Internal class used by the {@link ConfigurationPropertiesBindingPostProcessor} to
  * handle the actual {@link ConfigurationProperties @ConfigurationProperties} binding.
  *
+ * 配置项绑定
+ *
  * @author Stephane Nicoll
  * @author Phillip Webb
  */
@@ -82,10 +84,44 @@ class ConfigurationPropertiesBinder {
 		this.jsr303Present = ConfigurationPropertiesJsr303Validator.isJsr303Present(applicationContext);
 	}
 
+    /**
+     * 注册,没有这个 beanName 放入
+     * @param registry
+     */
+	static void register(BeanDefinitionRegistry registry) {
+		if (!registry.containsBeanDefinition(FACTORY_BEAN_NAME)) {
+			GenericBeanDefinition definition = new GenericBeanDefinition();
+			definition.setBeanClass(ConfigurationPropertiesBinder.Factory.class);
+			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			registry.registerBeanDefinition(ConfigurationPropertiesBinder.FACTORY_BEAN_NAME, definition);
+		}
+		if (!registry.containsBeanDefinition(BEAN_NAME)) {
+			GenericBeanDefinition definition = new GenericBeanDefinition();
+			definition.setBeanClass(ConfigurationPropertiesBinder.class);
+			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			definition.setFactoryBeanName(FACTORY_BEAN_NAME);
+			definition.setFactoryMethodName("create");
+			registry.registerBeanDefinition(ConfigurationPropertiesBinder.BEAN_NAME, definition);
+		}
+	}
+
+	static ConfigurationPropertiesBinder get(BeanFactory beanFactory) {
+		return beanFactory.getBean(BEAN_NAME, ConfigurationPropertiesBinder.class);
+	}
+
+	/**
+	 * 数据绑定
+	 * @param propertiesBean
+	 * @return
+	 */
 	BindResult<?> bind(ConfigurationPropertiesBean propertiesBean) {
+		// 最后的结果
 		Bindable<?> target = propertiesBean.asBindTarget();
+		// 注解获取
 		ConfigurationProperties annotation = propertiesBean.getAnnotation();
+		// 获取处理器
 		BindHandler bindHandler = getBindHandler(target, annotation);
+		//
 		return getBinder().bind(annotation.prefix(), target, bindHandler);
 	}
 
@@ -104,24 +140,35 @@ class ConfigurationPropertiesBinder {
 	}
 
 	private <T> BindHandler getBindHandler(Bindable<T> target, ConfigurationProperties annotation) {
+		// 获取校验接口列表
 		List<Validator> validators = getValidators(target);
+		// 处理器
 		BindHandler handler = new IgnoreTopLevelConverterNotFoundBindHandler();
 		if (annotation.ignoreInvalidFields()) {
+			// 忽略错误的绑定处理器
 			handler = new IgnoreErrorsBindHandler(handler);
 		}
 		if (!annotation.ignoreUnknownFields()) {
 			UnboundElementsSourceFilter filter = new UnboundElementsSourceFilter();
+			// 未绑定元素处理器
 			handler = new NoUnboundElementsBindHandler(handler, filter);
 		}
 		if (!validators.isEmpty()) {
+			// 校验绑定处理器
 			handler = new ValidationBindHandler(handler, validators.toArray(new Validator[0]));
 		}
 		for (ConfigurationPropertiesBindHandlerAdvisor advisor : getBindHandlerAdvisors()) {
+			// handler
 			handler = advisor.apply(handler);
 		}
 		return handler;
 	}
 
+	/**
+	 * 获取校验接口列表
+	 * @param target
+	 * @return
+	 */
 	private List<Validator> getValidators(Bindable<?> target) {
 		List<Validator> validators = new ArrayList<>(3);
 		if (this.configurationPropertiesValidator != null) {
@@ -131,11 +178,16 @@ class ConfigurationPropertiesBinder {
 			validators.add(getJsr303Validator());
 		}
 		if (target.getValue() != null && target.getValue().get() instanceof Validator) {
+			// 获取spring的校验标记
 			validators.add((Validator) target.getValue().get());
 		}
 		return validators;
 	}
 
+	/**
+	 * 获取JSR303 校验标记
+	 * @return
+	 */
 	private Validator getJsr303Validator() {
 		if (this.jsr303Validator == null) {
 			this.jsr303Validator = new ConfigurationPropertiesJsr303Validator(this.applicationContext);
@@ -143,6 +195,10 @@ class ConfigurationPropertiesBinder {
 		return this.jsr303Validator;
 	}
 
+	/**
+	 * 获取 绑定处理器 切面 {@link ConfigurationPropertiesBindHandlerAdvisor}
+	 * @return
+	 */
 	private List<ConfigurationPropertiesBindHandlerAdvisor> getBindHandlerAdvisors() {
 		return this.applicationContext.getBeanProvider(ConfigurationPropertiesBindHandlerAdvisor.class).orderedStream()
 				.collect(Collectors.toList());
@@ -174,27 +230,6 @@ class ConfigurationPropertiesBinder {
 			return ((ConfigurableApplicationContext) this.applicationContext).getBeanFactory()::copyRegisteredEditorsTo;
 		}
 		return null;
-	}
-
-	static void register(BeanDefinitionRegistry registry) {
-		if (!registry.containsBeanDefinition(FACTORY_BEAN_NAME)) {
-			GenericBeanDefinition definition = new GenericBeanDefinition();
-			definition.setBeanClass(ConfigurationPropertiesBinder.Factory.class);
-			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-			registry.registerBeanDefinition(ConfigurationPropertiesBinder.FACTORY_BEAN_NAME, definition);
-		}
-		if (!registry.containsBeanDefinition(BEAN_NAME)) {
-			GenericBeanDefinition definition = new GenericBeanDefinition();
-			definition.setBeanClass(ConfigurationPropertiesBinder.class);
-			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-			definition.setFactoryBeanName(FACTORY_BEAN_NAME);
-			definition.setFactoryMethodName("create");
-			registry.registerBeanDefinition(ConfigurationPropertiesBinder.BEAN_NAME, definition);
-		}
-	}
-
-	static ConfigurationPropertiesBinder get(BeanFactory beanFactory) {
-		return beanFactory.getBean(BEAN_NAME, ConfigurationPropertiesBinder.class);
 	}
 
 	/**

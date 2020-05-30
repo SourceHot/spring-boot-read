@@ -69,6 +69,16 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 
 	private static final LogLevels<Level> LEVELS = new LogLevels<>();
 
+	private static final TurboFilter FILTER = new TurboFilter() {
+
+		@Override
+		public FilterReply decide(Marker marker, ch.qos.logback.classic.Logger logger, Level level, String format,
+				Object[] params, Throwable t) {
+			return FilterReply.DENY;
+		}
+
+	};
+
 	static {
 		LEVELS.map(LogLevel.TRACE, Level.TRACE);
 		LEVELS.map(LogLevel.TRACE, Level.ALL);
@@ -80,20 +90,14 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 		LEVELS.map(LogLevel.OFF, Level.OFF);
 	}
 
-	private static final TurboFilter FILTER = new TurboFilter() {
-
-		@Override
-		public FilterReply decide(Marker marker, ch.qos.logback.classic.Logger logger, Level level, String format,
-				Object[] params, Throwable t) {
-			return FilterReply.DENY;
-		}
-
-	};
-
 	public LogbackLoggingSystem(ClassLoader classLoader) {
 		super(classLoader);
 	}
 
+	/**
+	 * 配置文件
+	 * @return
+	 */
 	@Override
 	protected String[] getStandardConfigLocations() {
 		return new String[] { "logback-test.groovy", "logback-test.xml", "logback.groovy", "logback.xml" };
@@ -101,22 +105,30 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 
 	@Override
 	public void beforeInitialize() {
+		// 日志上下文
 		LoggerContext loggerContext = getLoggerContext();
+		// 是否初始化
 		if (isAlreadyInitialized(loggerContext)) {
 			return;
 		}
+		// 父类方法
 		super.beforeInitialize();
+		// 添加过滤器
 		loggerContext.getTurboFilterList().add(FILTER);
 	}
 
 	@Override
 	public void initialize(LoggingInitializationContext initializationContext, String configLocation, LogFile logFile) {
 		LoggerContext loggerContext = getLoggerContext();
+		// 是否加载过
 		if (isAlreadyInitialized(loggerContext)) {
 			return;
 		}
+		// 日志初始化
 		super.initialize(initializationContext, configLocation, logFile);
+		// 删除 FILTER
 		loggerContext.getTurboFilterList().remove(FILTER);
+		// 初始化标记
 		markAsInitialized(loggerContext);
 		if (StringUtils.hasText(System.getProperty(CONFIGURATION_FILE_PROPERTY))) {
 			getLogger(LogbackLoggingSystem.class.getName()).warn("Ignoring '" + CONFIGURATION_FILE_PROPERTY
@@ -124,6 +136,11 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 		}
 	}
 
+	/**
+	 * 默认的配置信息
+	 * @param initializationContext the logging initialization context
+	 * @param logFile the file to load or {@code null} if no log file is to be written
+	 */
 	@Override
 	protected void loadDefaults(LoggingInitializationContext initializationContext, LogFile logFile) {
 		LoggerContext context = getLoggerContext();
@@ -145,13 +162,23 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 		context.setPackagingDataEnabled(true);
 	}
 
+	/**
+	 * 加载配置文件
+	 * @param initializationContext
+	 * @param location
+	 * @param logFile
+	 */
 	@Override
 	protected void loadConfiguration(LoggingInitializationContext initializationContext, String location,
 			LogFile logFile) {
+	    // 父类方法
 		super.loadConfiguration(initializationContext, location, logFile);
+		// 获取上下文
 		LoggerContext loggerContext = getLoggerContext();
+		// 停止并且重启
 		stopAndReset(loggerContext);
 		try {
+		    // 配置文件加载
 			configureByResourceUrl(initializationContext, loggerContext, ResourceUtils.getURL(location));
 		}
 		catch (Exception ex) {
@@ -173,8 +200,11 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 	private void configureByResourceUrl(LoggingInitializationContext initializationContext, LoggerContext loggerContext,
 			URL url) throws JoranException {
 		if (url.toString().endsWith("xml")) {
+		    // logback 日志操作
 			JoranConfigurator configurator = new SpringBootJoranConfigurator(initializationContext);
+			// 设置上下文
 			configurator.setContext(loggerContext);
+			// 执行配置
 			configurator.doConfigure(url);
 		}
 		else {
@@ -217,8 +247,10 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 
 	@Override
 	protected void reinitialize(LoggingInitializationContext initializationContext) {
+		// 日志上下文重新设置
 		getLoggerContext().reset();
 		getLoggerContext().getStatusManager().clear();
+		// 加载配置文件
 		loadConfiguration(initializationContext, getSelfInitializationConfig(), null);
 	}
 

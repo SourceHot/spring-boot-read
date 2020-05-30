@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * {@link BeanPostProcessor} that applies all {@link WebServerFactoryCustomizer} beans
  * from the bean factory to {@link WebServerFactory} beans.
  *
+ * web 服务
  * @author Dave Syer
  * @author Phillip Webb
  * @author Stephane Nicoll

@@ -49,6 +49,7 @@ import org.springframework.util.Assert;
  * Banner implementation that prints ASCII art generated from an image resource
  * {@link Resource}.
  *
+ * 图片banner
  * @author Craig Burke
  * @author Phillip Webb
  * @author Madhura Bhave

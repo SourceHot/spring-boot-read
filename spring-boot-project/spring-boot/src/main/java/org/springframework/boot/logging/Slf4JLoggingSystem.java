@@ -58,6 +58,7 @@ public abstract class Slf4JLoggingSystem extends AbstractLoggingSystem {
 			LogFile logFile) {
 		Assert.notNull(location, "Location must not be null");
 		if (initializationContext != null) {
+		    // 系统配置
 			applySystemProperties(initializationContext.getEnvironment(), logFile);
 		}
 	}

@@ -40,6 +40,7 @@ public abstract class LoggingSystem {
 
 	/**
 	 * A System property that can be used to indicate the {@link LoggingSystem} to use.
+	 * 系统属性
 	 */
 	public static final String SYSTEM_PROPERTY = LoggingSystem.class.getName();
 
@@ -56,6 +57,9 @@ public abstract class LoggingSystem {
 	 */
 	public static final String ROOT_LOGGER_NAME = "ROOT";
 
+	/**
+	 * key: 第三方日志框架的类 value: springBoot 中的处理类
+	 */
 	private static final Map<String, String> SYSTEMS;
 
 	static {
@@ -71,14 +75,21 @@ public abstract class LoggingSystem {
 	 * Reset the logging system to be limit output. This method may be called before
 	 * {@link #initialize(LoggingInitializationContext, String, LogFile)} to reduce
 	 * logging noise until the system has been fully initialized.
+	 *
+	 * 初始化之前调用，目的是减少日志输出
+	 *
 	 */
 	public abstract void beforeInitialize();
 
 	/**
 	 * Fully initialize the logging system.
-	 * @param initializationContext the logging initialization context
+	 *
+	 * 初始化日志
+	 *
+	 * @param initializationContext the logging initialization context 日志上下文
 	 * @param configLocation a log configuration location or {@code null} if default
 	 * initialization is required
+	 *                       配置文件地址
 	 * @param logFile the log output file that should be written or {@code null} for
 	 * console only output
 	 */
@@ -88,6 +99,8 @@ public abstract class LoggingSystem {
 	/**
 	 * Clean up the logging system. The default implementation does nothing. Subclasses
 	 * should override this method to perform any logging system-specific cleanup.
+	 *
+	 * 清除日志
 	 */
 	public void cleanUp() {
 	}
@@ -105,6 +118,8 @@ public abstract class LoggingSystem {
 	/**
 	 * Returns a set of the {@link LogLevel LogLevels} that are actually supported by the
 	 * logging system.
+	 *
+	 * 获取支持的日志级别
 	 * @return the supported levels
 	 */
 	public Set<LogLevel> getSupportedLogLevels() {
@@ -113,6 +128,8 @@ public abstract class LoggingSystem {
 
 	/**
 	 * Sets the logging level for a given logger.
+	 *
+	 * 设置日志级别
 	 * @param loggerName the name of the logger to set ({@code null} can be used for the
 	 * root logger).
 	 * @param level the log level ({@code null} can be used to remove any custom level for
@@ -125,6 +142,8 @@ public abstract class LoggingSystem {
 	/**
 	 * Returns a collection of the current configuration for all a {@link LoggingSystem}'s
 	 * loggers.
+	 *
+	 * 获取日志配置
 	 * @return the current configurations
 	 * @since 1.5.0
 	 */
@@ -134,6 +153,8 @@ public abstract class LoggingSystem {
 
 	/**
 	 * Returns the current configuration for a {@link LoggingSystem}'s logger.
+	 *
+	 * 获取日志配置
 	 * @param loggerName the name of the logger
 	 * @return the current configuration
 	 * @since 1.5.0
@@ -148,15 +169,22 @@ public abstract class LoggingSystem {
 	 * @return the logging system
 	 */
 	public static LoggingSystem get(ClassLoader classLoader) {
+	    // 获取系统属性
 		String loggingSystem = System.getProperty(SYSTEM_PROPERTY);
+
 		if (StringUtils.hasLength(loggingSystem)) {
+		    // 是不是NONE
 			if (NONE.equals(loggingSystem)) {
+			    // 空的日志系统
 				return new NoOpLoggingSystem();
 			}
 			return get(classLoader, loggingSystem);
 		}
+		// 循环所有日志,
 		return SYSTEMS.entrySet().stream().filter((entry) -> ClassUtils.isPresent(entry.getKey(), classLoader))
-				.map((entry) -> get(classLoader, entry.getValue())).findFirst()
+				.map((entry) ->
+				// 实例化具体日志
+				 get(classLoader, entry.getValue())).findFirst()
 				.orElseThrow(() -> new IllegalStateException("No suitable logging system located"));
 	}
 
@@ -174,6 +202,7 @@ public abstract class LoggingSystem {
 
 	/**
 	 * {@link LoggingSystem} that does nothing.
+	 * 空日志
 	 */
 	static class NoOpLoggingSystem extends LoggingSystem {
 

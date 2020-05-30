@@ -55,6 +55,10 @@ public final class DataSourceBuilder<T extends DataSource> {
 
 	private Map<String, String> properties = new HashMap<>();
 
+	private DataSourceBuilder(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
+
 	public static DataSourceBuilder<?> create() {
 		return new DataSourceBuilder<>(null);
 	}
@@ -63,16 +67,33 @@ public final class DataSourceBuilder<T extends DataSource> {
 		return new DataSourceBuilder<>(classLoader);
 	}
 
-	private DataSourceBuilder(ClassLoader classLoader) {
-		this.classLoader = classLoader;
+	@SuppressWarnings("unchecked")
+	public static Class<? extends DataSource> findType(ClassLoader classLoader) {
+		for (String name : DATA_SOURCE_TYPE_NAMES) {
+			try {
+				return (Class<? extends DataSource>) ClassUtils.forName(name, classLoader);
+			}
+			catch (Exception ex) {
+				// Swallow and continue
+			}
+		}
+		return null;
 	}
 
+	/**
+	 * 将{@link DataSourceProperties} 中的数据赋值给{@link DataSource}
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	public T build() {
 		Class<? extends DataSource> type = getType();
+		// 创建数据源
 		DataSource result = BeanUtils.instantiateClass(type);
+		// 获取 驱动类
 		maybeGetDriverClassName();
+		// bind
 		bind(result);
+		// 数据源返回
 		return (T) result;
 	}
 
@@ -117,19 +138,6 @@ public final class DataSourceBuilder<T extends DataSource> {
 	public DataSourceBuilder<T> password(String password) {
 		this.properties.put("password", password);
 		return this;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static Class<? extends DataSource> findType(ClassLoader classLoader) {
-		for (String name : DATA_SOURCE_TYPE_NAMES) {
-			try {
-				return (Class<? extends DataSource>) ClassUtils.forName(name, classLoader);
-			}
-			catch (Exception ex) {
-				// Swallow and continue
-			}
-		}
-		return null;
 	}
 
 	private Class<? extends DataSource> getType() {

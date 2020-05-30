@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * <li>{@code log[org.springboot].level}</li>
  * </ul>
  *
+ * 属性名称
  * @author Phillip Webb
  * @author Madhura Bhave
  * @since 2.0.0

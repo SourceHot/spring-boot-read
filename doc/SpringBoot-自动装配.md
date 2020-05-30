@@ -1,4 +1,7 @@
 # Spring Boot 自动装配
+- Author: [HuiFer](https://github.com/huifer)
+- 源码阅读仓库: [SourceHot-spring-boot](https://github.com/SourceHot/spring-boot-read)
+
 
 - `org.springframework.boot.autoconfigure.SpringBootApplication`
 ```java
@@ -51,11 +54,7 @@ public @interface EnableAutoConfiguration {
 
 ![image-20200320150642022](assets/image-20200320150642022.png)
 
-### getAutoConfigurationMetadata()
-
-
-
-
+## getAutoConfigurationMetadata()
 
 ```JAVA
 		@Override
@@ -372,3 +371,261 @@ protected Set<String> getExclusions(AnnotationMetadata metadata, AnnotationAttri
 
 
 
+
+### getExcludeAutoConfigurationsProperty
+
+```JAVA
+	private List<String> getExcludeAutoConfigurationsProperty() {
+		if (getEnvironment() instanceof ConfigurableEnvironment) {
+			Binder binder = Binder.get(getEnvironment());
+			// 取出 "spring.autoconfigure.exclude" 转换成list
+			return binder.bind(PROPERTY_NAME_AUTOCONFIGURE_EXCLUDE, String[].class).map(Arrays::asList)
+					.orElse(Collections.emptyList());
+		}
+		String[] excludes = getEnvironment().getProperty(PROPERTY_NAME_AUTOCONFIGURE_EXCLUDE, String[].class);
+		return (excludes != null) ? Arrays.asList(excludes) : Collections.emptyList();
+	}
+
+```
+
+
+
+![image-20200323080611527](assets/image-20200323080611527.png)
+
+
+
+- 修改启动类
+
+  ```JAVA
+  @SpringBootApplication(excludeName =  { "org.sourcehot.service.HelloServiceAutoConfiguration" })
+  
+  ```
+
+  ![image-20200323081009823](assets/image-20200323081009823.png)
+
+### checkExcludedClasses
+
+
+
+```JAVA
+	private void checkExcludedClasses(List<String> configurations, Set<String> exclusions) {
+		List<String> invalidExcludes = new ArrayList<>(exclusions.size());
+		for (String exclusion : exclusions) {
+			//
+			if (ClassUtils.isPresent(exclusion, getClass().getClassLoader()) && !configurations.contains(exclusion)) {
+				invalidExcludes.add(exclusion);
+			}
+		}
+		if (!invalidExcludes.isEmpty()) {
+			// 处理忽略的类
+			handleInvalidExcludes(invalidExcludes);
+		}
+	}
+
+```
+
+
+
+- `configurations.removeAll(exclusions)`
+
+  移除忽略的类
+
+### filter
+
+```JAVA
+	private List<String> filter(List<String> configurations, AutoConfigurationMetadata autoConfigurationMetadata) {
+		long startTime = System.nanoTime();
+		String[] candidates = StringUtils.toStringArray(configurations);
+		boolean[] skip = new boolean[candidates.length];
+		boolean skipped = false;
+		// 获取 AutoConfigurationImportFilter 相关配置
+		for (AutoConfigurationImportFilter filter : getAutoConfigurationImportFilters()) {
+		    // 执行 aware 相关接口
+			invokeAwareMethods(filter);
+			// 比较
+			boolean[] match = filter.match(candidates, autoConfigurationMetadata);
+			for (int i = 0; i < match.length; i++) {
+				if (!match[i]) {
+					skip[i] = true;
+					candidates[i] = null;
+					skipped = true;
+				}
+			}
+		}
+		if (!skipped) {
+			return configurations;
+		}
+		List<String> result = new ArrayList<>(candidates.length);
+		for (int i = 0; i < candidates.length; i++) {
+			if (!skip[i]) {
+				result.add(candidates[i]);
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			int numberFiltered = configurations.size() - result.size();
+			logger.trace("Filtered " + numberFiltered + " auto configuration class in "
+					+ TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + " ms");
+		}
+		return new ArrayList<>(result);
+	}
+
+```
+
+
+
+- `getAutoConfigurationImportFilters()` 从`spring.factories` 获取 `AutoConfigurationImportFilter`的接口
+
+
+
+![image-20200323081903145](assets/image-20200323081903145.png)
+
+
+
+- 循环内执行`Aware`系列接口
+
+
+
+`match`方法: `org.springframework.boot.autoconfigure.AutoConfigurationImportFilter#match`
+
+- `filter.match(candidates, autoConfigurationMetadata)` 比较判断哪些是需要自动注入的类
+
+
+
+
+
+![image-20200323082553595](assets/image-20200323082553595.png)
+
+
+
+
+
+
+
+### fireAutoConfigurationImportEvents
+
+```JAVA
+	private void fireAutoConfigurationImportEvents(List<String> configurations, Set<String> exclusions) {
+		// 获取自动配置的监听器列表
+		List<AutoConfigurationImportListener> listeners = getAutoConfigurationImportListeners();
+		if (!listeners.isEmpty()) {
+			// 创建 自动配置事件
+			AutoConfigurationImportEvent event = new AutoConfigurationImportEvent(this, configurations, exclusions);
+			for (AutoConfigurationImportListener listener : listeners) {
+				// 执行 Aware 相关接口
+				invokeAwareMethods(listener);
+				// 监听器执行自动配置事件
+				listener.onAutoConfigurationImportEvent(event);
+			}
+		}
+	}
+
+```
+
+![image-20200323083149737](assets/image-20200323083149737.png)
+
+
+
+- `AutoConfigurationImportEvent event = new AutoConfigurationImportEvent(this, configurations, exclusions);`
+
+![image-20200323083247061](assets/image-20200323083247061.png)
+
+- `org.springframework.boot.autoconfigure.AutoConfigurationImportListener#onAutoConfigurationImportEvent` 在执行自动配置时触发 , 实现类只有 **`ConditionEvaluationReportAutoConfigurationImportListener`**
+
+  ```JAVA
+  	@Override
+  	public void onAutoConfigurationImportEvent(AutoConfigurationImportEvent event) {
+  		if (this.beanFactory != null) {
+  			ConditionEvaluationReport report = ConditionEvaluationReport.get(this.beanFactory);
+  			// 记录需要加载的配置
+  			report.recordEvaluationCandidates(event.getCandidateConfigurations());
+  			// 记录不需要加载的配置
+  			report.recordExclusions(event.getExclusions());
+  		}
+  	}
+  
+  ```
+
+  
+
+![image-20200323083656670](assets/image-20200323083656670.png)
+
+
+
+
+
+- 初始化完
+
+
+
+
+
+## process
+
+- `org.springframework.boot.autoconfigure.AutoConfigurationImportSelector.AutoConfigurationGroup#process`
+
+
+
+![image-20200323084922159](assets/image-20200323084922159.png)
+
+- 后续的一些行为相对简单，直接放个源码了.
+
+```JAVA
+@Override
+		public void process(AnnotationMetadata annotationMetadata, DeferredImportSelector deferredImportSelector) {
+			Assert.state(deferredImportSelector instanceof AutoConfigurationImportSelector,
+					() -> String.format("Only %s implementations are supported, got %s",
+							AutoConfigurationImportSelector.class.getSimpleName(),
+							deferredImportSelector.getClass().getName()));
+			// 自动装配信息
+			AutoConfigurationEntry autoConfigurationEntry = ((AutoConfigurationImportSelector) deferredImportSelector)
+					.getAutoConfigurationEntry(
+							// 加载配置元数据
+							getAutoConfigurationMetadata(), annotationMetadata);
+			this.autoConfigurationEntries.add(autoConfigurationEntry);
+			// 循环需要自动注入的类
+			for (String importClassName : autoConfigurationEntry.getConfigurations()) {
+				// 继续放入k,v
+				this.entries.putIfAbsent(importClassName, annotationMetadata);
+			}
+		}
+```
+
+
+
+
+
+
+
+## selectImports
+
+```java
+		@Override
+		public Iterable<Entry> selectImports() {
+			if (this.autoConfigurationEntries.isEmpty()) {
+				return Collections.emptyList();
+			}
+			// 获取忽略的类
+			Set<String> allExclusions = this.autoConfigurationEntries.stream()
+					.map(AutoConfigurationEntry::getExclusions).flatMap(Collection::stream).collect(Collectors.toSet());
+
+			// 获取需要注入的类
+			Set<String> processedConfigurations = this.autoConfigurationEntries.stream()
+					.map(AutoConfigurationEntry::getConfigurations).flatMap(Collection::stream)
+					.collect(Collectors.toCollection(LinkedHashSet::new));
+
+			// 把不需要自动注入的类从需要注入的类中移除
+			processedConfigurations.removeAll(allExclusions);
+
+			// 排序
+			return sortAutoConfigurations(processedConfigurations, getAutoConfigurationMetadata()).stream()
+					.map((importClassName) -> new Entry(this.entries.get(importClassName), importClassName))
+					.collect(Collectors.toList());
+		}
+
+```
+
+
+
+
+
+后续由spring进行不再继续跟踪

@@ -62,6 +62,9 @@ public class DataSourceAutoConfiguration {
 
 	}
 
+	/**
+	 * 数据库连接池配置,具体执行类{@link DataSourceConfiguration }
+	 */
 	@Configuration(proxyBeanMethods = false)
 	@Conditional(PooledDataSourceCondition.class)
 	@ConditionalOnMissingBean({ DataSource.class, XADataSource.class })

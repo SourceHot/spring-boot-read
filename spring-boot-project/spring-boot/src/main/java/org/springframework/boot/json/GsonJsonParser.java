@@ -26,6 +26,7 @@ import com.google.gson.reflect.TypeToken;
 /**
  * Thin wrapper to adapt {@link Gson} to a {@link JsonParser}.
  *
+ * GSON 对 {@link JsonParser } 的实现
  * @author Dave Syer
  * @author Jean de Klerk
  * @since 1.2.0
@@ -39,6 +40,11 @@ public class GsonJsonParser extends AbstractJsonParser {
 
 	private Gson gson = new GsonBuilder().create();
 
+    /**
+     * json 转换成map
+     * @param json the JSON to parse
+     * @return
+     */
 	@Override
 	public Map<String, Object> parseMap(String json) {
 		return parseMap(json, (trimmed) -> this.gson.fromJson(trimmed, MAP_TYPE.getType()));

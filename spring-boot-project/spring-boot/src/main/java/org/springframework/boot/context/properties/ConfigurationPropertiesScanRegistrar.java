@@ -54,6 +54,9 @@ class ConfigurationPropertiesScanRegistrar implements ImportBeanDefinitionRegist
 		this.resourceLoader = resourceLoader;
 	}
 
+    /**
+     * 注册 bean定义
+     */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);

@@ -74,6 +74,10 @@ public class TomcatWebServerFactoryCustomizer
 		return 0;
 	}
 
+	/**
+	 * 放入配置
+	 * @param factory the web server factory to customize
+	 */
 	@Override
 	public void customize(ConfigurableTomcatWebServerFactory factory) {
 		ServerProperties properties = this.serverProperties;

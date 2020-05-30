@@ -38,6 +38,13 @@ import org.springframework.util.StringUtils;
  */
 abstract class DataSourceConfiguration {
 
+    /**
+     * 创建 datasource
+     * @param properties dataSource 配置信息
+     * @param type 数据源类型
+     * @param <T>
+     * @return
+     */
 	@SuppressWarnings("unchecked")
 	protected static <T> T createDataSource(DataSourceProperties properties, Class<? extends DataSource> type) {
 		return (T) properties.initializeDataSourceBuilder().type(type).build();
@@ -82,10 +89,14 @@ abstract class DataSourceConfiguration {
 		@Bean
 		@ConfigurationProperties(prefix = "spring.datasource.hikari")
 		HikariDataSource dataSource(DataSourceProperties properties) {
+		    // 创建数据源
 			HikariDataSource dataSource = createDataSource(properties, HikariDataSource.class);
+			// 是否存在名字
 			if (StringUtils.hasText(properties.getName())) {
+			    // 设置连接池名称
 				dataSource.setPoolName(properties.getName());
 			}
+			// 返回 数据源
 			return dataSource;
 		}
 

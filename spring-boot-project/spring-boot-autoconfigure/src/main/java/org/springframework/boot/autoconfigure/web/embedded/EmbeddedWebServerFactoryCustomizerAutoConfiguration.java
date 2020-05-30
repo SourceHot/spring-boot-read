@@ -38,6 +38,8 @@ import org.springframework.core.env.Environment;
  * {@link EnableAutoConfiguration Auto-configuration} for embedded servlet and reactive
  * web servers customizations.
  *
+ * 嵌入式Web服务器出厂自定义程序自动配置
+ *
  * @author Phillip Webb
  * @since 2.0.0
  */
@@ -53,6 +55,12 @@ public class EmbeddedWebServerFactoryCustomizerAutoConfiguration {
 	@ConditionalOnClass({ Tomcat.class, UpgradeProtocol.class })
 	public static class TomcatWebServerFactoryCustomizerConfiguration {
 
+		/**
+		 * tomcat web 服务定制工厂
+		 * @param environment 环境配置
+		 * @param serverProperties 服务配置 , 从 application.yml 配置后读取
+		 * @return
+		 */
 		@Bean
 		public TomcatWebServerFactoryCustomizer tomcatWebServerFactoryCustomizer(Environment environment,
 				ServerProperties serverProperties) {

@@ -52,6 +52,9 @@ import org.springframework.validation.annotation.Validated;
  * {@link #get(ApplicationContext, Object, String) individual beans} on a case-by-case
  * basis (for example, in a {@link BeanPostProcessor}).
  *
+ *
+ * {@link ConfigurationProperties} 注解的详细信息bean
+ *
  * @author Phillip Webb
  * @since 2.2.0
  * @see #getAll(ApplicationContext)
@@ -76,57 +79,6 @@ public final class ConfigurationPropertiesBean {
 		this.annotation = annotation;
 		this.bindTarget = bindTarget;
 		this.bindMethod = BindMethod.forType(bindTarget.getType().resolve());
-	}
-
-	/**
-	 * Return the name of the Spring bean.
-	 * @return the bean name
-	 */
-	public String getName() {
-		return this.name;
-	}
-
-	/**
-	 * Return the actual Spring bean instance.
-	 * @return the bean instance
-	 */
-	public Object getInstance() {
-		return this.instance;
-	}
-
-	/**
-	 * Return the bean type.
-	 * @return the bean type
-	 */
-	Class<?> getType() {
-		return this.bindTarget.getType().resolve();
-	}
-
-	/**
-	 * Return the property binding method that was used for the bean.
-	 * @return the bind type
-	 */
-	public BindMethod getBindMethod() {
-		return this.bindMethod;
-	}
-
-	/**
-	 * Return the {@link ConfigurationProperties} annotation for the bean. The annotation
-	 * may be defined on the bean itself or from the factory method that create the bean
-	 * (usually a {@link Bean @Bean} method).
-	 * @return the configuration properties annotation
-	 */
-	public ConfigurationProperties getAnnotation() {
-		return this.annotation;
-	}
-
-	/**
-	 * Return a {@link Bindable} instance suitable that can be used as a target for the
-	 * {@link Binder}.
-	 * @return a bind target for use with the {@link Binder}
-	 */
-	public Bindable<?> asBindTarget() {
-		return this.bindTarget;
 	}
 
 	/**
@@ -197,12 +149,21 @@ public final class ConfigurationPropertiesBean {
 	 * {@link ConfigurationProperties @ConfigurationProperties}
 	 */
 	public static ConfigurationPropertiesBean get(ApplicationContext applicationContext, Object bean, String beanName) {
+		// 寻找工厂方法
 		Method factoryMethod = findFactoryMethod(applicationContext, beanName);
+		// 创建 ConfigurationPropertiesBean
 		return create(beanName, bean, bean.getClass(), factoryMethod);
 	}
 
+	/**
+	 * 寻找工厂方法
+	 * @param applicationContext 上下文
+	 * @param beanName beanName
+	 * @return 方法
+	 */
 	private static Method findFactoryMethod(ApplicationContext applicationContext, String beanName) {
 		if (applicationContext instanceof ConfigurableApplicationContext) {
+			// 寻找工厂方法
 			return findFactoryMethod((ConfigurableApplicationContext) applicationContext, beanName);
 		}
 		return null;
@@ -212,10 +173,20 @@ public final class ConfigurationPropertiesBean {
 		return findFactoryMethod(applicationContext.getBeanFactory(), beanName);
 	}
 
+	/**
+	 * 寻找工厂方法
+	 * @param beanFactory bean工厂
+	 * @param beanName beanName
+	 * @return
+	 */
 	private static Method findFactoryMethod(ConfigurableListableBeanFactory beanFactory, String beanName) {
+		// 判断是否存在这个beanName
 		if (beanFactory.containsBeanDefinition(beanName)) {
+			// 获取bean定义
 			BeanDefinition beanDefinition = beanFactory.getMergedBeanDefinition(beanName);
+			// 类型判断
 			if (beanDefinition instanceof RootBeanDefinition) {
+				// 解析方法
 				Method resolvedFactoryMethod = ((RootBeanDefinition) beanDefinition).getResolvedFactoryMethod();
 				if (resolvedFactoryMethod != null) {
 					return resolvedFactoryMethod;
@@ -228,21 +199,27 @@ public final class ConfigurationPropertiesBean {
 
 	private static Method findFactoryMethodUsingReflection(ConfigurableListableBeanFactory beanFactory,
 			BeanDefinition beanDefinition) {
+		// 工厂方法
 		String factoryMethodName = beanDefinition.getFactoryMethodName();
+		// 工厂bean
 		String factoryBeanName = beanDefinition.getFactoryBeanName();
 		if (factoryMethodName == null || factoryBeanName == null) {
 			return null;
 		}
+		// 转换对象
 		Class<?> factoryType = beanFactory.getType(factoryBeanName);
 		if (factoryType.getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR)) {
 			factoryType = factoryType.getSuperclass();
 		}
 		AtomicReference<Method> factoryMethod = new AtomicReference<>();
 		ReflectionUtils.doWithMethods(factoryType, (method) -> {
+			// 判断是否是需要的方法
 			if (method.getName().equals(factoryMethodName)) {
+				// 设置方法
 				factoryMethod.set(method);
 			}
 		});
+		// 返回方法
 		return factoryMethod.get();
 	}
 
@@ -253,16 +230,29 @@ public final class ConfigurationPropertiesBean {
 		return propertiesBean;
 	}
 
+	/**
+	 * 创建参数信息bean
+	 * @param name
+	 * @param instance
+	 * @param type
+	 * @param factory
+	 * @return
+	 */
 	private static ConfigurationPropertiesBean create(String name, Object instance, Class<?> type, Method factory) {
+		// 找注解
 		ConfigurationProperties annotation = findAnnotation(instance, type, factory, ConfigurationProperties.class);
 		if (annotation == null) {
 			return null;
 		}
+		// 找注解
 		Validated validated = findAnnotation(instance, type, factory, Validated.class);
+		// 注解列表
 		Annotation[] annotations = (validated != null) ? new Annotation[] { annotation, validated }
 				: new Annotation[] { annotation };
+		// 类型解析
 		ResolvableType bindType = (factory != null) ? ResolvableType.forMethodReturnType(factory)
 				: ResolvableType.forClass(type);
+		// 绑定结果对象
 		Bindable<Object> bindTarget = Bindable.of(bindType).withAnnotations(annotations);
 		if (instance != null) {
 			bindTarget = bindTarget.withExistingValue(instance);
@@ -293,7 +283,60 @@ public final class ConfigurationPropertiesBean {
 	}
 
 	/**
+	 * Return the name of the Spring bean.
+	 * @return the bean name
+	 */
+	public String getName() {
+		return this.name;
+	}
+
+	/**
+	 * Return the actual Spring bean instance.
+	 * @return the bean instance
+	 */
+	public Object getInstance() {
+		return this.instance;
+	}
+
+	/**
+	 * Return the bean type.
+	 * @return the bean type
+	 */
+	Class<?> getType() {
+		return this.bindTarget.getType().resolve();
+	}
+
+	/**
+	 * Return the property binding method that was used for the bean.
+	 * @return the bind type
+	 */
+	public BindMethod getBindMethod() {
+		return this.bindMethod;
+	}
+
+	/**
+	 * Return the {@link ConfigurationProperties} annotation for the bean. The annotation
+	 * may be defined on the bean itself or from the factory method that create the bean
+	 * (usually a {@link Bean @Bean} method).
+	 * @return the configuration properties annotation
+	 */
+	public ConfigurationProperties getAnnotation() {
+		return this.annotation;
+	}
+
+	/**
+	 * Return a {@link Bindable} instance suitable that can be used as a target for the
+	 * {@link Binder}.
+	 * @return a bind target for use with the {@link Binder}
+	 */
+	public Bindable<?> asBindTarget() {
+		return this.bindTarget;
+	}
+
+	/**
 	 * The binding method that is used for the bean.
+	 *
+	 * 绑定方式
 	 */
 	public enum BindMethod {
 

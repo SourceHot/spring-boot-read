@@ -87,6 +87,12 @@ final class ConfigurationPropertiesBeanRegistrar {
 		this.registry.registerBeanDefinition(beanName, createBeanDefinition(beanName, type));
 	}
 
+	/**
+	 * 创建bean定义
+	 * @param beanName
+	 * @param type
+	 * @return
+	 */
 	private BeanDefinition createBeanDefinition(String beanName, Class<?> type) {
 		if (BindMethod.forType(type) == BindMethod.VALUE_OBJECT) {
 			return new ConfigurationPropertiesValueObjectBeanDefinition(this.beanFactory, beanName, type);

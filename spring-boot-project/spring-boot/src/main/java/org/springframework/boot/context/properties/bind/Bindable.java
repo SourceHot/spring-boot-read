@@ -42,12 +42,24 @@ public final class Bindable<T> {
 
 	private static final Annotation[] NO_ANNOTATIONS = {};
 
+    /**
+     * 类型
+     */
 	private final ResolvableType type;
 
+    /**
+     * 包装过的类型
+     */
 	private final ResolvableType boxedType;
 
+    /**
+     * 数据值
+     */
 	private final Supplier<T> value;
 
+    /**
+     * 注解列表
+     */
 	private final Annotation[] annotations;
 
 	private Bindable(ResolvableType type, ResolvableType boxedType, Supplier<T> value, Annotation[] annotations) {

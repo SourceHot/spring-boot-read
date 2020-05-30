@@ -40,9 +40,11 @@ public class TransactionManagerCustomizers {
 
 	@SuppressWarnings("unchecked")
 	public void customize(PlatformTransactionManager transactionManager) {
-		LambdaSafe.callbacks(PlatformTransactionManagerCustomizer.class, this.customizers, transactionManager)
+		    // 定制 事物管理
+	    LambdaSafe.callbacks(PlatformTransactionManagerCustomizer.class, this.customizers, transactionManager)
 				.withLogger(TransactionManagerCustomizers.class)
 				.invoke((customizer) -> customizer.customize(transactionManager));
+
 	}
 
 }

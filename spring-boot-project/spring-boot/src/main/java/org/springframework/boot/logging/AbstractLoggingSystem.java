@@ -51,8 +51,12 @@ public abstract class AbstractLoggingSystem extends LoggingSystem {
 	public void beforeInitialize() {
 	}
 
+	/**
+	 * 初始化日志
+	 */
 	@Override
 	public void initialize(LoggingInitializationContext initializationContext, String configLocation, LogFile logFile) {
+    // 是否存在配置文件地址
 		if (StringUtils.hasLength(configLocation)) {
 			initializeWithSpecificConfig(initializationContext, configLocation, logFile);
 			return;
@@ -67,9 +71,11 @@ public abstract class AbstractLoggingSystem extends LoggingSystem {
 	}
 
 	private void initializeWithConventions(LoggingInitializationContext initializationContext, LogFile logFile) {
+	    // 获取自定义的配置文件地址
 		String config = getSelfInitializationConfig();
 		if (config != null && logFile == null) {
 			// self initialization has occurred, reinitialize in case of property changes
+			// 重新加载配置信息
 			reinitialize(initializationContext);
 			return;
 		}
@@ -80,6 +86,7 @@ public abstract class AbstractLoggingSystem extends LoggingSystem {
 			loadConfiguration(initializationContext, config, logFile);
 			return;
 		}
+		// 加载默认配置
 		loadDefaults(initializationContext, logFile);
 	}
 
@@ -87,9 +94,12 @@ public abstract class AbstractLoggingSystem extends LoggingSystem {
 	 * Return any self initialization config that has been applied. By default this method
 	 * checks {@link #getStandardConfigLocations()} and assumes that any file that exists
 	 * will have been applied.
+	 *
+	 * 获取自定义的配置文件地址
 	 * @return the self initialization config or {@code null}
 	 */
 	protected String getSelfInitializationConfig() {
+	    // 寻找配置文件
 		return findConfig(getStandardConfigLocations());
 	}
 
@@ -102,6 +112,11 @@ public abstract class AbstractLoggingSystem extends LoggingSystem {
 		return findConfig(getSpringConfigLocations());
 	}
 
+    /**
+     * 配置文件地址修改
+     * @param locations 文件名
+     * @return classpath:+文件名
+     */
 	private String findConfig(String[] locations) {
 		for (String location : locations) {
 			ClassPathResource resource = new ClassPathResource(location, this.classLoader);
@@ -184,8 +199,14 @@ public abstract class AbstractLoggingSystem extends LoggingSystem {
 	 */
 	protected static class LogLevels<T> {
 
+		/**
+		 * key ： SpringBoot 中定义的日志级别, value: 其他日志框架的日志级别
+		 */
 		private final Map<LogLevel, T> systemToNative;
 
+		/**
+		 * key : 其他日志框架的日志级别 , value: springBoot 中定义中定义的日志级别
+		 */
 		private final Map<T, LogLevel> nativeToSystem;
 
 		public LogLevels() {

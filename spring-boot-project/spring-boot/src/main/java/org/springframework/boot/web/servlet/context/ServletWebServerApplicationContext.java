@@ -172,15 +172,21 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		stopAndReleaseWebServer();
 	}
 
+    /**
+     * 创建 web 服务
+     */
 	private void createWebServer() {
 		WebServer webServer = this.webServer;
 		ServletContext servletContext = getServletContext();
 		if (webServer == null && servletContext == null) {
+		    // 创建 工厂
 			ServletWebServerFactory factory = getWebServerFactory();
+			// 初始化webServer
 			this.webServer = factory.getWebServer(getSelfInitializer());
 		}
 		else if (servletContext != null) {
 			try {
+			    // 启动服务
 				getSelfInitializer().onStartup(servletContext);
 			}
 			catch (ServletException ex) {

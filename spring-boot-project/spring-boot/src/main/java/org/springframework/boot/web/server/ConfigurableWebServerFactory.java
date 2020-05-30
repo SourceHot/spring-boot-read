@@ -22,6 +22,8 @@ import java.util.Set;
 /**
  * A configurable {@link WebServerFactory}.
  *
+ *
+ * 定义了一些 webServer 相关的操作
  * @author Phillip Webb
  * @author Brian Clozel
  * @since 2.0.0
@@ -33,6 +35,7 @@ public interface ConfigurableWebServerFactory extends WebServerFactory, ErrorPag
 	 * Sets the port that the web server should listen on. If not specified port '8080'
 	 * will be used. Use port -1 to disable auto-start (i.e start the web application
 	 * context but not have it listen to any port).
+	 * 设置端口
 	 * @param port the port to set
 	 */
 	void setPort(int port);

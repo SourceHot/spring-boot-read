@@ -1,2 +1,23 @@
 server:
   port: 9999
+  tomcat:
+    # 最大线程数
+    max-threads: 6
+    # 最小线程数
+    min-spare-threads: 3
+    # 队列长度
+    accept-count: 10
+    # 最大链接数
+    max-connections: 1000
+
+
+org.sourcehout:
+  describe: Open source organization
+  initiator: huifer
+
+spring:
+  datasource:
+    username: root
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&useSSL=false
