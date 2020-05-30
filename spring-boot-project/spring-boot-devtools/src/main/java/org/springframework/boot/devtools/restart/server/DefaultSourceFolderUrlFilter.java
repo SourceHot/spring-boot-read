@@ -34,6 +34,9 @@ import org.springframework.util.StringUtils;
  */
 public class DefaultSourceFolderUrlFilter implements SourceFolderUrlFilter {
 
+	/**
+	 * 编译后路径
+	 */
 	private static final String[] COMMON_ENDINGS = { "/target/classes", "/bin" };
 
 	private static final Pattern URL_MODULE_PATTERN = Pattern.compile(".*\\/(.+)\\.jar");

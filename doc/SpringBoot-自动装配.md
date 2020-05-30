@@ -357,3 +357,18 @@ public class RedisProperties {
 
 ### getExclusions	
 
+```java
+protected Set<String> getExclusions(AnnotationMetadata metadata, AnnotationAttributes attributes) {
+   Set<String> excluded = new LinkedHashSet<>();
+   // 获取属性 exclude 值转换成list
+   excluded.addAll(asList(attributes, "exclude"));
+     // 获取属性 excludeName 值转换成list
+   excluded.addAll(Arrays.asList(attributes.getStringArray("excludeName")));
+   // 获取 SpringBoot 本身的忽略配置属性
+   excluded.addAll(getExcludeAutoConfigurationsProperty());
+   return excluded;
+}
+```
+
+
+

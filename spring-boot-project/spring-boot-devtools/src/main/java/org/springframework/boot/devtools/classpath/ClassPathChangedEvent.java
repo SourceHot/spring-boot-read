@@ -32,6 +32,9 @@ import org.springframework.util.Assert;
  */
 public class ClassPathChangedEvent extends ApplicationEvent {
 
+	/**
+	 * 变动的文件
+	 */
 	private final Set<ChangedFiles> changeSet;
 
 	private final boolean restartRequired;

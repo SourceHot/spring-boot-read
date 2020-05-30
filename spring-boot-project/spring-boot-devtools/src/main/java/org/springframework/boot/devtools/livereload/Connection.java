@@ -35,6 +35,7 @@ import org.springframework.util.Base64Utils;
 /**
  * A {@link LiveReloadServer} connection.
  *
+ * 连接对象
  * @author Phillip Webb
  */
 class Connection {

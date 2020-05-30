@@ -212,6 +212,10 @@ public class LocalDevToolsAutoConfiguration {
 			return true;
 		}
 
+		/**
+		 * 事件处理
+		 * @param event
+		 */
 		@Override
 		public void onApplicationEvent(ApplicationEvent event) {
 			if (event instanceof ContextRefreshedEvent || (event instanceof ClassPathChangedEvent

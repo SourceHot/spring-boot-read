@@ -429,3 +429,28 @@ public interface FileChangeListener {
 
 ```
 
+#### ClassPathChangedEvent
+- 类变动事件
+```java
+	/**
+	 * 变动的文件
+	 */
+	private final Set<ChangedFiles> changeSet;
+```
+
+- 处理事件的方法`org.springframework.boot.devtools.autoconfigure.LocalDevToolsAutoConfiguration.LiveReloadServerEventListener.onApplicationEvent`
+
+```java
+@Override
+		public void onApplicationEvent(ApplicationEvent event) {
+			if (event instanceof ContextRefreshedEvent || (event instanceof ClassPathChangedEvent
+					&& !((ClassPathChangedEvent) event).isRestartRequired())) {
+				this.liveReloadServer.triggerReload();
+			}
+		}
+```
+- 最后的处理
+- `org.springframework.boot.devtools.autoconfigure.OptionalLiveReloadServer.triggerReload`
+    - `org.springframework.boot.devtools.livereload.LiveReloadServer.triggerReload`
+- 具体的包:`org.springframework.boot.devtools.livereload`
+    - 主要采用 socket 技术进行重启

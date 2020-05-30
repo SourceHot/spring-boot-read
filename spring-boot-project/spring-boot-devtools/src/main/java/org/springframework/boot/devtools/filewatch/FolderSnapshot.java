@@ -133,6 +133,12 @@ class FolderSnapshot {
 		return super.equals(obj);
 	}
 
+	/**
+	 * 文件夹差异对比
+	 * @param other 快照
+	 * @param filter 文件过滤器
+	 * @return
+	 */
 	boolean equals(FolderSnapshot other, FileFilter filter) {
 		if (this.folder.equals(other.folder)) {
 			Set<FileSnapshot> ourFiles = filter(this.files, filter);

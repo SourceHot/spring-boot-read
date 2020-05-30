@@ -283,6 +283,14 @@ public class FileSystemWatcher {
 			}
 		}
 
+		/**
+		 * 差异对比
+		 * @param previous 上次的文件快照
+		 * @param current 本次的文件快照
+		 * @return true 存在差异, false 不存在
+		 *
+		 * @see FolderSnapshot#equals(org.springframework.boot.devtools.filewatch.FolderSnapshot, java.io.FileFilter)
+		 */
 		private boolean isDifferent(Map<File, FolderSnapshot> previous, Map<File, FolderSnapshot> current) {
 			if (!previous.keySet().equals(current.keySet())) {
 				return true;
