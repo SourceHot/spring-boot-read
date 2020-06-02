@@ -62,6 +62,7 @@ public class ResourceBanner implements Banner {
 	@Override
 	public void printBanner(Environment environment, Class<?> sourceClass, PrintStream out) {
 		try {
+			// 读取资源文件转换成 string 类型
 			String banner = StreamUtils.copyToString(this.resource.getInputStream(),
 					environment.getProperty("spring.banner.charset", Charset.class, StandardCharsets.UTF_8));
 
@@ -92,7 +93,9 @@ public class ResourceBanner implements Banner {
 	}
 
 	private Map<String, Object> getVersionsMap(Class<?> sourceClass) {
+		// app 版本
 		String appVersion = getApplicationVersion(sourceClass);
+		// boot 版本
 		String bootVersion = getBootVersion();
 		Map<String, Object> versions = new HashMap<>();
 		versions.put("application.version", getVersionString(appVersion, false));

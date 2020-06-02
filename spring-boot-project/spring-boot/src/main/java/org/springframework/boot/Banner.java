@@ -23,7 +23,7 @@ import org.springframework.core.env.Environment;
 /**
  * Interface class for writing a banner programmatically.
  *
- * banner 接口图片
+ * banner 接口
  * @author Phillip Webb
  * @author Michael Stummvoll
  * @author Jeremy Rickard
@@ -42,21 +42,26 @@ public interface Banner {
 
 	/**
 	 * An enumeration of possible values for configuring the Banner.
+	 *
+	 * 输出类型
 	 */
 	enum Mode {
 
 		/**
 		 * Disable printing of the banner.
+		 * 禁止banner的输出
 		 */
 		OFF,
 
 		/**
 		 * Print the banner to System.out.
+		 * banner 输出到控制台
 		 */
 		CONSOLE,
 
 		/**
 		 * Print the banner to the log file.
+		 * banner 输出到日志文件
 		 */
 		LOG
 

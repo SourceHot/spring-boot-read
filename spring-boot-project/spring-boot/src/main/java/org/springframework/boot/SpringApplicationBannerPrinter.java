@@ -36,16 +36,32 @@ import org.springframework.util.StringUtils;
  */
 class SpringApplicationBannerPrinter {
 
+	/**
+	 * 本地 banner 配置
+	 */
 	static final String BANNER_LOCATION_PROPERTY = "spring.banner.location";
 
+	/**
+	 * 本地图片 banner 配置
+	 */
 	static final String BANNER_IMAGE_LOCATION_PROPERTY = "spring.banner.image.location";
-
+	/**
+	 * 默认的 banner 文件
+	 */
 	static final String DEFAULT_BANNER_LOCATION = "banner.txt";
 
+	/**
+	 * 图片拓展名
+	 */
 	static final String[] IMAGE_EXTENSION = { "gif", "jpg", "png" };
 
+	/**
+	 * 默认的 banner 实现
+	 */
 	private static final Banner DEFAULT_BANNER = new SpringBootBanner();
-
+	/**
+	 * 资源加载器
+	 */
 	private final ResourceLoader resourceLoader;
 
 	private final Banner fallbackBanner;
@@ -56,6 +72,7 @@ class SpringApplicationBannerPrinter {
 	}
 
 	Banner print(Environment environment, Class<?> sourceClass, Log logger) {
+		// 获取 banner
 		Banner banner = getBanner(environment);
 		try {
 			logger.info(createStringFromBanner(banner, environment, sourceClass));
@@ -75,16 +92,25 @@ class SpringApplicationBannerPrinter {
 		return new PrintedBanner(banner, sourceClass);
 	}
 
+	/**
+	 * 从环境中获取 banner
+	 * @param environment 环境
+	 * @return banner
+	 */
 	private Banner getBanner(Environment environment) {
 		Banners banners = new Banners();
+		// 添加图片banner
 		banners.addIfNotNull(getImageBanner(environment));
+		// 添加 字符串banner
 		banners.addIfNotNull(getTextBanner(environment));
+		// 判空
 		if (banners.hasAtLeastOneBanner()) {
 			return banners;
 		}
 		if (this.fallbackBanner != null) {
 			return this.fallbackBanner;
 		}
+		// 默认 banner
 		return DEFAULT_BANNER;
 	}
 
@@ -122,11 +148,19 @@ class SpringApplicationBannerPrinter {
 
 	/**
 	 * {@link Banner} comprised of other {@link Banner Banners}.
+	 * banner 集合
 	 */
 	private static class Banners implements Banner {
 
+		/**
+		 * banner 集合
+		 */
 		private final List<Banner> banners = new ArrayList<>();
 
+		/**
+		 * 如果 banner 不为空加入 banner .
+		 * @param banner banner
+		 */
 		void addIfNotNull(Banner banner) {
 			if (banner != null) {
 				this.banners.add(banner);
@@ -149,11 +183,12 @@ class SpringApplicationBannerPrinter {
 	/**
 	 * Decorator that allows a {@link Banner} to be printed again without needing to
 	 * specify the source class.
+	 *
+	 * 输出用的banner 中间使用
 	 */
 	private static class PrintedBanner implements Banner {
 
 		private final Banner banner;
-
 		private final Class<?> sourceClass;
 
 		PrintedBanner(Banner banner, Class<?> sourceClass) {

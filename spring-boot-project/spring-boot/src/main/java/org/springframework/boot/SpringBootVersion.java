@@ -27,15 +27,16 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.JarFile;
 
 /**
- * Class that exposes the Spring Boot version. Fetches the
- * {@link Name#IMPLEMENTATION_VERSION Implementation-Version} manifest attribute from the
- * jar file via {@link Package#getImplementationVersion()}, falling back to locating the
- * jar file that contains this class and reading the {@code Implementation-Version}
- * attribute from its manifest.
+ * Class that exposes the Spring Boot version. Fetches the {@link Name#IMPLEMENTATION_VERSION
+ * Implementation-Version} manifest attribute from the jar file via {@link
+ * Package#getImplementationVersion()}, falling back to locating the jar file that contains this
+ * class and reading the {@code Implementation-Version} attribute from its manifest.
  * <p>
- * This class might not be able to determine the Spring Boot version in all environments.
- * Consider using a reflection-based check instead: For example, checking for the presence
- * of a specific Spring Boot method that you intend to call.
+ * This class might not be able to determine the Spring Boot version in all environments. Consider
+ * using a reflection-based check instead: For example, checking for the presence of a specific
+ * Spring Boot method that you intend to call.
+ * <p>
+ * SpringBoot 版本获取工具
  *
  * @author Drummond Dawson
  * @author Hendrig Sellik
@@ -48,8 +49,10 @@ public final class SpringBootVersion {
 	}
 
 	/**
-	 * Return the full version string of the present Spring Boot codebase, or {@code null}
-	 * if it cannot be determined.
+	 * Return the full version string of the present Spring Boot codebase, or {@code null} if it
+	 * cannot be determined.
+	 *
+	 * 获取 SpringBoot 版本号
 	 * @return the version of Spring Boot or {@code null}
 	 * @see Package#getImplementationVersion()
 	 */
@@ -58,7 +61,8 @@ public final class SpringBootVersion {
 	}
 
 	private static String determineSpringBootVersion() {
-		String implementationVersion = SpringBootVersion.class.getPackage().getImplementationVersion();
+		String implementationVersion = SpringBootVersion.class.getPackage()
+				.getImplementationVersion();
 		if (implementationVersion != null) {
 			return implementationVersion;
 		}
@@ -75,14 +79,14 @@ public final class SpringBootVersion {
 			try (JarFile jarFile = new JarFile(new File(codeSourceLocation.toURI()))) {
 				return getImplementationVersion(jarFile);
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			return null;
 		}
 	}
 
 	private static String getImplementationVersion(JarFile jarFile) throws IOException {
-		return jarFile.getManifest().getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+		return jarFile.getManifest().getMainAttributes()
+				.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
 	}
 
 }
