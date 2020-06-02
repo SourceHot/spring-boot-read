@@ -20,6 +20,7 @@ package org.springframework.boot.actuate.health;
  * Strategy interface used to contribute {@link Health} to the results returned from the
  * {@link HealthEndpoint}.
  *
+ * 健康检查.
  * @author Dave Syer
  * @author Phillip Webb
  * @since 1.0.0

@@ -112,8 +112,12 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		ConditionMessage matchMessage = ConditionMessage.empty();
 		MergedAnnotations annotations = metadata.getAnnotations();
+		// 注解是否匹配
 		if (annotations.isPresent(ConditionalOnBean.class)) {
-			Spec<ConditionalOnBean> spec = new Spec<>(context, metadata, annotations, ConditionalOnBean.class);
+			// 搜索 ConditionalOnBean 注解
+			Spec<ConditionalOnBean> spec = new Spec<>(context, metadata, annotations,
+					ConditionalOnBean.class);
+			// 匹配结果
 			MatchResult matchResult = getMatchingBeans(context, spec);
 			if (!matchResult.isAllMatched()) {
 				String reason = createOnBeanNoMatchReason(matchResult);

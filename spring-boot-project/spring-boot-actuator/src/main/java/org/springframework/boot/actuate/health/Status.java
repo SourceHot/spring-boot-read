@@ -31,6 +31,7 @@ import org.springframework.util.ObjectUtils;
  * <p>
  * Custom states can also be created and used throughout the Spring Boot Health subsystem.
  *
+ * 健康状态
  * @author Christian Dupuis
  * @since 1.1.0
  */

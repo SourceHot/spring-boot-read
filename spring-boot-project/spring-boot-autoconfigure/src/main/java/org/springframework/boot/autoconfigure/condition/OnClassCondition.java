@@ -20,7 +20,6 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.springframework.boot.autoconfigure.AutoConfigurationImportFilter;
 import org.springframework.boot.autoconfigure.AutoConfigurationMetadata;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage.Style;
@@ -33,8 +32,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link Condition} and {@link AutoConfigurationImportFilter} that checks for the
- * presence or absence of specific classes.
+ * {@link Condition} and {@link AutoConfigurationImportFilter} that checks for the presence or
+ * absence of specific classes.
  *
  * @author Phillip Webb
  * @see ConditionalOnClass
@@ -51,10 +50,11 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		// best performance. More threads make things worse.
 		if (Runtime.getRuntime().availableProcessors() > 1) {
 			return resolveOutcomesThreaded(autoConfigurationClasses, autoConfigurationMetadata);
-		}
-		else {
-			OutcomesResolver outcomesResolver = new StandardOutcomesResolver(autoConfigurationClasses, 0,
-					autoConfigurationClasses.length, autoConfigurationMetadata, getBeanClassLoader());
+		} else {
+			OutcomesResolver outcomesResolver = new StandardOutcomesResolver(
+					autoConfigurationClasses, 0,
+					autoConfigurationClasses.length, autoConfigurationMetadata,
+					getBeanClassLoader());
 			return outcomesResolver.resolveOutcomes();
 		}
 	}
@@ -62,9 +62,11 @@ class OnClassCondition extends FilteringSpringBootCondition {
 	private ConditionOutcome[] resolveOutcomesThreaded(String[] autoConfigurationClasses,
 			AutoConfigurationMetadata autoConfigurationMetadata) {
 		int split = autoConfigurationClasses.length / 2;
-		OutcomesResolver firstHalfResolver = createOutcomesResolver(autoConfigurationClasses, 0, split,
+		OutcomesResolver firstHalfResolver = createOutcomesResolver(autoConfigurationClasses, 0,
+				split,
 				autoConfigurationMetadata);
-		OutcomesResolver secondHalfResolver = new StandardOutcomesResolver(autoConfigurationClasses, split,
+		OutcomesResolver secondHalfResolver = new StandardOutcomesResolver(autoConfigurationClasses,
+				split,
 				autoConfigurationClasses.length, autoConfigurationMetadata, getBeanClassLoader());
 		ConditionOutcome[] secondHalf = secondHalfResolver.resolveOutcomes();
 		ConditionOutcome[] firstHalf = firstHalfResolver.resolveOutcomes();
@@ -74,29 +76,39 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		return outcomes;
 	}
 
-	private OutcomesResolver createOutcomesResolver(String[] autoConfigurationClasses, int start, int end,
+	private OutcomesResolver createOutcomesResolver(String[] autoConfigurationClasses, int start,
+			int end,
 			AutoConfigurationMetadata autoConfigurationMetadata) {
-		OutcomesResolver outcomesResolver = new StandardOutcomesResolver(autoConfigurationClasses, start, end,
+		OutcomesResolver outcomesResolver = new StandardOutcomesResolver(autoConfigurationClasses,
+				start, end,
 				autoConfigurationMetadata, getBeanClassLoader());
 		try {
 			return new ThreadedOutcomesResolver(outcomesResolver);
-		}
-		catch (AccessControlException ex) {
+		} catch (AccessControlException ex) {
 			return outcomesResolver;
 		}
 	}
 
 	@Override
-	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+	public ConditionOutcome getMatchOutcome(ConditionContext context,
+			AnnotatedTypeMetadata metadata) {
 		ClassLoader classLoader = context.getClassLoader();
 		ConditionMessage matchMessage = ConditionMessage.empty();
+		// 获取注解信息
 		List<String> onClasses = getCandidates(metadata, ConditionalOnClass.class);
+
+		// 如果注解存在
 		if (onClasses != null) {
+			// 找过滤的类
 			List<String> missing = filter(onClasses, ClassNameFilter.MISSING, classLoader);
 			if (!missing.isEmpty()) {
-				return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnClass.class)
-						.didNotFind("required class", "required classes").items(Style.QUOTE, missing));
+				// 不存在 直接返回匹配失败的 ConditionalOutcome
+				return ConditionOutcome
+						.noMatch(ConditionMessage.forCondition(ConditionalOnClass.class)
+								.didNotFind("required class", "required classes")
+								.items(Style.QUOTE, missing));
 			}
+			// 过滤的类存在进行匹配
 			matchMessage = matchMessage.andCondition(ConditionalOnClass.class)
 					.found("required class", "required classes")
 					.items(Style.QUOTE, filter(onClasses, ClassNameFilter.PRESENT, classLoader));
@@ -105,18 +117,22 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		if (onMissingClasses != null) {
 			List<String> present = filter(onMissingClasses, ClassNameFilter.PRESENT, classLoader);
 			if (!present.isEmpty()) {
-				return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnMissingClass.class)
-						.found("unwanted class", "unwanted classes").items(Style.QUOTE, present));
+				return ConditionOutcome
+						.noMatch(ConditionMessage.forCondition(ConditionalOnMissingClass.class)
+								.found("unwanted class", "unwanted classes")
+								.items(Style.QUOTE, present));
 			}
 			matchMessage = matchMessage.andCondition(ConditionalOnMissingClass.class)
 					.didNotFind("unwanted class", "unwanted classes")
-					.items(Style.QUOTE, filter(onMissingClasses, ClassNameFilter.MISSING, classLoader));
+					.items(Style.QUOTE,
+							filter(onMissingClasses, ClassNameFilter.MISSING, classLoader));
 		}
 		return ConditionOutcome.match(matchMessage);
 	}
 
 	private List<String> getCandidates(AnnotatedTypeMetadata metadata, Class<?> annotationType) {
-		MultiValueMap<String, Object> attributes = metadata.getAllAnnotationAttributes(annotationType.getName(), true);
+		MultiValueMap<String, Object> attributes = metadata
+				.getAllAnnotationAttributes(annotationType.getName(), true);
 		if (attributes == null) {
 			return null;
 		}
@@ -155,8 +171,7 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		public ConditionOutcome[] resolveOutcomes() {
 			try {
 				this.thread.join();
-			}
-			catch (InterruptedException ex) {
+			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
 			return this.outcomes;
@@ -187,16 +202,19 @@ class OnClassCondition extends FilteringSpringBootCondition {
 
 		@Override
 		public ConditionOutcome[] resolveOutcomes() {
-			return getOutcomes(this.autoConfigurationClasses, this.start, this.end, this.autoConfigurationMetadata);
+			return getOutcomes(this.autoConfigurationClasses, this.start, this.end,
+					this.autoConfigurationMetadata);
 		}
 
-		private ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses, int start, int end,
+		private ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses, int start,
+				int end,
 				AutoConfigurationMetadata autoConfigurationMetadata) {
 			ConditionOutcome[] outcomes = new ConditionOutcome[end - start];
 			for (int i = start; i < end; i++) {
 				String autoConfigurationClass = autoConfigurationClasses[i];
 				if (autoConfigurationClass != null) {
-					String candidates = autoConfigurationMetadata.get(autoConfigurationClass, "ConditionalOnClass");
+					String candidates = autoConfigurationMetadata
+							.get(autoConfigurationClass, "ConditionalOnClass");
 					if (candidates != null) {
 						outcomes[i - start] = getOutcome(candidates);
 					}
@@ -216,8 +234,7 @@ class OnClassCondition extends FilteringSpringBootCondition {
 						return outcome;
 					}
 				}
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				// We'll get another chance later
 			}
 			return null;
@@ -225,8 +242,9 @@ class OnClassCondition extends FilteringSpringBootCondition {
 
 		private ConditionOutcome getOutcome(String className, ClassLoader classLoader) {
 			if (ClassNameFilter.MISSING.matches(className, classLoader)) {
-				return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnClass.class)
-						.didNotFind("required class").items(Style.QUOTE, className));
+				return ConditionOutcome
+						.noMatch(ConditionMessage.forCondition(ConditionalOnClass.class)
+								.didNotFind("required class").items(Style.QUOTE, className));
 			}
 			return null;
 		}

@@ -131,6 +131,8 @@ public @interface ConditionalOnProperty {
 	/**
 	 * Specify if the condition should match if the property is not set. Defaults to
 	 * {@code false}.
+	 *
+	 * 匹配值
 	 * @return if should match if the property is missing
 	 */
 	boolean matchIfMissing() default false;

@@ -67,6 +67,8 @@ public @interface ConditionalOnBean {
 	/**
 	 * The class types of beans that should be checked. The condition matches when beans
 	 * of all classes specified are contained in the {@link BeanFactory}.
+	 *
+	 * 需要匹配的 bean 类型
 	 * @return the class types of beans to check
 	 */
 	Class<?>[] value() default {};
@@ -82,6 +84,8 @@ public @interface ConditionalOnBean {
 	 * The annotation type decorating a bean that should be checked. The condition matches
 	 * when all of the annotations specified are defined on beans in the
 	 * {@link BeanFactory}.
+	 *
+	 * 匹配的 bean 注解
 	 * @return the class-level annotation types to check
 	 */
 	Class<? extends Annotation>[] annotation() default {};
@@ -89,6 +93,8 @@ public @interface ConditionalOnBean {
 	/**
 	 * The names of beans to check. The condition matches when all of the bean names
 	 * specified are contained in the {@link BeanFactory}.
+	 *
+	 * 需要匹配的 beanName
 	 * @return the names of beans to check
 	 */
 	String[] name() default {};
@@ -96,6 +102,7 @@ public @interface ConditionalOnBean {
 	/**
 	 * Strategy to decide if the application context hierarchy (parent contexts) should be
 	 * considered.
+	 * 搜索策略
 	 * @return the search strategy
 	 */
 	SearchStrategy search() default SearchStrategy.ALL;
