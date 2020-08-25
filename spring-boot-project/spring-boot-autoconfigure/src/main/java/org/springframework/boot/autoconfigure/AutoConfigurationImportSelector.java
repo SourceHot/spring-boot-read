@@ -296,7 +296,7 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		for (AutoConfigurationImportFilter filter : getAutoConfigurationImportFilters()) {
 			// 执行 aware 相关接口
 			invokeAwareMethods(filter);
-			// 比较
+			// 是否可以初始化的结果
 			boolean[] match = filter.match(candidates, autoConfigurationMetadata);
 			for (int i = 0; i < match.length; i++) {
 				if (!match[i]) {

@@ -77,6 +77,8 @@ public @interface ConditionalOnBean {
 	 * The class type names of beans that should be checked. The condition matches when
 	 * beans of all classes specified are contained in the {@link BeanFactory}.
 	 * @return the class type names of beans to check
+	 *
+	 * 需要匹配的 bean 类型
 	 */
 	String[] type() default {};
 

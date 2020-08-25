@@ -57,72 +57,79 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties
 public class MessageSourceAutoConfiguration {
 
-	private static final Resource[] NO_RESOURCES = {};
+    private static final Resource[] NO_RESOURCES = {};
 
-	@Bean
-	@ConfigurationProperties(prefix = "spring.messages")
-	public MessageSourceProperties messageSourceProperties() {
-		return new MessageSourceProperties();
-	}
+    @Bean
+    @ConfigurationProperties(prefix = "spring.messages")
+    public MessageSourceProperties messageSourceProperties() {
+        return new MessageSourceProperties();
+    }
 
-	@Bean
-	public MessageSource messageSource(MessageSourceProperties properties) {
-		ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-		if (StringUtils.hasText(properties.getBasename())) {
-			messageSource.setBasenames(StringUtils
-					.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(properties.getBasename())));
-		}
-		if (properties.getEncoding() != null) {
-			messageSource.setDefaultEncoding(properties.getEncoding().name());
-		}
-		messageSource.setFallbackToSystemLocale(properties.isFallbackToSystemLocale());
-		Duration cacheDuration = properties.getCacheDuration();
-		if (cacheDuration != null) {
-			messageSource.setCacheMillis(cacheDuration.toMillis());
-		}
-		messageSource.setAlwaysUseMessageFormat(properties.isAlwaysUseMessageFormat());
-		messageSource.setUseCodeAsDefaultMessage(properties.isUseCodeAsDefaultMessage());
-		return messageSource;
-	}
+    @Bean
+    public MessageSource messageSource(MessageSourceProperties properties) {
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+        if (StringUtils.hasText(properties.getBasename())) {
+            messageSource.setBasenames(StringUtils
+                    .commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(properties.getBasename())));
+        }
+        if (properties.getEncoding() != null) {
+            messageSource.setDefaultEncoding(properties.getEncoding().name());
+        }
+        messageSource.setFallbackToSystemLocale(properties.isFallbackToSystemLocale());
+        Duration cacheDuration = properties.getCacheDuration();
+        if (cacheDuration != null) {
+            messageSource.setCacheMillis(cacheDuration.toMillis());
+        }
+        messageSource.setAlwaysUseMessageFormat(properties.isAlwaysUseMessageFormat());
+        messageSource.setUseCodeAsDefaultMessage(properties.isUseCodeAsDefaultMessage());
+        return messageSource;
+    }
 
-	protected static class ResourceBundleCondition extends SpringBootCondition {
+    protected static class ResourceBundleCondition extends SpringBootCondition {
 
-		private static ConcurrentReferenceHashMap<String, ConditionOutcome> cache = new ConcurrentReferenceHashMap<>();
+        private static final ConcurrentReferenceHashMap<String, ConditionOutcome> cache = new ConcurrentReferenceHashMap<>();
 
-		@Override
-		public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-			String basename = context.getEnvironment().getProperty("spring.messages.basename", "messages");
-			ConditionOutcome outcome = cache.get(basename);
-			if (outcome == null) {
-				outcome = getMatchOutcomeForBasename(context, basename);
-				cache.put(basename, outcome);
-			}
-			return outcome;
-		}
+        @Override
+        public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+            // 从 容器中获取
+            String basename = context.getEnvironment().getProperty("spring.messages.basename", "messages");
+            // 从缓存中获取条件信息
+            ConditionOutcome outcome = cache.get(basename);
+            if (outcome == null) {
+                // 生成条件信息对象
+                outcome = getMatchOutcomeForBasename(context, basename);
+                // 放入缓存
+                cache.put(basename, outcome);
+            }
+            return outcome;
+        }
 
-		private ConditionOutcome getMatchOutcomeForBasename(ConditionContext context, String basename) {
-			ConditionMessage.Builder message = ConditionMessage.forCondition("ResourceBundle");
-			for (String name : StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(basename))) {
-				for (Resource resource : getResources(context.getClassLoader(), name)) {
-					if (resource.exists()) {
-						return ConditionOutcome.match(message.found("bundle").items(resource));
-					}
-				}
-			}
-			return ConditionOutcome.noMatch(message.didNotFind("bundle with basename " + basename).atAll());
-		}
+        /**
+         * 创建条件信息对象
+         */
+        private ConditionOutcome getMatchOutcomeForBasename(ConditionContext context, String basename) {
+            ConditionMessage.Builder message = ConditionMessage.forCondition("ResourceBundle");
+            for (String name : StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(basename))) {
+                for (Resource resource : getResources(context.getClassLoader(), name)) {
+                    if (resource.exists()) {
+                        return ConditionOutcome.match(message.found("bundle").items(resource));
+                    }
+                }
+            }
+            return ConditionOutcome.noMatch(message.didNotFind("bundle with basename " + basename).atAll());
+        }
 
-		private Resource[] getResources(ClassLoader classLoader, String name) {
-			String target = name.replace('.', '/');
-			try {
-				return new PathMatchingResourcePatternResolver(classLoader)
-						.getResources("classpath*:" + target + ".properties");
-			}
-			catch (Exception ex) {
-				return NO_RESOURCES;
-			}
-		}
+        private Resource[] getResources(ClassLoader classLoader, String name) {
+            String target = name.replace('.', '/');
+            try {
+                return new PathMatchingResourcePatternResolver(classLoader)
+                        .getResources("classpath*:" + target + ".properties");
+            }
+            catch (Exception ex) {
+                return NO_RESOURCES;
+            }
+        }
 
-	}
+    }
 
 }

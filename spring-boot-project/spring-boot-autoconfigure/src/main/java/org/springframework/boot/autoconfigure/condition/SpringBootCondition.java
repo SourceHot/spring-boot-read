@@ -43,7 +43,7 @@ public abstract class SpringBootCondition implements Condition {
 
 	/**
 	 *
-	 * @param context 文本
+	 * @param context 上下文
 	 * @param metadata 注解信息
 	 * @return
 	 */
@@ -58,6 +58,7 @@ public abstract class SpringBootCondition implements Condition {
 			logOutcome(classOrMethodName, outcome);
 			// 报告记录
 			recordEvaluation(context, classOrMethodName, outcome);
+			// 返回匹配结果
 			return outcome.isMatch();
 		}
 		catch (NoClassDefFoundError ex) {

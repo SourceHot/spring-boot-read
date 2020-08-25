@@ -1,6 +1,7 @@
 package org.sourcehot;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sourcehot.attr.OrgSourceHotAttr;
 import org.sourcehot.service.IHelloService;
 
@@ -16,37 +17,40 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @RestController
 @RequestMapping("/")
-@Slf4j
 public class Application {
 
-	@Autowired
-	Environment environment;
+    private static final Logger log = LoggerFactory.getLogger(Application.class);
 
-	@Autowired
-	ApplicationContext applicationContext;
+    @Autowired
+    Environment environment;
 
-	@Autowired
-	private IHelloService helloService;
+    @Autowired
+    ApplicationContext applicationContext;
 
-	@Autowired
-	private OrgSourceHotAttr orgSourceHotAttr;
+    @Autowired
+    private IHelloService helloService;
 
-	public static void main(String[] args) {
-		SpringApplication springApplication = new SpringApplication(Application.class);
-		springApplication.run(args);
-	}
+    @Autowired
+    private OrgSourceHotAttr orgSourceHotAttr;
 
-	@Bean
-	public OrgSourceHotAttr orgSourceHotAttr() {
-		return new OrgSourceHotAttr();
-	}
+    public static void main(String[] args) {
+        SpringApplication springApplication = new SpringApplication(Application.class);
+        springApplication.run(args);
+    }
 
-	@RequestMapping("/hh")
-	public Object h() {
-		log.info("as");
-		OrgSourceHotAttr bean = applicationContext.getBean(OrgSourceHotAttr.class);
-		System.out.println();
-		return helloService.hello();
-	}
+    @Bean
+    public OrgSourceHotAttr orgSourceHotAttr() {
+        return new OrgSourceHotAttr();
+    }
+
+    @RequestMapping("/hh")
+    public Object h(String name, String a) {
+        if (log.isInfoEnabled()) {
+            log.info("h,name = {}, a = {}", name, a);
+        }
+        OrgSourceHotAttr bean = applicationContext.getBean(OrgSourceHotAttr.class);
+        System.out.println();
+        return helloService.hello();
+    }
 
 }
