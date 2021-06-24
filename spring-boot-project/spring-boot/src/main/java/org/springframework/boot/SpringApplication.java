@@ -205,6 +205,9 @@ public class SpringApplication {
 
 	private static final Log logger = LogFactory.getLog(SpringApplication.class);
 
+	/**
+	 * 主要类
+	 */
 	private Set<Class<?>> primarySources;
 
 	private Set<String> sources = new LinkedHashSet<>();
@@ -272,30 +275,44 @@ public class SpringApplication {
 	 * beans from the specified primary sources (see {@link SpringApplication class-level}
 	 * documentation for details. The instance can be customized before calling
 	 * {@link #run(String...)}.
+	 *
 	 * @param resourceLoader the resource loader to use
 	 * @param primarySources the primary bean sources
 	 * @see #run(Class, String[])
 	 * @see #setSources(Set)
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+		// 资源加载器
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
+		// 主要类
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		// web应用类型标记
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
+		// 获取BootstrapRegistryInitializer接口集合
 		this.bootstrapRegistryInitializers = getBootstrapRegistryInitializersFromSpringFactories();
+		// 设置ApplicationContextInitializer集合
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+		// 设置ApplicationListener
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+		// 设置应用类
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 
 	@SuppressWarnings("deprecation")
 	private List<BootstrapRegistryInitializer> getBootstrapRegistryInitializersFromSpringFactories() {
+		// 结果集合
 		ArrayList<BootstrapRegistryInitializer> initializers = new ArrayList<>();
+
+		// 通过getSpringFactoriesInstances方法找出Bootstrapper类集合
+		// 将Bootstrapper集合遍历调用initialize并将其执行结果放入到结果集合中
 		getSpringFactoriesInstances(Bootstrapper.class).stream()
 				.map((bootstrapper) -> ((BootstrapRegistryInitializer) bootstrapper::initialize))
 				.forEach(initializers::add);
+		// 通过getSpringFactoriesInstances方法搜索BootstrapRegistryInitializer类型的工厂接口将其放入到结果集合中
 		initializers.addAll(getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+		// 返回结果集合
 		return initializers;
 	}
 
@@ -455,24 +472,33 @@ public class SpringApplication {
 	}
 
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
+		// 获取类加载器
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
+		// 获取类型对应的名称集合, 寻找META-INF/spring.factories文件中type对应的名称
 		Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+		// 实例化接口
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
+		// 排序
 		AnnotationAwareOrderComparator.sort(instances);
+		// 返回
 		return instances;
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> List<T> createSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes,
+		private <T> List<T> createSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes,
 			ClassLoader classLoader, Object[] args, Set<String> names) {
 		List<T> instances = new ArrayList<>(names.size());
 		for (String name : names) {
 			try {
+				// 获取类
 				Class<?> instanceClass = ClassUtils.forName(name, classLoader);
 				Assert.isAssignable(type, instanceClass);
+				// 获取构造函数
 				Constructor<?> constructor = instanceClass.getDeclaredConstructor(parameterTypes);
+				// 实例化
 				T instance = (T) BeanUtils.instantiateClass(constructor, args);
+				// 加入到集合中
 				instances.add(instance);
 			}
 			catch (Throwable ex) {
