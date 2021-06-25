@@ -241,6 +241,9 @@ public class SpringApplication {
 
 	private boolean headless = true;
 
+	/**
+	 * 是否需要注册关闭的钩子
+	 */
 	private boolean registerShutdownHook = true;
 
 	private List<ApplicationContextInitializer<?>> initializers;
@@ -613,13 +616,16 @@ public class SpringApplication {
 	}
 
 	private void refreshContext(ConfigurableApplicationContext context) {
+		// 是否需要注册关闭的钩子
 		if (this.registerShutdownHook) {
 			try {
+				// 上下文注册关闭的钩子
 				context.registerShutdownHook();
 			} catch (AccessControlException ex) {
 				// Not allowed in some environments.
 			}
 		}
+		// 刷新操作
 		refresh((ApplicationContext) context);
 	}
 
@@ -838,10 +844,12 @@ public class SpringApplication {
 	 * @param context the application context
 	 */
 	protected void postProcessApplicationContext(ConfigurableApplicationContext context) {
+		// bean 名称生成器不为空
 		if (this.beanNameGenerator != null) {
 			context.getBeanFactory().registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR,
 					this.beanNameGenerator);
 		}
+		// 资源加载器不为空
 		if (this.resourceLoader != null) {
 			if (context instanceof GenericApplicationContext) {
 				((GenericApplicationContext) context).setResourceLoader(this.resourceLoader);
@@ -850,6 +858,7 @@ public class SpringApplication {
 				((DefaultResourceLoader) context).setClassLoader(this.resourceLoader.getClassLoader());
 			}
 		}
+		// 是否需要添加转化换能器服务
 		if (this.addConversionService) {
 			context.getBeanFactory().setConversionService(ApplicationConversionService.getSharedInstance());
 		}
@@ -863,11 +872,14 @@ public class SpringApplication {
 	 * @see ConfigurableApplicationContext#refresh()
 	 */
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	protected void applyInitializers(ConfigurableApplicationContext context) {
+		protected void applyInitializers(ConfigurableApplicationContext context) {
+		// 获取ApplicationContextInitializer集合,这里获取的集合是排序后的集合
 		for (ApplicationContextInitializer initializer : getInitializers()) {
+			// 确认实际类型
 			Class<?> requiredType = GenericTypeResolver.resolveTypeArgument(initializer.getClass(),
 					ApplicationContextInitializer.class);
 			Assert.isInstanceOf(requiredType, context, "Unable to call initializer.");
+			// initialize方法调度
 			initializer.initialize(context);
 		}
 	}
@@ -926,16 +938,21 @@ public class SpringApplication {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Loading source " + StringUtils.arrayToCommaDelimitedString(sources));
 		}
+		// 创建bean定义加载器
 		BeanDefinitionLoader loader = createBeanDefinitionLoader(getBeanDefinitionRegistry(context), sources);
 		if (this.beanNameGenerator != null) {
+			// 设置bean名称生成器
 			loader.setBeanNameGenerator(this.beanNameGenerator);
 		}
 		if (this.resourceLoader != null) {
+			// 设置资源加载器
 			loader.setResourceLoader(this.resourceLoader);
 		}
 		if (this.environment != null) {
+			// 设置环境信息
 			loader.setEnvironment(this.environment);
 		}
+		// 加载bean
 		loader.load();
 	}
 
@@ -1032,10 +1049,15 @@ public class SpringApplication {
 	}
 
 	private void callRunners(ApplicationContext context, ApplicationArguments args) {
+		// 需要执行的runner实例集合
 		List<Object> runners = new ArrayList<>();
+		// 从容器中提取ApplicationRunner
 		runners.addAll(context.getBeansOfType(ApplicationRunner.class).values());
+		// 从容器中提取CommandLineRunner
 		runners.addAll(context.getBeansOfType(CommandLineRunner.class).values());
+		// 排序
 		AnnotationAwareOrderComparator.sort(runners);
+		// 循环runner并且执行
 		for (Object runner : new LinkedHashSet<>(runners)) {
 			if (runner instanceof ApplicationRunner) {
 				callRunner((ApplicationRunner) runner, args);
