@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
-
 import org.apache.commons.logging.Log;
-
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.metrics.ApplicationStartup;
@@ -60,6 +58,7 @@ class SpringApplicationRunListeners {
 
 	/**
 	 * 环境准备事件
+	 *
 	 * @param bootstrapContext
 	 * @param environment
 	 */
@@ -68,10 +67,20 @@ class SpringApplicationRunListeners {
 				(listener) -> listener.environmentPrepared(bootstrapContext, environment));
 	}
 
+	/**
+	 * 上下文准备事件
+	 *
+	 * @param context
+	 */
 	void contextPrepared(ConfigurableApplicationContext context) {
 		doWithListeners("spring.boot.application.context-prepared", (listener) -> listener.contextPrepared(context));
 	}
 
+	/**
+	 * 上下文加载事件
+	 *
+	 * @param context
+	 */
 	void contextLoaded(ConfigurableApplicationContext context) {
 		doWithListeners("spring.boot.application.context-loaded", (listener) -> listener.contextLoaded(context));
 	}
@@ -96,15 +105,13 @@ class SpringApplicationRunListeners {
 			Throwable exception) {
 		try {
 			listener.failed(context, exception);
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
 			if (exception == null) {
 				ReflectionUtils.rethrowRuntimeException(ex);
 			}
 			if (this.log.isDebugEnabled()) {
 				this.log.error("Error handling failed", ex);
-			}
-			else {
+			} else {
 				String message = ex.getMessage();
 				message = (message != null) ? message : "no error message";
 				this.log.warn("Error handling failed (" + message + ")");

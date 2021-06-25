@@ -219,8 +219,14 @@ public class SpringApplication {
 
 	private boolean logStartupInfo = true;
 
+	/**
+	 * 是否需要添加命令行属性
+	 */
 	private boolean addCommandLineProperties = true;
 
+	/**
+	 * 是否添加转换服务
+	 */
 	private boolean addConversionService = true;
 
 	private Banner banner;
@@ -241,12 +247,18 @@ public class SpringApplication {
 
 	private List<ApplicationListener<?>> listeners;
 
+	/**
+	 * 默认属性表
+	 */
 	private Map<String, Object> defaultProperties;
 
 	private final List<BootstrapRegistryInitializer> bootstrapRegistryInitializers;
 
 	private Set<String> additionalProfiles = Collections.emptySet();
 
+	/**
+	 * 允许覆盖Bean定义
+	 */
 	private boolean allowBeanDefinitionOverriding;
 
 	/**
@@ -254,6 +266,9 @@ public class SpringApplication {
 	 */
 	private boolean isCustomEnvironment = false;
 
+	/**
+	 * 是否延迟加载
+	 */
 	private boolean lazyInitialization = false;
 
 	private ApplicationContextFactory applicationContextFactory = ApplicationContextFactory.DEFAULT;
@@ -551,32 +566,49 @@ public class SpringApplication {
 	private void prepareContext(DefaultBootstrapContext bootstrapContext, ConfigurableApplicationContext context,
 			ConfigurableEnvironment environment, SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments, Banner printedBanner) {
+		// 设置环境对象
 		context.setEnvironment(environment);
+		// 后置处理应用程序上下文
 		postProcessApplicationContext(context);
+		// 应用初始化相关内容,配合ApplicationContextInitializer接口
 		applyInitializers(context);
+		// 上下文准备事件
 		listeners.contextPrepared(context);
+		// 关闭引导上下文
 		bootstrapContext.close(context);
+		// 日志
 		if (this.logStartupInfo) {
 			logStartupInfo(context.getParent() == null);
 			logStartupProfileInfo(context);
 		}
 		// Add boot specific singleton beans
+		// 从上下文中获取bean工厂
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+		// 进行单例注册,注册内容是spring应用参数
 		beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
+		// banner是否不为空
 		if (printedBanner != null) {
+			// 进行单例注册,注册内容是springBootBanner
 			beanFactory.registerSingleton("springBootBanner", printedBanner);
 		}
+		// bean工厂类型是否是DefaultListableBeanFactory
 		if (beanFactory instanceof DefaultListableBeanFactory) {
+			// 设置允许覆盖Bean定义的标记
 			((DefaultListableBeanFactory) beanFactory)
 					.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 		}
+		// 是否延迟加载
 		if (this.lazyInitialization) {
+			// 添加bean工厂后置处理器
 			context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
 		}
 		// Load the sources
+		// 获取所有源
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
+		// 加载 bean
 		load(context, sources.toArray(new Object[0]));
+		// 上下文加载事件
 		listeners.contextLoaded(context);
 	}
 
@@ -644,9 +676,11 @@ public class SpringApplication {
 	}
 
 	private ConfigurableEnvironment getOrCreateEnvironment() {
+		// 成员变量获取
 		if (this.environment != null) {
 			return this.environment;
 		}
+		// 通过web应用类型获取
 		switch (this.webApplicationType) {
 			case SERVLET:
 				return new StandardServletEnvironment();
@@ -670,11 +704,16 @@ public class SpringApplication {
 	 * @see #configurePropertySources(ConfigurableEnvironment, String[])
 	 */
 	protected void configureEnvironment(ConfigurableEnvironment environment, String[] args) {
+		// 是否添加转换服务
 		if (this.addConversionService) {
+			// 获取应用级别的转换服务
 			ConversionService conversionService = ApplicationConversionService.getSharedInstance();
+			// 为环境对象添加转换服务
 			environment.setConversionService((ConfigurableConversionService) conversionService);
 		}
+		// 配置属性源
 		configurePropertySources(environment, args);
+		// 配置profiles
 		configureProfiles(environment, args);
 	}
 
@@ -687,20 +726,32 @@ public class SpringApplication {
 	 * @see #configureEnvironment(ConfigurableEnvironment, String[])
 	 */
 	protected void configurePropertySources(ConfigurableEnvironment environment, String[] args) {
+		// 从环境对象中获取属性表
 		MutablePropertySources sources = environment.getPropertySources();
+		// 如果成员变量defaultProperties不为空会进行属性合并操作
 		if (!CollectionUtils.isEmpty(this.defaultProperties)) {
 			DefaultPropertiesPropertySource.addOrMerge(this.defaultProperties, sources);
 		}
+		// 判断是否需要添加命令行属性,并且命令行参数数量大于0
 		if (this.addCommandLineProperties && args.length > 0) {
+			// 获取命令行参数属性名称
 			String name = CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME;
+			// 判断是否存在该属性名称, 存在
 			if (sources.contains(name)) {
+				// 获取name对应的属性源
 				PropertySource<?> source = sources.get(name);
+				// 创建复合属性源
 				CompositePropertySource composite = new CompositePropertySource(name);
+				// 加入当前args对应的属性
 				composite.addPropertySource(
 						new SimpleCommandLinePropertySource("springApplicationCommandLineArgs", args));
+				// 加入环境对象中原有的属性
 				composite.addPropertySource(source);
+				// 替换原有属性源
 				sources.replace(name, composite);
-			} else {
+			}
+			// 不存在直接头部插入
+			else {
 				sources.addFirst(new SimpleCommandLinePropertySource(args));
 			}
 		}
@@ -720,8 +771,11 @@ public class SpringApplication {
 	}
 
 	private void configureIgnoreBeanInfo(ConfigurableEnvironment environment) {
+		// 获取系统变量 spring.beaninfo.ignore 如果为空进行处理
 		if (System.getProperty(CachedIntrospectionResults.IGNORE_BEANINFO_PROPERTY_NAME) == null) {
+			// 环境变量中获取spring.beaninfo.ignore对应的数据
 			Boolean ignore = environment.getProperty("spring.beaninfo.ignore", Boolean.class, Boolean.TRUE);
+			// 设置spring.beaninfo.ignore属性
 			System.setProperty(CachedIntrospectionResults.IGNORE_BEANINFO_PROPERTY_NAME, ignore.toString());
 		}
 	}
@@ -739,16 +793,28 @@ public class SpringApplication {
 		}
 	}
 
+	/**
+	 * 输出banner
+	 *
+	 * @param environment
+	 * @return
+	 */
 	private Banner printBanner(ConfigurableEnvironment environment) {
+		// 是否开启banner
 		if (this.bannerMode == Banner.Mode.OFF) {
 			return null;
 		}
+		// 获取资源加载接口
 		ResourceLoader resourceLoader = (this.resourceLoader != null) ? this.resourceLoader
 				: new DefaultResourceLoader(null);
+		// 通过资源加载器和成员变量banner创建SpringApplicationBannerPrinter对象
 		SpringApplicationBannerPrinter bannerPrinter = new SpringApplicationBannerPrinter(resourceLoader, this.banner);
+		// 是否打印日志
 		if (this.bannerMode == Mode.LOG) {
+			// 打印日志
 			return bannerPrinter.print(environment, this.mainApplicationClass, logger);
 		}
+		// sout输出日志
 		return bannerPrinter.print(environment, this.mainApplicationClass, System.out);
 	}
 
