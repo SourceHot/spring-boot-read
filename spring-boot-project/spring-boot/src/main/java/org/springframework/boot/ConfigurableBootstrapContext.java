@@ -20,6 +20,7 @@ package org.springframework.boot;
  * A {@link BootstrapContext} that also provides configuration methods via the
  * {@link BootstrapRegistry} interface.
  *
+ * 可配置的引导上下文
  * @author Phillip Webb
  * @since 2.4.0
  * @see BootstrapRegistry

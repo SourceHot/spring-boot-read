@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
 /**
  * Default {@link ConfigurableBootstrapContext} implementation.
  *
+ * 默认的引导上下文
  * @author Phillip Webb
  * @since 2.4.0
  */

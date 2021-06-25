@@ -28,6 +28,7 @@ import org.springframework.core.env.Environment;
  * Provides lazy access to singletons that may be expensive to create, or need to be
  * shared before the {@link ApplicationContext} is available.
  *
+ * 引导上下文.
  * @author Phillip Webb
  * @since 2.4.0
  */
