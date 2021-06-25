@@ -30,6 +30,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  * with the {@code SpringApplication} responsible for configuring and refreshing the
  * context.
  *
+ * 应用上下文工厂
  * @author Andy Wilkinson
  * @author Phillip Webb
  * @since 2.4.0
@@ -40,6 +41,8 @@ public interface ApplicationContextFactory {
 	/**
 	 * A default {@link ApplicationContextFactory} implementation that will create an
 	 * appropriate context for the {@link WebApplicationType}.
+	 *
+	 * 默认的生成应用上下文生成工厂
 	 */
 	ApplicationContextFactory DEFAULT = (webApplicationType) -> {
 		try {
@@ -61,6 +64,7 @@ public interface ApplicationContextFactory {
 	/**
 	 * Creates the {@link ConfigurableApplicationContext application context} for a
 	 * {@link SpringApplication}, respecting the given {@code webApplicationType}.
+	 * 根据类型web应用类型创建可配置的应用上下文
 	 * @param webApplicationType the web application type
 	 * @return the newly created application context
 	 */
@@ -69,6 +73,7 @@ public interface ApplicationContextFactory {
 	/**
 	 * Creates an {@code ApplicationContextFactory} that will create contexts by
 	 * instantiating the given {@code contextClass} via its primary constructor.
+	 * 根据应用上下文类型获取应用上下文工厂
 	 * @param contextClass the context class
 	 * @return the factory that will instantiate the context class
 	 * @see BeanUtils#instantiateClass(Class)
@@ -80,6 +85,7 @@ public interface ApplicationContextFactory {
 	/**
 	 * Creates an {@code ApplicationContextFactory} that will create contexts by calling
 	 * the given {@link Supplier}.
+	 * 根据Supplier接口创建应用上下文
 	 * @param supplier the context supplier, for example
 	 * {@code AnnotationConfigApplicationContext::new}
 	 * @return the factory that will instantiate the context class

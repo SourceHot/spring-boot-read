@@ -36,8 +36,14 @@ class SpringApplicationRunListeners {
 
 	private final Log log;
 
+	/**
+	 * SpringApplicationRunListener集合
+	 */
 	private final List<SpringApplicationRunListener> listeners;
 
+	/**
+	 * 应用启动接口
+	 */
 	private final ApplicationStartup applicationStartup;
 
 	SpringApplicationRunListeners(Log log, Collection<? extends SpringApplicationRunListener> listeners,
@@ -47,6 +53,9 @@ class SpringApplicationRunListeners {
 		this.applicationStartup = applicationStartup;
 	}
 
+	/**
+	 * 监听启动
+	 */
 	void starting(ConfigurableBootstrapContext bootstrapContext, Class<?> mainApplicationClass) {
 		doWithListeners("spring.boot.application.starting", (listener) -> listener.starting(bootstrapContext),
 				(step) -> {
@@ -58,9 +67,6 @@ class SpringApplicationRunListeners {
 
 	/**
 	 * 环境准备事件
-	 *
-	 * @param bootstrapContext
-	 * @param environment
 	 */
 	void environmentPrepared(ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment) {
 		doWithListeners("spring.boot.application.environment-prepared",
@@ -69,8 +75,6 @@ class SpringApplicationRunListeners {
 
 	/**
 	 * 上下文准备事件
-	 *
-	 * @param context
 	 */
 	void contextPrepared(ConfigurableApplicationContext context) {
 		doWithListeners("spring.boot.application.context-prepared", (listener) -> listener.contextPrepared(context));
@@ -78,21 +82,28 @@ class SpringApplicationRunListeners {
 
 	/**
 	 * 上下文加载事件
-	 *
-	 * @param context
 	 */
 	void contextLoaded(ConfigurableApplicationContext context) {
 		doWithListeners("spring.boot.application.context-loaded", (listener) -> listener.contextLoaded(context));
 	}
 
+	/**
+	 * 启动事件
+	 */
 	void started(ConfigurableApplicationContext context) {
 		doWithListeners("spring.boot.application.started", (listener) -> listener.started(context));
 	}
 
+	/**
+	 * 运行事件,准备就绪事件
+	 */
 	void running(ConfigurableApplicationContext context) {
 		doWithListeners("spring.boot.application.running", (listener) -> listener.running(context));
 	}
 
+	/**
+	 * 失败事件
+	 */
 	void failed(ConfigurableApplicationContext context, Throwable exception) {
 		doWithListeners("spring.boot.application.failed",
 				(listener) -> callFailedListener(listener, context, exception), (step) -> {
@@ -101,6 +112,12 @@ class SpringApplicationRunListeners {
 				});
 	}
 
+	/**
+	 *
+	 * @param listener
+	 * @param context
+	 * @param exception
+	 */
 	private void callFailedListener(SpringApplicationRunListener listener, ConfigurableApplicationContext context,
 			Throwable exception) {
 		try {
