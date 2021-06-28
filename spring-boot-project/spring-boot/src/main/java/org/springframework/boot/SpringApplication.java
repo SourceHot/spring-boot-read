@@ -1057,7 +1057,7 @@ public class SpringApplication {
 		runners.addAll(context.getBeansOfType(CommandLineRunner.class).values());
 		// 排序
 		AnnotationAwareOrderComparator.sort(runners);
-		// 循环runner并且执行
+		// 循环runner并且执行``
 		for (Object runner : new LinkedHashSet<>(runners)) {
 			if (runner instanceof ApplicationRunner) {
 				callRunner((ApplicationRunner) runner, args);

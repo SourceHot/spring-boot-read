@@ -103,13 +103,24 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 * is deemed to be the "main" servlet and is automatically given a mapping of "/" by
 	 * default. To change the default behavior you can use a
 	 * {@link ServletRegistrationBean} or a different bean name.
+	 *
+	 * servlet 名称
 	 */
 	public static final String DISPATCHER_SERVLET_NAME = "dispatcherServlet";
 
+	/**
+	 * Web服务接口
+	 */
 	private volatile WebServer webServer;
 
+	/**
+	 * servlet 配置
+	 */
 	private ServletConfig servletConfig;
 
+	/**
+	 * 服务命名空间
+	 */
 	private String serverNamespace;
 
 	/**
@@ -129,12 +140,16 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 
 	/**
 	 * Register ServletContextAwareProcessor.
+	 *
 	 * @see ServletContextAwareProcessor
 	 */
 	@Override
 	protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+		// 添加bean后置处理器
 		beanFactory.addBeanPostProcessor(new WebApplicationContextServletContextAwareProcessor(this));
+		// 添加忽略的依赖接口
 		beanFactory.ignoreDependencyInterface(ServletContextAware.class);
+		// 注册应用作用域
 		registerWebApplicationScopes();
 	}
 
@@ -171,28 +186,42 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		super.doClose();
 	}
 
+	/**
+	 * 创建web服务接口
+	 */
 	private void createWebServer() {
+		// 获取web服务接口
 		WebServer webServer = this.webServer;
+		// 获取servlet上下文
 		ServletContext servletContext = getServletContext();
+		// web服务为空并且servelet上下文为空
 		if (webServer == null && servletContext == null) {
+			// 步骤记录器,标记为创建阶段
 			StartupStep createWebServer = this.getApplicationStartup().start("spring.boot.webserver.create");
+			// servlet web 服务工厂
 			ServletWebServerFactory factory = getWebServerFactory();
+			// 标记工厂数据
 			createWebServer.tag("factory", factory.getClass().toString());
+			// 通过 servletweb服务工厂创建web服务
 			this.webServer = factory.getWebServer(getSelfInitializer());
+			// 创建结束标记
 			createWebServer.end();
+			// bean工厂注册单例对象
 			getBeanFactory().registerSingleton("webServerGracefulShutdown",
 					new WebServerGracefulShutdownLifecycle(this.webServer));
 			getBeanFactory().registerSingleton("webServerStartStop",
 					new WebServerStartStopLifecycle(this, this.webServer));
 		}
+		// 如果servlet上下文不为空
 		else if (servletContext != null) {
 			try {
+				// ServletContextInitializer进行初始化
 				getSelfInitializer().onStartup(servletContext);
-			}
-			catch (ServletException ex) {
+			} catch (ServletException ex) {
 				throw new ApplicationContextException("Cannot initialize servlet context", ex);
 			}
 		}
+		// 初始化属性源
 		initPropertySources();
 	}
 
@@ -243,8 +272,11 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	}
 
 	private void registerWebApplicationScopes() {
+		// 创建当前应用的作用域
 		ExistingWebApplicationScopes existingScopes = new ExistingWebApplicationScopes(getBeanFactory());
+		// 注册
 		WebApplicationContextUtils.registerWebApplicationScopes(getBeanFactory());
+		// 注册
 		existingScopes.restore();
 	}
 

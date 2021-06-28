@@ -58,13 +58,21 @@ import org.springframework.util.ObjectUtils;
  */
 public class AnnotationConfigReactiveWebServerApplicationContext extends ReactiveWebServerApplicationContext
 		implements AnnotationConfigRegistry {
-
+	/**
+	 * 注解相关的bean定义读取器
+	 */
 	private final AnnotatedBeanDefinitionReader reader;
-
+	/**
+	 * 类地址相关的bean定义扫描器
+	 */
 	private final ClassPathBeanDefinitionScanner scanner;
-
+	/**
+	 * 注解类
+	 */
 	private final Set<Class<?>> annotatedClasses = new LinkedHashSet<>();
-
+	/**
+	 * 基础包扫描位置
+	 */
 	private String[] basePackages;
 
 	/**

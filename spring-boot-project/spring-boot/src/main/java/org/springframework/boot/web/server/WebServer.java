@@ -30,6 +30,7 @@ public interface WebServer {
 	/**
 	 * Starts the web server. Calling this method on an already started server has no
 	 * effect.
+	 * 开始
 	 * @throws WebServerException if the server cannot be started
 	 */
 	void start() throws WebServerException;
@@ -37,12 +38,14 @@ public interface WebServer {
 	/**
 	 * Stops the web server. Calling this method on an already stopped server has no
 	 * effect.
+	 * 停止
 	 * @throws WebServerException if the server cannot be stopped
 	 */
 	void stop() throws WebServerException;
 
 	/**
 	 * Return the port this server is listening on.
+	 * 获取端口
 	 * @return the port (or -1 if none)
 	 */
 	int getPort();
