@@ -37,9 +37,13 @@ import org.springframework.util.StringUtils;
  */
 public class ReactiveWebServerApplicationContext extends GenericReactiveWebApplicationContext
 		implements ConfigurableWebServerApplicationContext {
-
+	/**
+	 * web服务管理器
+	 */
 	private volatile WebServerManager serverManager;
-
+	/**
+	 * 服务命名空间
+	 */
 	private String serverNamespace;
 
 	/**
@@ -83,20 +87,31 @@ public class ReactiveWebServerApplicationContext extends GenericReactiveWebAppli
 	}
 
 	private void createWebServer() {
+		// 获取web服务管理器
 		WebServerManager serverManager = this.serverManager;
+		// web服务管理器为空
 		if (serverManager == null) {
+			// 步骤记录器
 			StartupStep createWebServer = this.getApplicationStartup().start("spring.boot.webserver.create");
+			// 获取web服务工厂的bean名称
 			String webServerFactoryBeanName = getWebServerFactoryBeanName();
+			// 获取响应式web服务工厂
 			ReactiveWebServerFactory webServerFactory = getWebServerFactory(webServerFactoryBeanName);
+			// 标记工厂信息
 			createWebServer.tag("factory", webServerFactory.getClass().toString());
+			// 获取是否是懒加载的标记
 			boolean lazyInit = getBeanFactory().getBeanDefinition(webServerFactoryBeanName).isLazyInit();
+			// 创建web服务管理器
 			this.serverManager = new WebServerManager(this, webServerFactory, this::getHttpHandler, lazyInit);
+			// 注册单例bean
 			getBeanFactory().registerSingleton("webServerGracefulShutdown",
 					new WebServerGracefulShutdownLifecycle(this.serverManager));
 			getBeanFactory().registerSingleton("webServerStartStop",
 					new WebServerStartStopLifecycle(this.serverManager));
+			// 标记为结束
 			createWebServer.end();
 		}
+		// 初始化属性源
 		initPropertySources();
 	}
 
