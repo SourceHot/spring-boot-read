@@ -27,6 +27,7 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * {@link ApplicationContextInitializer} for setting the servlet context.
  *
+ * servlet应用上下文初始化类
  * @author Dave Syer
  * @author Phillip Webb
  * @since 2.0.0

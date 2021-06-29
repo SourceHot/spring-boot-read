@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -49,32 +48,90 @@ import org.springframework.util.ObjectUtils;
  */
 public final class ConditionEvaluationReport {
 
+	/**
+	 * bean名称(autoConfigurationReport)
+	 */
 	private static final String BEAN_NAME = "autoConfigurationReport";
 
+	/**
+	 * 条件接口实现类,{@link Condition},目前该对象进行匹配会抛出异常
+	 */
 	private static final AncestorsMatchedCondition ANCESTOR_CONDITION = new AncestorsMatchedCondition();
-
+	/**
+	 * 条件和条件处理结果
+	 */
 	private final SortedMap<String, ConditionAndOutcomes> outcomes = new TreeMap<>();
-
-	private boolean addedAncestorOutcomes;
-
-	private ConditionEvaluationReport parent;
-
+	/**
+	 * 排除类名
+	 */
 	private final List<String> exclusions = new ArrayList<>();
-
+	/**
+	 * 需要评估的类?
+	 */
 	private final Set<String> unconditionalClasses = new HashSet<>();
+	/**
+	 * 是否添加上级结果
+	 */
+	private boolean addedAncestorOutcomes;
+	/**
+	 * 父评价结果
+	 */
+	private ConditionEvaluationReport parent;
 
 	/**
 	 * Private constructor.
+	 *
 	 * @see #get(ConfigurableListableBeanFactory)
 	 */
 	private ConditionEvaluationReport() {
 	}
 
 	/**
+	 * Attempt to find the {@link ConditionEvaluationReport} for the specified bean
+	 * factory.
+	 *
+	 * @param beanFactory the bean factory (may be {@code null})
+	 * @return the {@link ConditionEvaluationReport} or {@code null}
+	 */
+	public static ConditionEvaluationReport find(BeanFactory beanFactory) {
+		if (beanFactory != null && beanFactory instanceof ConfigurableBeanFactory) {
+			return ConditionEvaluationReport.get((ConfigurableListableBeanFactory) beanFactory);
+		}
+		return null;
+	}
+
+	/**
+	 * Obtain a {@link ConditionEvaluationReport} for the specified bean factory.
+	 *
+	 * @param beanFactory the bean factory
+	 * @return an existing or new {@link ConditionEvaluationReport}
+	 */
+	public static ConditionEvaluationReport get(ConfigurableListableBeanFactory beanFactory) {
+		synchronized (beanFactory) {
+			ConditionEvaluationReport report;
+			if (beanFactory.containsSingleton(BEAN_NAME)) {
+				report = beanFactory.getBean(BEAN_NAME, ConditionEvaluationReport.class);
+			} else {
+				report = new ConditionEvaluationReport();
+				beanFactory.registerSingleton(BEAN_NAME, report);
+			}
+			locateParent(beanFactory.getParentBeanFactory(), report);
+			return report;
+		}
+	}
+
+	private static void locateParent(BeanFactory beanFactory, ConditionEvaluationReport report) {
+		if (beanFactory != null && report.parent == null && beanFactory.containsBean(BEAN_NAME)) {
+			report.parent = beanFactory.getBean(BEAN_NAME, ConditionEvaluationReport.class);
+		}
+	}
+
+	/**
 	 * Record the occurrence of condition evaluation.
-	 * @param source the source of the condition (class or method name)
+	 *
+	 * @param source    the source of the condition (class or method name)
 	 * @param condition the condition evaluated
-	 * @param outcome the condition outcome
+	 * @param outcome   the condition outcome
 	 */
 	public void recordConditionEvaluation(String source, Condition condition, ConditionOutcome outcome) {
 		Assert.notNull(source, "Source must not be null");
@@ -90,6 +147,7 @@ public final class ConditionEvaluationReport {
 
 	/**
 	 * Records the names of the classes that have been excluded from condition evaluation.
+	 *
 	 * @param exclusions the names of the excluded classes
 	 */
 	public void recordExclusions(Collection<String> exclusions) {
@@ -99,8 +157,9 @@ public final class ConditionEvaluationReport {
 
 	/**
 	 * Records the names of the classes that are candidates for condition evaluation.
+	 *
 	 * @param evaluationCandidates the names of the classes whose conditions will be
-	 * evaluated
+	 *                             evaluated
 	 */
 	public void recordEvaluationCandidates(List<String> evaluationCandidates) {
 		Assert.notNull(evaluationCandidates, "evaluationCandidates must not be null");
@@ -109,6 +168,7 @@ public final class ConditionEvaluationReport {
 
 	/**
 	 * Returns condition outcomes from this report, grouped by the source.
+	 *
 	 * @return the condition outcomes
 	 */
 	public Map<String, ConditionAndOutcomes> getConditionAndOutcomesBySource() {
@@ -136,6 +196,7 @@ public final class ConditionEvaluationReport {
 
 	/**
 	 * Returns the names of the classes that have been excluded from condition evaluation.
+	 *
 	 * @return the names of the excluded classes
 	 */
 	public List<String> getExclusions() {
@@ -144,6 +205,7 @@ public final class ConditionEvaluationReport {
 
 	/**
 	 * Returns the names of the classes that were evaluated but were not conditional.
+	 *
 	 * @return the names of the unconditional classes
 	 */
 	public Set<String> getUnconditionalClasses() {
@@ -154,49 +216,11 @@ public final class ConditionEvaluationReport {
 
 	/**
 	 * The parent report (from a parent BeanFactory if there is one).
+	 *
 	 * @return the parent report (or null if there isn't one)
 	 */
 	public ConditionEvaluationReport getParent() {
 		return this.parent;
-	}
-
-	/**
-	 * Attempt to find the {@link ConditionEvaluationReport} for the specified bean
-	 * factory.
-	 * @param beanFactory the bean factory (may be {@code null})
-	 * @return the {@link ConditionEvaluationReport} or {@code null}
-	 */
-	public static ConditionEvaluationReport find(BeanFactory beanFactory) {
-		if (beanFactory != null && beanFactory instanceof ConfigurableBeanFactory) {
-			return ConditionEvaluationReport.get((ConfigurableListableBeanFactory) beanFactory);
-		}
-		return null;
-	}
-
-	/**
-	 * Obtain a {@link ConditionEvaluationReport} for the specified bean factory.
-	 * @param beanFactory the bean factory
-	 * @return an existing or new {@link ConditionEvaluationReport}
-	 */
-	public static ConditionEvaluationReport get(ConfigurableListableBeanFactory beanFactory) {
-		synchronized (beanFactory) {
-			ConditionEvaluationReport report;
-			if (beanFactory.containsSingleton(BEAN_NAME)) {
-				report = beanFactory.getBean(BEAN_NAME, ConditionEvaluationReport.class);
-			}
-			else {
-				report = new ConditionEvaluationReport();
-				beanFactory.registerSingleton(BEAN_NAME, report);
-			}
-			locateParent(beanFactory.getParentBeanFactory(), report);
-			return report;
-		}
-	}
-
-	private static void locateParent(BeanFactory beanFactory, ConditionEvaluationReport report) {
-		if (beanFactory != null && report.parent == null && beanFactory.containsBean(BEAN_NAME)) {
-			report.parent = beanFactory.getBean(BEAN_NAME, ConditionEvaluationReport.class);
-		}
 	}
 
 	public ConditionEvaluationReport getDelta(ConditionEvaluationReport previousReport) {
@@ -230,6 +254,7 @@ public final class ConditionEvaluationReport {
 
 		/**
 		 * Return {@code true} if all outcomes match.
+		 *
 		 * @return {@code true} if a full match
 		 */
 		public boolean isFullMatch() {
@@ -253,8 +278,14 @@ public final class ConditionEvaluationReport {
 	 */
 	public static class ConditionAndOutcome {
 
+		/**
+		 * 条件接口
+		 */
 		private final Condition condition;
 
+		/**
+		 * 条件处理结果
+		 */
 		private final ConditionOutcome outcome;
 
 		public ConditionAndOutcome(Condition condition, ConditionOutcome outcome) {

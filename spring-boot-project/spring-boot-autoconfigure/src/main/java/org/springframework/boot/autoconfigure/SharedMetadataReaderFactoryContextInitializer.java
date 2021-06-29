@@ -48,6 +48,7 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
  * {@link CachingMetadataReaderFactory} between the
  * {@link ConfigurationClassPostProcessor} and Spring Boot.
  *
+ * 共享元数据读取器工厂的初始化类
  * @author Phillip Webb
  * @author Dave Syer
  */

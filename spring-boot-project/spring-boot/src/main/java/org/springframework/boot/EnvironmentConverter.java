@@ -19,7 +19,6 @@ package org.springframework.boot;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
@@ -30,6 +29,8 @@ import org.springframework.web.context.support.StandardServletEnvironment;
 
 /**
  * Utility class for converting one type of {@link Environment} to another.
+ * <p>
+ * 环境转换类
  *
  * @author Ethan Rubinson
  * @author Andy Wilkinson
@@ -37,23 +38,36 @@ import org.springframework.web.context.support.StandardServletEnvironment;
  */
 final class EnvironmentConverter {
 
+	/**
+	 * ConfigurableWebEnvironment的类全路径
+	 */
 	private static final String CONFIGURABLE_WEB_ENVIRONMENT_CLASS = "org.springframework.web.context.ConfigurableWebEnvironment";
 
+	/**
+	 * servlet环境配置名称
+	 */
 	private static final Set<String> SERVLET_ENVIRONMENT_SOURCE_NAMES;
 
 	static {
 		Set<String> names = new HashSet<>();
+		// servletContextInitParams
 		names.add(StandardServletEnvironment.SERVLET_CONTEXT_PROPERTY_SOURCE_NAME);
+		// servletConfigInitParams
 		names.add(StandardServletEnvironment.SERVLET_CONFIG_PROPERTY_SOURCE_NAME);
+		// jndiProperties
 		names.add(StandardServletEnvironment.JNDI_PROPERTY_SOURCE_NAME);
 		SERVLET_ENVIRONMENT_SOURCE_NAMES = Collections.unmodifiableSet(names);
 	}
 
+	/**
+	 * 类加载器
+	 */
 	private final ClassLoader classLoader;
 
 	/**
 	 * Creates a new {@link EnvironmentConverter} that will use the given
 	 * {@code classLoader} during conversion.
+	 *
 	 * @param classLoader the class loader to use
 	 */
 	EnvironmentConverter(ClassLoader classLoader) {
@@ -64,32 +78,39 @@ final class EnvironmentConverter {
 	 * Converts the given {@code environment} to the given {@link StandardEnvironment}
 	 * type. If the environment is already of the same type, no conversion is performed
 	 * and it is returned unchanged.
+	 *
 	 * @param environment the Environment to convert
-	 * @param type the type to convert the Environment to
+	 * @param type        the type to convert the Environment to
 	 * @return the converted Environment
 	 */
 	StandardEnvironment convertEnvironmentIfNecessary(ConfigurableEnvironment environment,
 			Class<? extends StandardEnvironment> type) {
+		// 类型相同的情况下进行强制类型转换
 		if (type.equals(environment.getClass())) {
 			return (StandardEnvironment) environment;
 		}
+		// 进一步转换
 		return convertEnvironment(environment, type);
 	}
 
 	private StandardEnvironment convertEnvironment(ConfigurableEnvironment environment,
 			Class<? extends StandardEnvironment> type) {
+		// 通过type创建StandardEnvironment类型的对象
 		StandardEnvironment result = createEnvironment(type);
+		// 设置激活的profile
 		result.setActiveProfiles(environment.getActiveProfiles());
+		// 设置转换服务
 		result.setConversionService(environment.getConversionService());
+		// 属性拷贝
 		copyPropertySources(environment, result);
+		// 返回结果
 		return result;
 	}
 
 	private StandardEnvironment createEnvironment(Class<? extends StandardEnvironment> type) {
 		try {
 			return type.getDeclaredConstructor().newInstance();
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			return new StandardEnvironment();
 		}
 	}
@@ -107,8 +128,7 @@ final class EnvironmentConverter {
 		try {
 			Class<?> webEnvironmentClass = ClassUtils.forName(CONFIGURABLE_WEB_ENVIRONMENT_CLASS, classLoader);
 			return webEnvironmentClass.isAssignableFrom(conversionType);
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
 			return false;
 		}
 	}

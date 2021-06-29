@@ -31,6 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
  * {@link ContextConfiguration#initializers()} to trigger loading of {@link ConfigData}
  * such as {@literal application.properties}.
  *
+ * 用户触发加载 ConfigData
  * @author Phillip Webb
  * @since 2.4.0
  * @see ConfigDataEnvironmentPostProcessor

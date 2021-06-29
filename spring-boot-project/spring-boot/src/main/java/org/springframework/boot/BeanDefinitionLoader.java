@@ -61,18 +61,37 @@ import org.springframework.util.StringUtils;
 class BeanDefinitionLoader {
 
 	// Static final field to facilitate code removal by Graal
+	/**
+	 * 是否启动xml
+	 */
 	private static final boolean XML_ENABLED = !SpringProperties.getFlag("spring.xml.ignore");
 
+	/**
+	 * 源数据
+	 */
 	private final Object[] sources;
-
+	/**
+	 * 注解bean定义读取器
+	 */
 	private final AnnotatedBeanDefinitionReader annotatedReader;
-
+	/**
+	 * 抽象的bean定义读取器
+	 */
 	private final AbstractBeanDefinitionReader xmlReader;
 
+	/**
+	 * groovy相关的bean定义读取器
+	 */
 	private final BeanDefinitionReader groovyReader;
 
+	/**
+	 * 类路径相关的bean定义扫描器
+	 */
 	private final ClassPathBeanDefinitionScanner scanner;
 
+	/**
+	 * 资源加载器
+	 */
 	private ResourceLoader resourceLoader;
 
 	/**

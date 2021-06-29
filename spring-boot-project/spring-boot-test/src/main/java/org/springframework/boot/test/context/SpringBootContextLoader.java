@@ -259,6 +259,7 @@ public class SpringBootContextLoader extends AbstractContextLoader {
 	/**
 	 * Adapts a {@link ContextCustomizer} to a {@link ApplicationContextInitializer} so
 	 * that it can be triggered via {@link SpringApplication}.
+	 * 上下文适配器
 	 */
 	private static class ContextCustomizerAdapter
 			implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -279,6 +280,9 @@ public class SpringBootContextLoader extends AbstractContextLoader {
 
 	}
 
+	/**
+	 * 父上下文初始化器
+	 */
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	private static class ParentContextApplicationContextInitializer
 			implements ApplicationContextInitializer<ConfigurableApplicationContext> {

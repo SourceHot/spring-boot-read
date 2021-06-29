@@ -29,14 +29,21 @@ import org.springframework.core.Ordered;
  * {@link ParentContextAvailableEvent} when the context is refreshed to signal to other
  * listeners that the context is available and has a parent.
  *
+ * 父应用上下文初始化对象
  * @author Dave Syer
  * @since 1.0.0
  */
 public class ParentContextApplicationContextInitializer
 		implements ApplicationContextInitializer<ConfigurableApplicationContext>, Ordered {
 
+	/**
+	 * 排序号,最大
+	 */
 	private int order = Ordered.HIGHEST_PRECEDENCE;
 
+	/**
+	 * 父上下文
+	 */
 	private final ApplicationContext parent;
 
 	public ParentContextApplicationContextInitializer(ApplicationContext parent) {
@@ -73,6 +80,7 @@ public class ParentContextApplicationContextInitializer
 		public void onApplicationEvent(ContextRefreshedEvent event) {
 			ApplicationContext context = event.getApplicationContext();
 			if (context instanceof ConfigurableApplicationContext && context == event.getSource()) {
+				// 发送ParentContextAvailableEvent事件
 				context.publishEvent(new ParentContextAvailableEvent((ConfigurableApplicationContext) context));
 			}
 		}

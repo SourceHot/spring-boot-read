@@ -39,6 +39,7 @@ import org.springframework.core.env.PropertySource;
  * <p>
  * Properties are automatically propagated up to any parent context.
  *
+ * RSocketServer相关的初始化类
  * @author Verónica Vásquez
  * @author Eddú Meléndez
  * @since 2.2.0

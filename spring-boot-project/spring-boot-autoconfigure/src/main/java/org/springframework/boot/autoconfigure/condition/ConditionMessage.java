@@ -37,6 +37,9 @@ import org.springframework.util.StringUtils;
  */
 public final class ConditionMessage {
 
+	/**
+	 * 信息
+	 */
 	private final String message;
 
 	private ConditionMessage() {

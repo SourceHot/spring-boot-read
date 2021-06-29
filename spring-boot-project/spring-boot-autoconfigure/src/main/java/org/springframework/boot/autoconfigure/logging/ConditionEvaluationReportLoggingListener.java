@@ -18,7 +18,6 @@ package org.springframework.boot.autoconfigure.logging;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.logging.LogLevel;
@@ -41,6 +40,8 @@ import org.springframework.util.Assert;
  * <p>
  * This initializer is not intended to be shared across multiple application context
  * instances.
+ * <p>
+ * 条件评估监听器
  *
  * @author Greg Turnquist
  * @author Dave Syer
@@ -53,12 +54,18 @@ public class ConditionEvaluationReportLoggingListener
 		implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
 	private final Log logger = LogFactory.getLog(getClass());
-
-	private ConfigurableApplicationContext applicationContext;
-
-	private ConditionEvaluationReport report;
-
+	/**
+	 * 日志级别
+	 */
 	private final LogLevel logLevelForReport;
+	/**
+	 * 应用上下文
+	 */
+	private ConfigurableApplicationContext applicationContext;
+	/**
+	 * 报告对象
+	 */
+	private ConditionEvaluationReport report;
 
 	public ConditionEvaluationReportLoggingListener() {
 		this(LogLevel.DEBUG);
@@ -79,23 +86,32 @@ public class ConditionEvaluationReportLoggingListener
 
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
+		// 设置成员变量应用上下文
 		this.applicationContext = applicationContext;
+		// 添加应用监听器
 		applicationContext.addApplicationListener(new ConditionEvaluationReportListener());
+		// 应用上下文类型是GenericApplicationContext
 		if (applicationContext instanceof GenericApplicationContext) {
 			// Get the report early in case the context fails to load
+			// 获取报告对象设置到成员变量中
 			this.report = ConditionEvaluationReport.get(this.applicationContext.getBeanFactory());
 		}
 	}
 
 	protected void onApplicationEvent(ApplicationEvent event) {
+		// 获取应用上下文
 		ConfigurableApplicationContext initializerApplicationContext = this.applicationContext;
+		// 事件类型是ContextRefreshedEvent的处理
 		if (event instanceof ContextRefreshedEvent) {
 			if (((ApplicationContextEvent) event).getApplicationContext() == initializerApplicationContext) {
+				// 组装条件报告结果
 				logAutoConfigurationReport();
 			}
 		}
+		// 事件类型是ApplicationFailedEvent的处理
 		else if (event instanceof ApplicationFailedEvent
 				&& ((ApplicationFailedEvent) event).getApplicationContext() == initializerApplicationContext) {
+			// 组装条件报告结果
 			logAutoConfigurationReport(true);
 		}
 	}
@@ -116,16 +132,13 @@ public class ConditionEvaluationReportLoggingListener
 			if (getLogLevelForReport().equals(LogLevel.INFO)) {
 				if (this.logger.isInfoEnabled()) {
 					this.logger.info(new ConditionEvaluationReportMessage(this.report));
-				}
-				else if (isCrashReport) {
+				} else if (isCrashReport) {
 					logMessage("info");
 				}
-			}
-			else {
+			} else {
 				if (this.logger.isDebugEnabled()) {
 					this.logger.debug(new ConditionEvaluationReportMessage(this.report));
-				}
-				else if (isCrashReport) {
+				} else if (isCrashReport) {
 					logMessage("debug");
 				}
 			}

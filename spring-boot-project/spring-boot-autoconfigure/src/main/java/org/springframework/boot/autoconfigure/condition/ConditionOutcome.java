@@ -27,9 +27,14 @@ import org.springframework.util.ObjectUtils;
  * @see ConditionMessage
  */
 public class ConditionOutcome {
-
+	/**
+	 * 是否匹配
+	 */
 	private final boolean match;
 
+	/**
+	 * 条件信息
+	 */
 	private final ConditionMessage message;
 
 	/**

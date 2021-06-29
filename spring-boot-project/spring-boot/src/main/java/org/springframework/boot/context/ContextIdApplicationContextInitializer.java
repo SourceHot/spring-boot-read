@@ -31,6 +31,7 @@ import org.springframework.util.StringUtils;
  * {@code spring.application.name} property is used to create the ID. If the property is
  * not set {@code application} is used.
  *
+ * 创建应用id
  * @author Dave Syer
  * @author Andy Wilkinson
  * @since 1.0.0

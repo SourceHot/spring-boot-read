@@ -56,6 +56,7 @@ public class ParentContextCloserApplicationListener
 
 	@Override
 	public void onApplicationEvent(ParentContextAvailableEvent event) {
+		// 向父类添加应用监听器
 		maybeInstallListenerInParent(event.getApplicationContext());
 	}
 
