@@ -18,7 +18,6 @@ package org.springframework.boot.rsocket.context;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.rsocket.server.RSocketServer;
 import org.springframework.context.ApplicationContext;
@@ -38,8 +37,9 @@ import org.springframework.core.env.PropertySource;
  * {@link Value @Value} or obtained via the {@link Environment}.
  * <p>
  * Properties are automatically propagated up to any parent context.
- *
+ * <p>
  * RSocketServer相关的初始化类
+ *
  * @author Verónica Vásquez
  * @author Eddú Meléndez
  * @since 2.2.0
@@ -65,6 +65,7 @@ public class RSocketPortInfoApplicationContextInitializer
 		@Override
 		public void onApplicationEvent(RSocketServerInitializedEvent event) {
 			if (event.getServer().address() != null) {
+				// 设置服务地址的端口
 				setPortProperty(this.applicationContext, event.getServer().address().getPort());
 			}
 		}

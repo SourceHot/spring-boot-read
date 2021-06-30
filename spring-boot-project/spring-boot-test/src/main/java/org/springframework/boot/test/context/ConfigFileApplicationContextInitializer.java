@@ -40,7 +40,9 @@ public class ConfigFileApplicationContextInitializer
 	public void initialize(ConfigurableApplicationContext applicationContext) {
 		new org.springframework.boot.context.config.ConfigFileApplicationListener() {
 			public void apply() {
+				// 添加属性源
 				addPropertySources(applicationContext.getEnvironment(), applicationContext);
+				// 添加处理器
 				addPostProcessors(applicationContext);
 			}
 		}.apply();

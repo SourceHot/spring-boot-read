@@ -92,8 +92,10 @@ public class ConfigurationWarningsApplicationContextInitializer
 		@Override
 		public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 			for (Check check : this.checks) {
+				// 获取检查结果
 				String message = check.getWarning(registry);
 				if (StringUtils.hasLength(message)) {
+					// 输出warn级别的日志
 					warn(message);
 				}
 			}
@@ -128,6 +130,9 @@ public class ConfigurationWarningsApplicationContextInitializer
 	 */
 	protected static class ComponentScanPackageCheck implements Check {
 
+		/**
+		 * 有问题的包路径
+		 */
 		private static final Set<String> PROBLEM_PACKAGES;
 
 		static {
@@ -139,22 +144,29 @@ public class ConfigurationWarningsApplicationContextInitializer
 
 		@Override
 		public String getWarning(BeanDefinitionRegistry registry) {
+			// 获取需要扫描的包路径
 			Set<String> scannedPackages = getComponentScanningPackages(registry);
+			// 有问题的包扫描路径
 			List<String> problematicPackages = getProblematicPackages(scannedPackages);
 			if (problematicPackages.isEmpty()) {
 				return null;
 			}
+			// 返回消息
 			return "Your ApplicationContext is unlikely to start due to a @ComponentScan of "
 					+ StringUtils.collectionToDelimitedString(problematicPackages, ", ") + ".";
 		}
 
 		protected Set<String> getComponentScanningPackages(BeanDefinitionRegistry registry) {
 			Set<String> packages = new LinkedHashSet<>();
+			// 获取注册的bean定义名称
 			String[] names = registry.getBeanDefinitionNames();
 			for (String name : names) {
+				// 获取bean定义对象
 				BeanDefinition definition = registry.getBeanDefinition(name);
+				// 类型是AnnotatedBeanDefinition
 				if (definition instanceof AnnotatedBeanDefinition) {
 					AnnotatedBeanDefinition annotatedDefinition = (AnnotatedBeanDefinition) definition;
+					// 将注解bean定义所在的包路径加入到结果集合中
 					addComponentScanningPackages(packages, annotatedDefinition.getMetadata());
 				}
 			}
@@ -191,6 +203,7 @@ public class ConfigurationWarningsApplicationContextInitializer
 		private List<String> getProblematicPackages(Set<String> scannedPackages) {
 			List<String> problematicPackages = new ArrayList<>();
 			for (String scannedPackage : scannedPackages) {
+				// 判断是否出现问题
 				if (isProblematicPackage(scannedPackage)) {
 					problematicPackages.add(getDisplayName(scannedPackage));
 				}

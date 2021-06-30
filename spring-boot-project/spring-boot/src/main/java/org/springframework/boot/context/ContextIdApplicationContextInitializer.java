@@ -52,8 +52,11 @@ public class ContextIdApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
+		// 获取上下文ID
 		ContextId contextId = getContextId(applicationContext);
+		// 设置应用上下文id
 		applicationContext.setId(contextId.getId());
+		// 注册上下文ID
 		applicationContext.getBeanFactory().registerSingleton(ContextId.class.getName(), contextId);
 	}
 

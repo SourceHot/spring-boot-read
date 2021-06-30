@@ -97,14 +97,19 @@ public class ConfigDataEnvironmentPostProcessor implements EnvironmentPostProces
 	void postProcessEnvironment(ConfigurableEnvironment environment, ResourceLoader resourceLoader,
 			Collection<String> additionalProfiles) {
 		try {
+			// 日志
 			this.logger.trace("Post-processing environment to add config data");
+			// 获取资源加载器
 			resourceLoader = (resourceLoader != null) ? resourceLoader : new DefaultResourceLoader();
+			// 获取ConfigDataEnvironment对象并处理应用
 			getConfigDataEnvironment(environment, resourceLoader, additionalProfiles).processAndApply();
 		}
 		catch (UseLegacyConfigProcessingException ex) {
 			this.logger.debug(LogMessage.format("Switching to legacy config file processing [%s]",
 					ex.getConfigurationProperty()));
+			// 配置 profile相关内容
 			configureAdditionalProfiles(environment, additionalProfiles);
+			// 配置监听器
 			postProcessUsingLegacyApplicationListener(environment, resourceLoader);
 		}
 	}
@@ -173,6 +178,7 @@ public class ConfigDataEnvironmentPostProcessor implements EnvironmentPostProces
 			ConfigurableBootstrapContext bootstrapContext, Collection<String> additionalProfiles) {
 		DeferredLogFactory logFactory = Supplier::get;
 		bootstrapContext = (bootstrapContext != null) ? bootstrapContext : new DefaultBootstrapContext();
+		// 创建 ConfigDataEnvironmentPostProcessor 对象通过该对象进行环境数据处理
 		ConfigDataEnvironmentPostProcessor postProcessor = new ConfigDataEnvironmentPostProcessor(logFactory,
 				bootstrapContext);
 		postProcessor.postProcessEnvironment(environment, resourceLoader, additionalProfiles);

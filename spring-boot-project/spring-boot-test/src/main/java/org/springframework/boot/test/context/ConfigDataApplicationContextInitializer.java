@@ -41,11 +41,17 @@ public class ConfigDataApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
+		// 获取环境对象
 		ConfigurableEnvironment environment = applicationContext.getEnvironment();
+		// 添加环境对象
 		RandomValuePropertySource.addToEnvironment(environment);
+		// 创建默认的引导上下文
 		DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext();
+		// 应用配置
 		ConfigDataEnvironmentPostProcessor.applyTo(environment, applicationContext, bootstrapContext);
+		// 关闭
 		bootstrapContext.close(applicationContext);
+		// 移动到最后
 		DefaultPropertiesPropertySource.moveToEnd(environment);
 	}
 

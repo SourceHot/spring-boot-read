@@ -51,18 +51,25 @@ public class DelegatingApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableApplicationContext context) {
+		// 获取环境对象
 		ConfigurableEnvironment environment = context.getEnvironment();
+		// 获取类
 		List<Class<?>> initializerClasses = getInitializerClasses(environment);
 		if (!initializerClasses.isEmpty()) {
+			// 应用类
 			applyInitializerClasses(context, initializerClasses);
 		}
 	}
 
 	private List<Class<?>> getInitializerClasses(ConfigurableEnvironment env) {
+		// 从环境对象中获取类名集合
 		String classNames = env.getProperty(PROPERTY_NAME);
+		// 返回结果集合
 		List<Class<?>> classes = new ArrayList<>();
+		// 类名集合不为空的情况下会进行拆分
 		if (StringUtils.hasLength(classNames)) {
 			for (String className : StringUtils.tokenizeToStringArray(classNames, ",")) {
+				// 当类型是ApplicationContextInitializer的时候会加入到返回结果集合
 				classes.add(getInitializerClass(className));
 			}
 		}
@@ -81,11 +88,15 @@ public class DelegatingApplicationContextInitializer
 	}
 
 	private void applyInitializerClasses(ConfigurableApplicationContext context, List<Class<?>> initializerClasses) {
+		// 获取上下文的类型
 		Class<?> contextClass = context.getClass();
+		// 创建ApplicationContextInitializer集合
 		List<ApplicationContextInitializer<?>> initializers = new ArrayList<>();
+		// 遍历initializerClasses将其中元素实例化加入到ApplicationContextInitializer集合
 		for (Class<?> initializerClass : initializerClasses) {
 			initializers.add(instantiateInitializer(contextClass, initializerClass));
 		}
+		// 执行ApplicationContextInitializer的方法
 		applyInitializers(context, initializers);
 	}
 

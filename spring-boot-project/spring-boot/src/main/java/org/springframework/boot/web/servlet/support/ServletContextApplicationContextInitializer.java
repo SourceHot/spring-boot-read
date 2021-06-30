@@ -35,10 +35,19 @@ import org.springframework.web.context.WebApplicationContext;
 public class ServletContextApplicationContextInitializer
 		implements ApplicationContextInitializer<ConfigurableWebApplicationContext>, Ordered {
 
+	/**
+	 * 排序号
+	 */
 	private int order = Ordered.HIGHEST_PRECEDENCE;
 
+	/**
+	 * servlet上下文
+	 */
 	private final ServletContext servletContext;
 
+	/**
+	 * 是否添加应用属性
+	 */
 	private final boolean addApplicationContextAttribute;
 
 	/**
@@ -73,8 +82,11 @@ public class ServletContextApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableWebApplicationContext applicationContext) {
+		// 为web应用上下文设置servlet上下文
 		applicationContext.setServletContext(this.servletContext);
+		// 判断是否需要添加属性
 		if (this.addApplicationContextAttribute) {
+			// 添加根web应用上下文
 			this.servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,
 					applicationContext);
 		}

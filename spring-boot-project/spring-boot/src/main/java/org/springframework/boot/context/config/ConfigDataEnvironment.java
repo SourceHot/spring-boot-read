@@ -224,15 +224,18 @@ class ConfigDataEnvironment {
 	 * {@link Environment}.
 	 */
 	void processAndApply() {
+		// 创建ConfigDataImporter对象
 		ConfigDataImporter importer = new ConfigDataImporter(this.logFactory, this.notFoundAction, this.resolvers,
 				this.loaders);
 		registerBootstrapBinder(this.contributors, null, DENY_INACTIVE_BINDING);
 		ConfigDataEnvironmentContributors contributors = processInitial(this.contributors, importer);
 		ConfigDataActivationContext activationContext = createActivationContext(
 				contributors.getBinder(null, BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE));
+		// 处理profile相关内容
 		contributors = processWithoutProfiles(contributors, importer, activationContext);
 		activationContext = withProfiles(contributors, activationContext);
 		contributors = processWithProfiles(contributors, importer, activationContext);
+		// 应用环境
 		applyToEnvironment(contributors, activationContext, importer.getLoadedLocations(),
 				importer.getOptionalLocations());
 	}
@@ -325,17 +328,23 @@ class ConfigDataEnvironment {
 	private void applyToEnvironment(ConfigDataEnvironmentContributors contributors,
 			ConfigDataActivationContext activationContext, Set<ConfigDataLocation> loadedLocations,
 			Set<ConfigDataLocation> optionalLocations) {
+		// 检查无效属性
 		checkForInvalidProperties(contributors);
+		// 检查强制属性
 		checkMandatoryLocations(contributors, activationContext, loadedLocations, optionalLocations);
+		// 获取环境对象中的属性源对象
 		MutablePropertySources propertySources = this.environment.getPropertySources();
 		this.logger.trace("Applying config data environment contributions");
+		// 处理ConfigDataEnvironmentContributor,主要目标是将其中的数据加入到属性源对象中
 		for (ConfigDataEnvironmentContributor contributor : contributors) {
 			PropertySource<?> propertySource = contributor.getPropertySource();
 			if (contributor.getKind() == ConfigDataEnvironmentContributor.Kind.BOUND_IMPORT && propertySource != null) {
+				// 不激活的情况下输出日志
 				if (!contributor.isActive(activationContext)) {
 					this.logger.trace(
 							LogMessage.format("Skipping inactive property source '%s'", propertySource.getName()));
 				}
+				// 激活的情况下加入到数据源
 				else {
 					this.logger
 							.trace(LogMessage.format("Adding imported property source '%s'", propertySource.getName()));
@@ -345,12 +354,17 @@ class ConfigDataEnvironment {
 				}
 			}
 		}
+		// 移动到最后一个元素
 		DefaultPropertiesPropertySource.moveToEnd(propertySources);
+		// 获取profile对象
 		Profiles profiles = activationContext.getProfiles();
 		this.logger.trace(LogMessage.format("Setting default profiles: %s", profiles.getDefault()));
+		// 设置默认的profile数据值
 		this.environment.setDefaultProfiles(StringUtils.toStringArray(profiles.getDefault()));
 		this.logger.trace(LogMessage.format("Setting active profiles: %s", profiles.getActive()));
+		// 设置接活的profile对象
 		this.environment.setActiveProfiles(StringUtils.toStringArray(profiles.getActive()));
+		// 设置profile集合
 		this.environmentUpdateListener.onSetProfiles(profiles);
 	}
 
