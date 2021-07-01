@@ -49,6 +49,7 @@ public interface ConfigDataLoader<R extends ConfigDataResource> {
 
 	/**
 	 * Returns if the specified resource can be loaded by this instance.
+	 * 判断是否可以加载
 	 * @param context the loader context
 	 * @param resource the resource to check.
 	 * @return if the resource is supported by this loader
@@ -59,6 +60,8 @@ public interface ConfigDataLoader<R extends ConfigDataResource> {
 
 	/**
 	 * Load {@link ConfigData} for the given resource.
+	 *
+	 * 加载资源
 	 * @param context the loader context
 	 * @param resource the resource to load
 	 * @return the loaded config data or {@code null} if the location should be skipped

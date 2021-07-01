@@ -41,7 +41,9 @@ class SubversionConfigDataLoader implements ConfigDataLoader<SubversionConfigDat
 	private static final ApplicationListener<BootstrapContextClosedEvent> closeListener = SubversionConfigDataLoader::onBootstrapContextClosed;
 
 	SubversionConfigDataLoader(BootstrapRegistry bootstrapRegistry) {
+		// 注册SubversionClient实例
 		bootstrapRegistry.registerIfAbsent(SubversionClient.class, this::createSubversionClient);
+		// 添加关闭监听器
 		bootstrapRegistry.addCloseListener(closeListener);
 	}
 
@@ -52,11 +54,16 @@ class SubversionConfigDataLoader implements ConfigDataLoader<SubversionConfigDat
 	@Override
 	public ConfigData load(ConfigDataLoaderContext context, SubversionConfigDataResource resource)
 			throws IOException, ConfigDataLocationNotFoundException {
+		// 获取引导上下文并从中注册证书数据
 		context.getBootstrapContext().registerIfAbsent(SubversionServerCertificate.class,
 				InstanceSupplier.of(resource.getServerCertificate()));
+		// 获取引导上下文中获取SubversionClient对象
 		SubversionClient client = context.getBootstrapContext().get(SubversionClient.class);
+		// 通过SubversionClient对象将资源地址中的数据进行读取
 		String loaded = client.load(resource.getLocation());
+		// 将读取到的数据转换成MapPropertySource
 		PropertySource<?> propertySource = new MapPropertySource("svn", Collections.singletonMap("svn", loaded));
+		// 将转换成PropertySource类型的数据再转换成ConfigData类型
 		return new ConfigData(Collections.singleton(propertySource));
 	}
 

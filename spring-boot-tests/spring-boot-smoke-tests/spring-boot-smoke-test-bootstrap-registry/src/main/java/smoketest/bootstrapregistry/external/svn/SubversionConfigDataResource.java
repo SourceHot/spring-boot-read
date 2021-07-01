@@ -25,8 +25,14 @@ import org.springframework.boot.context.config.ConfigDataResource;
  */
 class SubversionConfigDataResource extends ConfigDataResource {
 
+	/**
+	 * 地址
+	 */
 	private final String location;
 
+	/**
+	 * 服务证书
+	 */
 	private final SubversionServerCertificate serverCertificate;
 
 	SubversionConfigDataResource(String location, String serverCertificate) {

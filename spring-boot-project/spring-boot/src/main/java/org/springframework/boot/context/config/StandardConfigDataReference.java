@@ -26,15 +26,25 @@ import org.springframework.util.StringUtils;
  * @author Phillip Webb
  */
 class StandardConfigDataReference {
-
+	/**
+	 * 数据地址对象
+	 */
 	private final ConfigDataLocation configDataLocation;
-
+	/**
+	 * 资源地址
+	 */
 	private final String resourceLocation;
-
+	/**
+	 * 目录
+	 */
 	private final String directory;
-
+	/**
+	 * profile标志
+	 */
 	private final String profile;
-
+	/**
+	 * 属性源加载器
+	 */
 	private final PropertySourceLoader propertySourceLoader;
 
 	/**

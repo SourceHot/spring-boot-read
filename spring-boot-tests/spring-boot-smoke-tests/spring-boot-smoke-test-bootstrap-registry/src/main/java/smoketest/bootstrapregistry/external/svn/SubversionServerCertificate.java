@@ -25,6 +25,9 @@ import org.springframework.util.StringUtils;
  */
 public class SubversionServerCertificate {
 
+	/**
+	 * 数据值
+	 */
 	private final String data;
 
 	SubversionServerCertificate(String data) {

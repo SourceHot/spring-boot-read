@@ -33,6 +33,9 @@ import org.springframework.util.Assert;
  */
 public class ConfigTreeConfigDataResource extends ConfigDataResource {
 
+	/**
+	 * 文件地址
+	 */
 	private final Path path;
 
 	ConfigTreeConfigDataResource(String path) {

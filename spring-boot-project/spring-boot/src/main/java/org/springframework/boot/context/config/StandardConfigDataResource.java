@@ -32,10 +32,19 @@ import org.springframework.util.Assert;
  */
 public class StandardConfigDataResource extends ConfigDataResource {
 
+	/**
+	 * 标准配置数据
+	 */
 	private final StandardConfigDataReference reference;
 
+	/**
+	 * 资源对象
+	 */
 	private final Resource resource;
 
+	/**
+	 * 是否是空目录
+	 */
 	private final boolean emptyDirectory;
 
 	/**

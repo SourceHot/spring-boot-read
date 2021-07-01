@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.boot.env.OriginTrackedPropertiesLoader.Document;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.Resource;
@@ -41,32 +40,34 @@ public class PropertiesPropertySourceLoader implements PropertySourceLoader {
 
 	@Override
 	public String[] getFileExtensions() {
-		return new String[] { "properties", "xml" };
+		return new String[] {"properties", "xml"};
 	}
 
 	@Override
 	public List<PropertySource<?>> load(String name, Resource resource) throws IOException {
+		// 读取resource对象
 		List<Map<String, ?>> properties = loadProperties(resource);
 		if (properties.isEmpty()) {
 			return Collections.emptyList();
 		}
+		// 创建结果集合
 		List<PropertySource<?>> propertySources = new ArrayList<>(properties.size());
 		for (int i = 0; i < properties.size(); i++) {
 			String documentNumber = (properties.size() != 1) ? " (document #" + i + ")" : "";
+			// 转换成OriginTrackedMapPropertySource
 			propertySources.add(new OriginTrackedMapPropertySource(name + documentNumber,
 					Collections.unmodifiableMap(properties.get(i)), true));
 		}
 		return propertySources;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private List<Map<String, ?>> loadProperties(Resource resource) throws IOException {
 		String filename = resource.getFilename();
 		List<Map<String, ?>> result = new ArrayList<>();
 		if (filename != null && filename.endsWith(XML_FILE_EXTENSION)) {
 			result.add((Map) PropertiesLoaderUtils.loadProperties(resource));
-		}
-		else {
+		} else {
 			List<Document> documents = new OriginTrackedPropertiesLoader(resource).load();
 			documents.forEach((document) -> result.add(document.asMap()));
 		}

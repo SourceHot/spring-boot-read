@@ -27,6 +27,9 @@ package org.springframework.boot.context.config;
  */
 public abstract class ConfigDataResource {
 
+	/**
+	 * 是否可选
+	 */
 	private final boolean optional;
 
 	/**
