@@ -42,6 +42,9 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  */
 class ConfigDataLocationResolvers {
 
+	/**
+	 * 配置数据位置解析器
+	 */
 	private final List<ConfigDataLocationResolver<?>> resolvers;
 
 	/**

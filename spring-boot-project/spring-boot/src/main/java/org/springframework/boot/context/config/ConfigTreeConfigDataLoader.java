@@ -35,10 +35,15 @@ public class ConfigTreeConfigDataLoader implements ConfigDataLoader<ConfigTreeCo
 	@Override
 	public ConfigData load(ConfigDataLoaderContext context, ConfigTreeConfigDataResource resource)
 			throws IOException, ConfigDataResourceNotFoundException {
+		// 获取资源对象中的path对象
 		Path path = resource.getPath();
+		// 检查资源是否存在,如果资源不存在抛出异常
 		ConfigDataResourceNotFoundException.throwIfDoesNotExist(resource, path);
+		// 组装资源名称
 		String name = "Config tree '" + path + "'";
+		// 转换成ConfigTreePropertySource
 		ConfigTreePropertySource source = new ConfigTreePropertySource(name, path, Option.AUTO_TRIM_TRAILING_NEW_LINE);
+		// 转换成ConfigData
 		return new ConfigData(Collections.singletonList(source));
 	}
 

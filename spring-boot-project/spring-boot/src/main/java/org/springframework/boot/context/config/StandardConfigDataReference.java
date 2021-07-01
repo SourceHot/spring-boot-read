@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
  * An reference expanded from the original {@link ConfigDataLocation} that can ultimately
  * be resolved to one or more {@link StandardConfigDataResource resources}.
  *
+ * 标准配置数据
  * @author Phillip Webb
  */
 class StandardConfigDataReference {

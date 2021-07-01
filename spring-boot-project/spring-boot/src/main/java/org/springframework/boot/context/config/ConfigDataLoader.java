@@ -40,6 +40,7 @@ import org.springframework.boot.logging.DeferredLogFactory;
  * <p>
  * Multiple loaders cannot claim the same resource.
  *
+ * 配置数据记载器
  * @param <R> the resource type
  * @author Phillip Webb
  * @author Madhura Bhave

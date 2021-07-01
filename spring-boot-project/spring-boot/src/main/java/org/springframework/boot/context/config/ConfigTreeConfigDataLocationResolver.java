@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.springframework.boot.context.config.LocationResourceLoader.ResourceType;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -53,8 +52,7 @@ public class ConfigTreeConfigDataLocationResolver implements ConfigDataLocationR
 			ConfigDataLocation location) {
 		try {
 			return resolve(context, location.getNonPrefixedValue(PREFIX));
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			throw new ConfigDataLocationNotFoundException(location, ex);
 		}
 	}
@@ -63,12 +61,15 @@ public class ConfigTreeConfigDataLocationResolver implements ConfigDataLocationR
 			throws IOException {
 		Assert.isTrue(location.endsWith("/"),
 				() -> String.format("Config tree location '%s' must end with '/'", location));
+		// 判断是否匹配,不匹配直接创建ConfigTreeConfigDataResource并转换Collections返回.
 		if (!this.resourceLoader.isPattern(location)) {
 			return Collections.singletonList(new ConfigTreeConfigDataResource(location));
 		}
+		// 获取location中出现的资源对象
 		Resource[] resources = this.resourceLoader.getResources(location, ResourceType.DIRECTORY);
 		List<ConfigTreeConfigDataResource> resolved = new ArrayList<>(resources.length);
 		for (Resource resource : resources) {
+			// 获取资源对象的文件路径转换成ConfigTreeConfigDataResource
 			resolved.add(new ConfigTreeConfigDataResource(resource.getFile().toPath()));
 		}
 		return resolved;

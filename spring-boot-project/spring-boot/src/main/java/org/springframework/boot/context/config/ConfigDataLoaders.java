@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
 /**
  * A collection of {@link ConfigDataLoader} instances loaded via {@code spring.factories}.
  *
+ * 配置数据加载集合
  * @author Phillip Webb
  * @author Madhura Bhave
  */
@@ -43,8 +44,14 @@ class ConfigDataLoaders {
 
 	private final Log logger;
 
+	/**
+	 * 配置数据加载器集合
+	 */
 	private final List<ConfigDataLoader<?>> loaders;
 
+	/**
+	 * 资源类型集合
+	 */
 	private final List<Class<?>> resourceTypes;
 
 	/**
@@ -91,13 +98,15 @@ class ConfigDataLoaders {
 
 	/**
 	 * Load {@link ConfigData} using the first appropriate {@link ConfigDataLoader}.
-	 * @param <R> the resource type
-	 * @param context the loader context
+	 *
+	 * @param <R>      the resource type
+	 * @param context  the loader context
 	 * @param resource the resource to load
 	 * @return the loaded {@link ConfigData}
 	 * @throws IOException on IO error
 	 */
 	<R extends ConfigDataResource> ConfigData load(ConfigDataLoaderContext context, R resource) throws IOException {
+		// 确认配置数据记载器
 		ConfigDataLoader<R> loader = getLoader(context, resource);
 		this.logger.trace(LogMessage.of(() -> "Loading " + resource + " using loader " + loader.getClass().getName()));
 		return loader.load(context, resource);
@@ -108,6 +117,7 @@ class ConfigDataLoaders {
 		ConfigDataLoader<R> result = null;
 		for (int i = 0; i < this.loaders.size(); i++) {
 			ConfigDataLoader<?> candidate = this.loaders.get(i);
+			//
 			if (this.resourceTypes.get(i).isInstance(resource)) {
 				ConfigDataLoader<R> loader = (ConfigDataLoader<R>) candidate;
 				if (loader.isLoadable(context, resource)) {

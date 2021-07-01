@@ -43,7 +43,9 @@ class SubversionConfigDataLocationResolver implements ConfigDataLocationResolver
 	public List<SubversionConfigDataResource> resolve(ConfigDataLocationResolverContext context,
 			ConfigDataLocation location)
 			throws ConfigDataLocationNotFoundException, ConfigDataResourceNotFoundException {
+		// 获取绑定对象进行绑定
 		String serverCertificate = context.getBinder().bind("spring.svn.server.certificate", String.class).orElse(null);
+		// 创建SubversionConfigDataResource对象将其转换成Collections
 		return Collections.singletonList(
 				new SubversionConfigDataResource(location.getNonPrefixedValue(PREFIX), serverCertificate));
 	}

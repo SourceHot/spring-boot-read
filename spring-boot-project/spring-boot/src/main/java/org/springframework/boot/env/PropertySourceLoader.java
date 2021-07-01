@@ -27,6 +27,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  * Strategy interface located via {@link SpringFactoriesLoader} and used to load a
  * {@link PropertySource}.
  *
+ * 属性源加载器
  * @author Dave Syer
  * @author Phillip Webb
  * @since 1.0.0

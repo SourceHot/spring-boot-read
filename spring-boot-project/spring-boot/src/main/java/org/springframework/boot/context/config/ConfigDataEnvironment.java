@@ -22,9 +22,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.commons.logging.Log;
-
 import org.springframework.boot.BootstrapRegistry.InstanceSupplier;
 import org.springframework.boot.BootstrapRegistry.Scope;
 import org.springframework.boot.ConfigurableBootstrapContext;
@@ -77,6 +75,7 @@ class ConfigDataEnvironment {
 	/**
 	 * Property used to determine what action to take when a
 	 * {@code ConfigDataNotFoundAction} is thrown.
+	 *
 	 * @see ConfigDataNotFoundAction
 	 */
 	static final String ON_NOT_FOUND_PROPERTY = "spring.config.on-not-found";
@@ -85,6 +84,13 @@ class ConfigDataEnvironment {
 	 * Default search locations used if not {@link #LOCATION_PROPERTY} is found.
 	 */
 	static final ConfigDataLocation[] DEFAULT_SEARCH_LOCATIONS;
+	private static final ConfigDataLocation[] EMPTY_LOCATIONS = new ConfigDataLocation[0];
+	private static final Bindable<ConfigDataLocation[]> CONFIG_DATA_LOCATION_ARRAY = Bindable
+			.of(ConfigDataLocation[].class);
+	private static final Bindable<List<String>> STRING_LIST = Bindable.listOf(String.class);
+	private static final BinderOption[] ALLOW_INACTIVE_BINDING = {};
+	private static final BinderOption[] DENY_INACTIVE_BINDING = {BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE};
+
 	static {
 		List<ConfigDataLocation> locations = new ArrayList<>();
 		locations.add(ConfigDataLocation.of("optional:classpath:/"));
@@ -94,17 +100,6 @@ class ConfigDataEnvironment {
 		locations.add(ConfigDataLocation.of("optional:file:./config/*/"));
 		DEFAULT_SEARCH_LOCATIONS = locations.toArray(new ConfigDataLocation[0]);
 	}
-
-	private static final ConfigDataLocation[] EMPTY_LOCATIONS = new ConfigDataLocation[0];
-
-	private static final Bindable<ConfigDataLocation[]> CONFIG_DATA_LOCATION_ARRAY = Bindable
-			.of(ConfigDataLocation[].class);
-
-	private static final Bindable<List<String>> STRING_LIST = Bindable.listOf(String.class);
-
-	private static final BinderOption[] ALLOW_INACTIVE_BINDING = {};
-
-	private static final BinderOption[] DENY_INACTIVE_BINDING = { BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE };
 
 	private final DeferredLogFactory logFactory;
 
@@ -122,20 +117,24 @@ class ConfigDataEnvironment {
 
 	private final ConfigDataEnvironmentUpdateListener environmentUpdateListener;
 
+	/**
+	 * 配置数据加载集合
+	 */
 	private final ConfigDataLoaders loaders;
 
 	private final ConfigDataEnvironmentContributors contributors;
 
 	/**
 	 * Create a new {@link ConfigDataEnvironment} instance.
-	 * @param logFactory the deferred log factory
-	 * @param bootstrapContext the bootstrap context
-	 * @param environment the Spring {@link Environment}.
-	 * @param resourceLoader {@link ResourceLoader} to load resource locations
-	 * @param additionalProfiles any additional profiles to activate
+	 *
+	 * @param logFactory                the deferred log factory
+	 * @param bootstrapContext          the bootstrap context
+	 * @param environment               the Spring {@link Environment}.
+	 * @param resourceLoader            {@link ResourceLoader} to load resource locations
+	 * @param additionalProfiles        any additional profiles to activate
 	 * @param environmentUpdateListener optional
-	 * {@link ConfigDataEnvironmentUpdateListener} that can be used to track
-	 * {@link Environment} updates.
+	 *                                  {@link ConfigDataEnvironmentUpdateListener} that can be used to track
+	 *                                  {@link Environment} updates.
 	 */
 	ConfigDataEnvironment(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext,
 			ConfigurableEnvironment environment, ResourceLoader resourceLoader, Collection<String> additionalProfiles,
@@ -152,6 +151,7 @@ class ConfigDataEnvironment {
 		this.additionalProfiles = additionalProfiles;
 		this.environmentUpdateListener = (environmentUpdateListener != null) ? environmentUpdateListener
 				: ConfigDataEnvironmentUpdateListener.NONE;
+		// 创建
 		this.loaders = new ConfigDataLoaders(logFactory, bootstrapContext);
 		this.contributors = createContributors(binder);
 	}
@@ -169,8 +169,7 @@ class ConfigDataEnvironment {
 		for (PropertySource<?> propertySource : propertySources) {
 			if (DefaultPropertiesPropertySource.hasMatchingName(propertySource)) {
 				defaultPropertySource = propertySource;
-			}
-			else {
+			} else {
 				this.logger.trace(LogMessage.format("Creating wrapped config data contributor for '%s'",
 						propertySource.getName()));
 				contributors.add(ConfigDataEnvironmentContributor.ofExisting(propertySource));
@@ -252,8 +251,7 @@ class ConfigDataEnvironment {
 		this.logger.trace("Creating config data activation context from initial contributions");
 		try {
 			return new ConfigDataActivationContext(this.environment, initialBinder);
-		}
-		catch (BindException ex) {
+		} catch (BindException ex) {
 			if (ex.getCause() instanceof InactiveConfigDataAccessException) {
 				throw (InactiveConfigDataAccessException) ex.getCause();
 			}
@@ -280,8 +278,7 @@ class ConfigDataEnvironment {
 			additionalProfiles.addAll(getIncludedProfiles(contributors, activationContext));
 			Profiles profiles = new Profiles(this.environment, binder, additionalProfiles);
 			return activationContext.withProfiles(profiles);
-		}
-		catch (BindException ex) {
+		} catch (BindException ex) {
 			if (ex.getCause() instanceof InactiveConfigDataAccessException) {
 				throw (InactiveConfigDataAccessException) ex.getCause();
 			}

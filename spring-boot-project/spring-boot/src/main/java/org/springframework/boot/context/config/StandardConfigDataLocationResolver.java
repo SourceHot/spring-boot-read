@@ -55,24 +55,51 @@ import org.springframework.util.StringUtils;
 public class StandardConfigDataLocationResolver
 		implements ConfigDataLocationResolver<StandardConfigDataResource>, Ordered {
 
+	/**
+	 * 前缀
+	 */
 	private static final String PREFIX = "resource:";
 
+	/**
+	 * 配置属性名称
+	 */
 	static final String CONFIG_NAME_PROPERTY = "spring.config.name";
 
+	/**
+	 * 默认配置名称
+	 */
 	private static final String[] DEFAULT_CONFIG_NAMES = { "application" };
 
+	/**
+	 * url正则
+	 */
 	private static final Pattern URL_PREFIX = Pattern.compile("^([a-zA-Z][a-zA-Z0-9*]*?:)(.*$)");
 
+	/**
+	 * 拓展名正则
+	 */
 	private static final Pattern EXTENSION_HINT_PATTERN = Pattern.compile("^(.*)\\[(\\.\\w+)\\](?!\\[)$");
 
+	/**
+	 *
+	 */
 	private static final String NO_PROFILE = null;
 
 	private final Log logger;
 
+	/**
+	 * 属性源加载器
+	 */
 	private final List<PropertySourceLoader> propertySourceLoaders;
 
+	/**
+	 * 配置名称
+	 */
 	private final String[] configNames;
 
+	/**
+	 * 地址资源加载器
+	 */
 	private final LocationResourceLoader resourceLoader;
 
 	/**
@@ -114,19 +141,23 @@ public class StandardConfigDataLocationResolver
 	@Override
 	public List<StandardConfigDataResource> resolve(ConfigDataLocationResolverContext context,
 			ConfigDataLocation location) throws ConfigDataNotFoundException {
+		// 1. 获取StandardConfigDataResource集合
+		// 2. 解析
 		return resolve(getReferences(context, location));
 	}
 
 	private Set<StandardConfigDataReference> getReferences(ConfigDataLocationResolverContext context,
 			ConfigDataLocation configDataLocation) {
+		// 从上下文中获取配置文件地址
 		String resourceLocation = getResourceLocation(context, configDataLocation);
 		try {
+			// 如果是目录
 			if (isDirectory(resourceLocation)) {
+				// 加载目录
 				return getReferencesForDirectory(configDataLocation, resourceLocation, NO_PROFILE);
 			}
 			return getReferencesForFile(configDataLocation, resourceLocation, NO_PROFILE);
-		}
-		catch (RuntimeException ex) {
+		} catch (RuntimeException ex) {
 			throw new IllegalStateException("Unable to load config data from '" + configDataLocation + "'", ex);
 		}
 	}
