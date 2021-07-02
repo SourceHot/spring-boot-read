@@ -52,25 +52,56 @@ import org.springframework.util.CollectionUtils;
  */
 class ConfigDataEnvironmentContributor implements Iterable<ConfigDataEnvironmentContributor> {
 
+	/**
+	 * 空的
+	 */
 	private static final ConfigData.Options EMPTY_LOCATION_OPTIONS = ConfigData.Options
 			.of(ConfigData.Option.IGNORE_IMPORTS);
 
+	/**
+	 * 配置数据地址
+	 */
 	private final ConfigDataLocation location;
 
+	/**
+	 * 配置数据资源对象
+	 */
 	private final ConfigDataResource resource;
 
+	/**
+	 * 是否从配置文件特定导入
+	 */
 	private final boolean fromProfileSpecificImport;
 
+	/**
+	 * 属性源
+	 */
 	private final PropertySource<?> propertySource;
 
+	/**
+	 * 配置属性源
+	 */
 	private final ConfigurationPropertySource configurationPropertySource;
 
+	/**
+	 * 配置数据属性
+	 */
 	private final ConfigDataProperties properties;
 
+	/**
+	 * 配置数据选项标记
+	 */
 	private final ConfigData.Options configDataOptions;
 
+	/**
+	 * key:导入阶段
+	 * value: 配置数据环境贡献者
+	 */
 	private final Map<ImportPhase, List<ConfigDataEnvironmentContributor>> children;
 
+	/**
+	 * 数据种类
+	 */
 	private final Kind kind;
 
 	/**
@@ -100,6 +131,74 @@ class ConfigDataEnvironmentContributor implements Iterable<ConfigDataEnvironment
 		this.configurationPropertySource = configurationPropertySource;
 		this.configDataOptions = (configDataOptions != null) ? configDataOptions : ConfigData.Options.NONE;
 		this.children = (children != null) ? children : Collections.emptyMap();
+	}
+
+	/**
+	 * Factory method to create a {@link Kind#ROOT root} contributor.
+	 * @param contributors the immediate children of the root
+	 * @return a new {@link ConfigDataEnvironmentContributor} instance
+	 */
+	static ConfigDataEnvironmentContributor of(List<ConfigDataEnvironmentContributor> contributors) {
+		Map<ImportPhase, List<ConfigDataEnvironmentContributor>> children = new LinkedHashMap<>();
+		children.put(ImportPhase.BEFORE_PROFILE_ACTIVATION, Collections.unmodifiableList(contributors));
+		return new ConfigDataEnvironmentContributor(Kind.ROOT, null, null, false, null, null, null, null, children);
+	}
+
+	/**
+	 * Factory method to create a {@link Kind#INITIAL_IMPORT initial import} contributor.
+	 * This contributor is used to trigger initial imports of additional contributors. It
+	 * does not contribute any properties itself.
+	 * @param initialImport the initial import location (with placeholders resolved)
+	 * @return a new {@link ConfigDataEnvironmentContributor} instance
+	 */
+	static ConfigDataEnvironmentContributor ofInitialImport(ConfigDataLocation initialImport) {
+		List<ConfigDataLocation> imports = Collections.singletonList(initialImport);
+		ConfigDataProperties properties = new ConfigDataProperties(imports, null);
+		return new ConfigDataEnvironmentContributor(Kind.INITIAL_IMPORT, null, null, false, null, null, properties,
+				null, null);
+	}
+
+	/**
+	 * Factory method to create a contributor that wraps an {@link Kind#EXISTING existing}
+	 * property source. The contributor provides access to existing properties, but
+	 * doesn't actively import any additional contributors.
+	 * @param propertySource the property source to wrap
+	 * @return a new {@link ConfigDataEnvironmentContributor} instance
+	 */
+	static ConfigDataEnvironmentContributor ofExisting(PropertySource<?> propertySource) {
+		return new ConfigDataEnvironmentContributor(Kind.EXISTING, null, null, false, propertySource,
+				ConfigurationPropertySource.from(propertySource), null, null, null);
+	}
+
+	/**
+	 * Factory method to create an {@link Kind#UNBOUND_IMPORT unbound import} contributor.
+	 * This contributor has been actively imported from another contributor and may itself
+	 * import further contributors later.
+	 * @param location the location of this contributor
+	 * @param resource the config data resource
+	 * @param profileSpecific if the contributor is from a profile specific import
+	 * @param configData the config data
+	 * @param propertySourceIndex the index of the property source that should be used
+	 * @return a new {@link ConfigDataEnvironmentContributor} instance
+	 */
+	static ConfigDataEnvironmentContributor ofUnboundImport(ConfigDataLocation location, ConfigDataResource resource,
+			boolean profileSpecific, ConfigData configData, int propertySourceIndex) {
+		PropertySource<?> propertySource = configData.getPropertySources().get(propertySourceIndex);
+		ConfigData.Options options = configData.getOptions(propertySource);
+		ConfigurationPropertySource configurationPropertySource = ConfigurationPropertySource.from(propertySource);
+		return new ConfigDataEnvironmentContributor(Kind.UNBOUND_IMPORT, location, resource, profileSpecific,
+				propertySource, configurationPropertySource, null, options, null);
+	}
+
+	/**
+	 * Factory method to create an {@link Kind#EMPTY_LOCATION empty location} contributor.
+	 * @param location the location of this contributor
+	 * @param profileSpecific if the contributor is from a profile specific import
+	 * @return a new {@link ConfigDataEnvironmentContributor} instance
+	 */
+	static ConfigDataEnvironmentContributor ofEmptyLocation(ConfigDataLocation location, boolean profileSpecific) {
+		return new ConfigDataEnvironmentContributor(Kind.EMPTY_LOCATION, location, null, profileSpecific, null, null,
+				null, EMPTY_LOCATION_OPTIONS, null);
 	}
 
 	/**
@@ -358,124 +457,67 @@ class ConfigDataEnvironmentContributor implements Iterable<ConfigDataEnvironment
 	}
 
 	/**
-	 * Factory method to create a {@link Kind#ROOT root} contributor.
-	 * @param contributors the immediate children of the root
-	 * @return a new {@link ConfigDataEnvironmentContributor} instance
-	 */
-	static ConfigDataEnvironmentContributor of(List<ConfigDataEnvironmentContributor> contributors) {
-		Map<ImportPhase, List<ConfigDataEnvironmentContributor>> children = new LinkedHashMap<>();
-		children.put(ImportPhase.BEFORE_PROFILE_ACTIVATION, Collections.unmodifiableList(contributors));
-		return new ConfigDataEnvironmentContributor(Kind.ROOT, null, null, false, null, null, null, null, children);
-	}
-
-	/**
-	 * Factory method to create a {@link Kind#INITIAL_IMPORT initial import} contributor.
-	 * This contributor is used to trigger initial imports of additional contributors. It
-	 * does not contribute any properties itself.
-	 * @param initialImport the initial import location (with placeholders resolved)
-	 * @return a new {@link ConfigDataEnvironmentContributor} instance
-	 */
-	static ConfigDataEnvironmentContributor ofInitialImport(ConfigDataLocation initialImport) {
-		List<ConfigDataLocation> imports = Collections.singletonList(initialImport);
-		ConfigDataProperties properties = new ConfigDataProperties(imports, null);
-		return new ConfigDataEnvironmentContributor(Kind.INITIAL_IMPORT, null, null, false, null, null, properties,
-				null, null);
-	}
-
-	/**
-	 * Factory method to create a contributor that wraps an {@link Kind#EXISTING existing}
-	 * property source. The contributor provides access to existing properties, but
-	 * doesn't actively import any additional contributors.
-	 * @param propertySource the property source to wrap
-	 * @return a new {@link ConfigDataEnvironmentContributor} instance
-	 */
-	static ConfigDataEnvironmentContributor ofExisting(PropertySource<?> propertySource) {
-		return new ConfigDataEnvironmentContributor(Kind.EXISTING, null, null, false, propertySource,
-				ConfigurationPropertySource.from(propertySource), null, null, null);
-	}
-
-	/**
-	 * Factory method to create an {@link Kind#UNBOUND_IMPORT unbound import} contributor.
-	 * This contributor has been actively imported from another contributor and may itself
-	 * import further contributors later.
-	 * @param location the location of this contributor
-	 * @param resource the config data resource
-	 * @param profileSpecific if the contributor is from a profile specific import
-	 * @param configData the config data
-	 * @param propertySourceIndex the index of the property source that should be used
-	 * @return a new {@link ConfigDataEnvironmentContributor} instance
-	 */
-	static ConfigDataEnvironmentContributor ofUnboundImport(ConfigDataLocation location, ConfigDataResource resource,
-			boolean profileSpecific, ConfigData configData, int propertySourceIndex) {
-		PropertySource<?> propertySource = configData.getPropertySources().get(propertySourceIndex);
-		ConfigData.Options options = configData.getOptions(propertySource);
-		ConfigurationPropertySource configurationPropertySource = ConfigurationPropertySource.from(propertySource);
-		return new ConfigDataEnvironmentContributor(Kind.UNBOUND_IMPORT, location, resource, profileSpecific,
-				propertySource, configurationPropertySource, null, options, null);
-	}
-
-	/**
-	 * Factory method to create an {@link Kind#EMPTY_LOCATION empty location} contributor.
-	 * @param location the location of this contributor
-	 * @param profileSpecific if the contributor is from a profile specific import
-	 * @return a new {@link ConfigDataEnvironmentContributor} instance
-	 */
-	static ConfigDataEnvironmentContributor ofEmptyLocation(ConfigDataLocation location, boolean profileSpecific) {
-		return new ConfigDataEnvironmentContributor(Kind.EMPTY_LOCATION, location, null, profileSpecific, null, null,
-				null, EMPTY_LOCATION_OPTIONS, null);
-	}
-
-	/**
 	 * The various kinds of contributor.
+	 * 提供者类型
 	 */
 	enum Kind {
 
 		/**
 		 * A root contributor used contain the initial set of children.
+		 * 根贡献者
 		 */
 		ROOT,
 
 		/**
 		 * An initial import that needs to be processed.
+		 * 需要处理的初始导入。
 		 */
 		INITIAL_IMPORT,
 
 		/**
 		 * An existing property source that contributes properties but no imports.
+		 * 提供属性但没有导入的现有属性源。
 		 */
 		EXISTING,
 
 		/**
 		 * A contributor with {@link ConfigData} imported from another contributor but not
 		 * yet bound.
+		 *
+		 * 从另一个贡献者导入但尚未绑定的ConfigData贡献者。
 		 */
 		UNBOUND_IMPORT,
 
 		/**
 		 * A contributor with {@link ConfigData} imported from another contributor that
 		 * has been.
+		 * 从另一个贡献者导入的ConfigData贡献者。
 		 */
 		BOUND_IMPORT,
 
 		/**
 		 * A valid location that contained nothing to load.
+		 * 一个没有加载任何东西的有效位置。
 		 */
-		EMPTY_LOCATION;
+		EMPTY_LOCATION
 
 	}
 
 	/**
 	 * Import phases that can be used when obtaining imports.
+	 * 导入阶段
 	 */
 	enum ImportPhase {
 
 		/**
 		 * The phase before profiles have been activated.
+		 * 配置文件被激活之前的阶段。
 		 */
 		BEFORE_PROFILE_ACTIVATION,
 
 		/**
 		 * The phase after profiles have been activated.
+		 * 配置文件激活后的阶段
 		 */
 		AFTER_PROFILE_ACTIVATION;
 

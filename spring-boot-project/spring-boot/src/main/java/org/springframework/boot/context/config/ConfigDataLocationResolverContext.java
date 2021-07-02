@@ -23,6 +23,7 @@ import org.springframework.boot.env.EnvironmentPostProcessor;
 /**
  * Context provided to {@link ConfigDataLocationResolver} methods.
  *
+ * 配置数据位置解析器上下文
  * @author Phillip Webb
  * @author Madhura Bhave
  * @since 2.4.0

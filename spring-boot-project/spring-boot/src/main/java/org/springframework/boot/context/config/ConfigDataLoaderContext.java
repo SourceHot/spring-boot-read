@@ -22,6 +22,7 @@ import org.springframework.boot.env.EnvironmentPostProcessor;
 /**
  * Context provided to {@link ConfigDataLoader} methods.
  *
+ * 配置数据加载上下文
  * @author Phillip Webb
  * @since 2.4.0
  */
@@ -30,6 +31,7 @@ public interface ConfigDataLoaderContext {
 	/**
 	 * Provides access to the {@link ConfigurableBootstrapContext} shared across all
 	 * {@link EnvironmentPostProcessor EnvironmentPostProcessors}.
+	 * 获取引导上下文
 	 * @return the bootstrap context
 	 */
 	ConfigurableBootstrapContext getBootstrapContext();

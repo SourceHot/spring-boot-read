@@ -40,13 +40,23 @@ public class EnvironmentPostProcessorApplicationListener implements SmartApplica
 
 	/**
 	 * The default order for the processor.
+	 * 默认排序号
 	 */
 	public static final int DEFAULT_ORDER = Ordered.HIGHEST_PRECEDENCE + 10;
 
+	/**
+	 * 延迟日志
+	 */
 	private final DeferredLogs deferredLogs;
 
+	/**
+	 * 排序号
+	 */
 	private int order = DEFAULT_ORDER;
 
+	/**
+	 * 环境后处理工厂
+	 */
 	private final EnvironmentPostProcessorsFactory postProcessorsFactory;
 
 	/**
@@ -83,20 +93,27 @@ public class EnvironmentPostProcessorApplicationListener implements SmartApplica
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
 		if (event instanceof ApplicationEnvironmentPreparedEvent) {
+			// 应用程序环境准备事件
 			onApplicationEnvironmentPreparedEvent((ApplicationEnvironmentPreparedEvent) event);
 		}
 		if (event instanceof ApplicationPreparedEvent) {
+			// 应用程序准备事件
 			onApplicationPreparedEvent((ApplicationPreparedEvent) event);
 		}
 		if (event instanceof ApplicationFailedEvent) {
+			// 应用程序失败事件
 			onApplicationFailedEvent((ApplicationFailedEvent) event);
 		}
 	}
 
 	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
+		// 从事件中获取环境配置对象
 		ConfigurableEnvironment environment = event.getEnvironment();
+		// 获取spring应用对象
 		SpringApplication application = event.getSpringApplication();
+		// 获取环境后置处理器
 		for (EnvironmentPostProcessor postProcessor : getEnvironmentPostProcessors(event.getBootstrapContext())) {
+			// 后置处理器进行处理
 			postProcessor.postProcessEnvironment(environment, application);
 		}
 	}
@@ -110,6 +127,7 @@ public class EnvironmentPostProcessorApplicationListener implements SmartApplica
 	}
 
 	private void finish() {
+		// 输出日志
 		this.deferredLogs.switchOverAll();
 	}
 

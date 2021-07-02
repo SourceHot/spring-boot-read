@@ -21,7 +21,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Event published by a {@link SpringApplication} when it fails to start.
- *
+ * 应用程序失败事件
  * @author Dave Syer
  * @since 1.0.0
  * @see ApplicationReadyEvent

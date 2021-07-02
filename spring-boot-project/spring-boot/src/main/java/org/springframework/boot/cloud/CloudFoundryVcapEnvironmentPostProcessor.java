@@ -136,16 +136,24 @@ public class CloudFoundryVcapEnvironmentPostProcessor
 
 	@Override
 	public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+		// 判断 CLOUD_FOUNDRY是否处于活跃状态
 		if (CloudPlatform.CLOUD_FOUNDRY.isActive(environment)) {
+			// 属性存储对象
 			Properties properties = new Properties();
+			// json 解析器
 			JsonParser jsonParser = JsonParserFactory.getJsonParser();
+			// 获取VCAP_APPLICATION对应的数据,将解析结果加入到属性表中,属性表的前缀是vcap.application.
 			addWithPrefix(properties, getPropertiesFromApplication(environment, jsonParser), "vcap.application.");
+			// 获取VCAP_SERVICES对应的数据,将解析结果加入到属性表中,属性表的前缀是vcap.services.
 			addWithPrefix(properties, getPropertiesFromServices(environment, jsonParser), "vcap.services.");
+			// 从环境对象中获取属性源对象
 			MutablePropertySources propertySources = environment.getPropertySources();
+			// 如果属性源对象中包含commandLineArgs键对应的数据将数据插入到最后
 			if (propertySources.contains(CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME)) {
 				propertySources.addAfter(CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME,
 						new PropertiesPropertySource("vcap", properties));
 			}
+			// 插入到第一个
 			else {
 				propertySources.addFirst(new PropertiesPropertySource("vcap", properties));
 			}

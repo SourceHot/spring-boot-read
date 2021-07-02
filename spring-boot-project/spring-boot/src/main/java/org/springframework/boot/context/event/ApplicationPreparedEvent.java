@@ -26,6 +26,7 @@ import org.springframework.core.env.Environment;
  * {@link ApplicationContext} is fully prepared but not refreshed. The bean definitions
  * will be loaded and the {@link Environment} is ready for use at this stage.
  *
+ * 应用程序准备事件
  * @author Dave Syer
  * @since 1.0.0
  */

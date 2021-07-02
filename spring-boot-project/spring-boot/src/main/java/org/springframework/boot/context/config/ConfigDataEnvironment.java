@@ -52,6 +52,7 @@ import org.springframework.util.StringUtils;
  * {@value #ADDITIONAL_LOCATION_PROPERTY} and {@value #IMPORT_PROPERTY} properties. If no
  * explicit properties are set, the {@link #DEFAULT_SEARCH_LOCATIONS} will be used.
  *
+ * 配置数据环境
  * @author Phillip Webb
  * @author Madhura Bhave
  */

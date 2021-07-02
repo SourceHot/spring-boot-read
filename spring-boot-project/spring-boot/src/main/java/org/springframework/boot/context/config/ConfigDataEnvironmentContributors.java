@@ -56,8 +56,14 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 
 	private final Log logger;
 
+	/**
+	 * 环境配置数据提供者(根)
+	 */
 	private final ConfigDataEnvironmentContributor root;
 
+	/**
+	 * 引导上下文
+	 */
 	private final ConfigurableBootstrapContext bootstrapContext;
 
 	/**
@@ -91,40 +97,60 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 	 */
 	ConfigDataEnvironmentContributors withProcessedImports(ConfigDataImporter importer,
 			ConfigDataActivationContext activationContext) {
+		// 确定导入阶段
 		ImportPhase importPhase = ImportPhase.get(activationContext);
 		this.logger.trace(LogMessage.format("Processing imports for phase %s. %s", importPhase,
 				(activationContext != null) ? activationContext : "no activation context"));
+		// 结果集合
 		ConfigDataEnvironmentContributors result = this;
+		// 处理标记
 		int processed = 0;
+
 		while (true) {
+			// 获取一个需要处理的环境配置提供者
 			ConfigDataEnvironmentContributor contributor = getNextToProcess(result, activationContext, importPhase);
+			// 提供者为空直接返回result,处理到没有了就将结束
 			if (contributor == null) {
 				this.logger.trace(LogMessage.format("Processed imports for of %d contributors", processed));
 				return result;
 			}
+
+			// 当数据类型是UNBOUND_IMPORT时
 			if (contributor.getKind() == Kind.UNBOUND_IMPORT) {
+				// 从contributor中获取属性源集合
 				Iterable<ConfigurationPropertySource> sources = Collections
 						.singleton(contributor.getConfigurationPropertySource());
+				// 创建占位符解析器
 				PlaceholdersResolver placeholdersResolver = new ConfigDataEnvironmentContributorPlaceholdersResolver(
 						result, activationContext, true);
+				// 创建绑定对象
 				Binder binder = new Binder(sources, placeholdersResolver, null, null, null);
+				// 通过contributor创建ConfigDataEnvironmentContributor
 				ConfigDataEnvironmentContributor bound = contributor.withBoundProperties(binder);
+				// 创建ConfigDataEnvironmentContributors对象设置为result
 				result = new ConfigDataEnvironmentContributors(this.logger, this.bootstrapContext,
 						result.getRoot().withReplacement(contributor, bound));
 				continue;
 			}
+			// 创建配置数据位置解析器上下文
 			ConfigDataLocationResolverContext locationResolverContext = new ContributorConfigDataLocationResolverContext(
 					result, contributor, activationContext);
+			// 创建配置数据加载上下文
 			ConfigDataLoaderContext loaderContext = new ContributorDataLoaderContext(this);
+			// 获取需要导入的配置数据地址
 			List<ConfigDataLocation> imports = contributor.getImports();
 			this.logger.trace(LogMessage.format("Processing imports %s", imports));
+			// 解析数据
 			Map<ConfigDataResolutionResult, ConfigData> imported = importer.resolveAndLoad(activationContext,
 					locationResolverContext, loaderContext, imports);
 			this.logger.trace(LogMessage.of(() -> getImportedMessage(imported.keySet())));
+			// 创建当前贡献者和它的子贡献者,子贡献者是imported中的数据
 			ConfigDataEnvironmentContributor contributorAndChildren = contributor.withChildren(importPhase,
 					asContributors(imported));
+			// 设置result数据值
 			result = new ConfigDataEnvironmentContributors(this.logger, this.bootstrapContext,
 					result.getRoot().withReplacement(contributor, contributorAndChildren));
+			// 处理标记+1
 			processed++;
 		}
 	}
@@ -241,6 +267,19 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 	}
 
 	/**
+	 * Binder options that can be used with
+	 * {@link ConfigDataEnvironmentContributors#getBinder(ConfigDataActivationContext, BinderOption...)}.
+	 */
+	enum BinderOption {
+
+		/**
+		 * Throw an exception if an inactive contributor contains a bound value.
+		 */
+		FAIL_ON_BIND_TO_INACTIVE_SOURCE
+
+	}
+
+	/**
 	 * {@link ConfigDataLocationResolverContext} for a contributor.
 	 */
 	private static class ContributorDataLoaderContext implements ConfigDataLoaderContext {
@@ -262,13 +301,24 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 	 * {@link ConfigDataLocationResolverContext} for a contributor.
 	 */
 	private static class ContributorConfigDataLocationResolverContext implements ConfigDataLocationResolverContext {
-
+		/**
+		 * 环境配置数据提供者集合
+		 */
 		private final ConfigDataEnvironmentContributors contributors;
 
+		/**
+		 * 环境配置数据提供者
+		 */
 		private final ConfigDataEnvironmentContributor contributor;
 
+		/**
+		 * 配置数据激活上下文
+		 */
 		private final ConfigDataActivationContext activationContext;
 
+		/**
+		 * 绑定对象
+		 */
 		private volatile Binder binder;
 
 		ContributorConfigDataLocationResolverContext(ConfigDataEnvironmentContributors contributors,
@@ -318,19 +368,6 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 			}
 			return result;
 		}
-
-	}
-
-	/**
-	 * Binder options that can be used with
-	 * {@link ConfigDataEnvironmentContributors#getBinder(ConfigDataActivationContext, BinderOption...)}.
-	 */
-	enum BinderOption {
-
-		/**
-		 * Throw an exception if an inactive contributor contains a bound value.
-		 */
-		FAIL_ON_BIND_TO_INACTIVE_SOURCE;
 
 	}
 

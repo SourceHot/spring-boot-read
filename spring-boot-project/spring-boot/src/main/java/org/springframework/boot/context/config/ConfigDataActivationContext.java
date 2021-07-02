@@ -25,6 +25,7 @@ import org.springframework.core.style.ToStringCreator;
  * Context information used when determining when to activate
  * {@link ConfigDataEnvironmentContributor contributed} {@link ConfigData}.
  *
+ * 配置数据激活上下文
  * @author Phillip Webb
  */
 class ConfigDataActivationContext {

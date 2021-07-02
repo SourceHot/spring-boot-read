@@ -21,6 +21,7 @@ package org.springframework.boot.context.config;
  * implement a valid {@link #equals(Object) equals}, {@link #hashCode() hashCode} and
  * {@link #toString() toString} methods.
  *
+ * 配置数据资源
  * @author Phillip Webb
  * @author Madhura Bhave
  * @since 2.4.0

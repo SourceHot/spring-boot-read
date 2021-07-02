@@ -26,6 +26,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  * Factory interface used by the {@link EnvironmentPostProcessorApplicationListener} to
  * create the {@link EnvironmentPostProcessor} instances.
  *
+ * 环境后处理工厂
  * @author Phillip Webb
  * @since 2.4.0
  */

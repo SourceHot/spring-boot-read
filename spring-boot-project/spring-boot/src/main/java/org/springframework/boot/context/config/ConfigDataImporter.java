@@ -41,24 +41,43 @@ class ConfigDataImporter {
 
 	private final Log logger;
 
+	/**
+	 * 配置数据位置解析器集合
+	 */
 	private final ConfigDataLocationResolvers resolvers;
 
+	/**
+	 * 配置数据加载器集合
+	 */
 	private final ConfigDataLoaders loaders;
 
+	/**
+	 * 配置数据未找到行为
+	 */
 	private final ConfigDataNotFoundAction notFoundAction;
 
+	/**
+	 * 配置数据资源集合
+	 */
 	private final Set<ConfigDataResource> loaded = new HashSet<>();
 
+	/**
+	 * 配置数据位置集合
+	 */
 	private final Set<ConfigDataLocation> loadedLocations = new HashSet<>();
 
+	/**
+	 * 配置数据位置集合
+	 */
 	private final Set<ConfigDataLocation> optionalLocations = new HashSet<>();
 
 	/**
 	 * Create a new {@link ConfigDataImporter} instance.
-	 * @param logFactory the log factory
+	 *
+	 * @param logFactory     the log factory
 	 * @param notFoundAction the action to take when a location cannot be found
-	 * @param resolvers the config data location resolvers
-	 * @param loaders the config data loaders
+	 * @param resolvers      the config data location resolvers
+	 * @param loaders        the config data loaders
 	 */
 	ConfigDataImporter(DeferredLogFactory logFactory, ConfigDataNotFoundAction notFoundAction,
 			ConfigDataLocationResolvers resolvers, ConfigDataLoaders loaders) {
@@ -71,18 +90,22 @@ class ConfigDataImporter {
 	/**
 	 * Resolve and load the given list of locations, filtering any that have been
 	 * previously loaded.
-	 * @param activationContext the activation context
+	 *
+	 * @param activationContext       the activation context
 	 * @param locationResolverContext the location resolver context
-	 * @param loaderContext the loader context
-	 * @param locations the locations to resolve
+	 * @param loaderContext           the loader context
+	 * @param locations               the locations to resolve
 	 * @return a map of the loaded locations and data
 	 */
 	Map<ConfigDataResolutionResult, ConfigData> resolveAndLoad(ConfigDataActivationContext activationContext,
 			ConfigDataLocationResolverContext locationResolverContext, ConfigDataLoaderContext loaderContext,
 			List<ConfigDataLocation> locations) {
 		try {
+			// 获取 profile
 			Profiles profiles = (activationContext != null) ? activationContext.getProfiles() : null;
+			// 解析
 			List<ConfigDataResolutionResult> resolved = resolve(locationResolverContext, profiles, locations);
+			// 加载
 			return load(loaderContext, resolved);
 		}
 		catch (IOException ex) {
@@ -90,10 +113,16 @@ class ConfigDataImporter {
 		}
 	}
 
+	/**
+	 * 解析配置数据地址
+	 */
 	private List<ConfigDataResolutionResult> resolve(ConfigDataLocationResolverContext locationResolverContext,
 			Profiles profiles, List<ConfigDataLocation> locations) {
+		// 创建返回值集合
 		List<ConfigDataResolutionResult> resolved = new ArrayList<>(locations.size());
+		// 循环处理配置数据地址
 		for (ConfigDataLocation location : locations) {
+			// 进行实际解析,解析后放入返回结果集合
 			resolved.addAll(resolve(locationResolverContext, profiles, location));
 		}
 		return Collections.unmodifiableList(resolved);
@@ -102,6 +131,7 @@ class ConfigDataImporter {
 	private List<ConfigDataResolutionResult> resolve(ConfigDataLocationResolverContext locationResolverContext,
 			Profiles profiles, ConfigDataLocation location) {
 		try {
+			// 交给成员变量resolvers进行解析
 			return this.resolvers.resolve(locationResolverContext, location, profiles);
 		}
 		catch (ConfigDataNotFoundException ex) {
@@ -112,20 +142,28 @@ class ConfigDataImporter {
 
 	private Map<ConfigDataResolutionResult, ConfigData> load(ConfigDataLoaderContext loaderContext,
 			List<ConfigDataResolutionResult> candidates) throws IOException {
+		// 创建结果集合
 		Map<ConfigDataResolutionResult, ConfigData> result = new LinkedHashMap<>();
+		// 循环处理方法参数candidates
 		for (int i = candidates.size() - 1; i >= 0; i--) {
 			ConfigDataResolutionResult candidate = candidates.get(i);
+			// 获取资源地址
 			ConfigDataLocation location = candidate.getLocation();
+			// 获取资源对象
 			ConfigDataResource resource = candidate.getResource();
+			// 判断是否是可选的资源,如果是加入到optionalLocations集合中
 			if (resource.isOptional()) {
 				this.optionalLocations.add(location);
 			}
+			// loaded中是否存在当前资源,如果存在加入到loadedLocations集合中
 			if (this.loaded.contains(resource)) {
 				this.loadedLocations.add(location);
 			}
 			else {
 				try {
+					// 实际加载配置数据
 					ConfigData loaded = this.loaders.load(loaderContext, resource);
+					// 如果数据集不为空加入到各个数据容器中
 					if (loaded != null) {
 						this.loaded.add(resource);
 						this.loadedLocations.add(location);

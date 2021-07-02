@@ -66,8 +66,14 @@ public class ConfigDataEnvironmentPostProcessor implements EnvironmentPostProces
 
 	private final Log logger;
 
+	/**
+	 * 引导上下文
+	 */
 	private final ConfigurableBootstrapContext bootstrapContext;
 
+	/**
+	 * 环境更新监听器
+	 */
 	private final ConfigDataEnvironmentUpdateListener environmentUpdateListener;
 
 	public ConfigDataEnvironmentPostProcessor(DeferredLogFactory logFactory,
