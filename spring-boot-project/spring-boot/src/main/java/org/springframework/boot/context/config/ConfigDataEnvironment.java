@@ -22,7 +22,9 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.commons.logging.Log;
+
 import org.springframework.boot.BootstrapRegistry.InstanceSupplier;
 import org.springframework.boot.BootstrapRegistry.Scope;
 import org.springframework.boot.ConfigurableBootstrapContext;
@@ -83,14 +85,29 @@ class ConfigDataEnvironment {
 
 	/**
 	 * Default search locations used if not {@link #LOCATION_PROPERTY} is found.
+	 * 默认的spring.config.location搜索位置
 	 */
 	static final ConfigDataLocation[] DEFAULT_SEARCH_LOCATIONS;
+
+	/**
+	 * 空的ConfigDataLocation集合
+	 */
 	private static final ConfigDataLocation[] EMPTY_LOCATIONS = new ConfigDataLocation[0];
+
 	private static final Bindable<ConfigDataLocation[]> CONFIG_DATA_LOCATION_ARRAY = Bindable
 			.of(ConfigDataLocation[].class);
+
 	private static final Bindable<List<String>> STRING_LIST = Bindable.listOf(String.class);
+
+	/**
+	 * 绑定选项集合
+	 */
 	private static final BinderOption[] ALLOW_INACTIVE_BINDING = {};
-	private static final BinderOption[] DENY_INACTIVE_BINDING = {BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE};
+
+	/**
+	 * 绑定选项集合
+	 */
+	private static final BinderOption[] DENY_INACTIVE_BINDING = { BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE };
 
 	static {
 		List<ConfigDataLocation> locations = new ArrayList<>();
@@ -102,20 +119,41 @@ class ConfigDataEnvironment {
 		DEFAULT_SEARCH_LOCATIONS = locations.toArray(new ConfigDataLocation[0]);
 	}
 
+	/**
+	 * 延迟日志工厂
+	 */
 	private final DeferredLogFactory logFactory;
 
 	private final Log logger;
 
+	/**
+	 * 配置数据未找到的行为
+	 */
 	private final ConfigDataNotFoundAction notFoundAction;
 
+	/**
+	 * 引导上下文
+	 */
 	private final ConfigurableBootstrapContext bootstrapContext;
 
+	/**
+	 * 环境对象
+	 */
 	private final ConfigurableEnvironment environment;
 
+	/**
+	 * 配置数据位置解析器集合。
+	 */
 	private final ConfigDataLocationResolvers resolvers;
 
+	/**
+	 * 附加的profile
+	 */
 	private final Collection<String> additionalProfiles;
 
+	/**
+	 * 环境更新监听器
+	 */
 	private final ConfigDataEnvironmentUpdateListener environmentUpdateListener;
 
 	/**
@@ -123,6 +161,9 @@ class ConfigDataEnvironment {
 	 */
 	private final ConfigDataLoaders loaders;
 
+	/**
+	 * 环境配置数据提供者
+	 */
 	private final ConfigDataEnvironmentContributors contributors;
 
 	/**
@@ -170,7 +211,8 @@ class ConfigDataEnvironment {
 		for (PropertySource<?> propertySource : propertySources) {
 			if (DefaultPropertiesPropertySource.hasMatchingName(propertySource)) {
 				defaultPropertySource = propertySource;
-			} else {
+			}
+			else {
 				this.logger.trace(LogMessage.format("Creating wrapped config data contributor for '%s'",
 						propertySource.getName()));
 				contributors.add(ConfigDataEnvironmentContributor.ofExisting(propertySource));
@@ -227,8 +269,11 @@ class ConfigDataEnvironment {
 		// 创建ConfigDataImporter对象
 		ConfigDataImporter importer = new ConfigDataImporter(this.logFactory, this.notFoundAction, this.resolvers,
 				this.loaders);
+		// 引导上下文注册绑定关系
 		registerBootstrapBinder(this.contributors, null, DENY_INACTIVE_BINDING);
+		// 获取环境配置提供者
 		ConfigDataEnvironmentContributors contributors = processInitial(this.contributors, importer);
+		// 创建激活的配置上下文
 		ConfigDataActivationContext activationContext = createActivationContext(
 				contributors.getBinder(null, BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE));
 		// 处理profile相关内容
@@ -252,7 +297,8 @@ class ConfigDataEnvironment {
 		this.logger.trace("Creating config data activation context from initial contributions");
 		try {
 			return new ConfigDataActivationContext(this.environment, initialBinder);
-		} catch (BindException ex) {
+		}
+		catch (BindException ex) {
 			if (ex.getCause() instanceof InactiveConfigDataAccessException) {
 				throw (InactiveConfigDataAccessException) ex.getCause();
 			}
@@ -279,7 +325,8 @@ class ConfigDataEnvironment {
 			additionalProfiles.addAll(getIncludedProfiles(contributors, activationContext));
 			Profiles profiles = new Profiles(this.environment, binder, additionalProfiles);
 			return activationContext.withProfiles(profiles);
-		} catch (BindException ex) {
+		}
+		catch (BindException ex) {
 			if (ex.getCause() instanceof InactiveConfigDataAccessException) {
 				throw (InactiveConfigDataAccessException) ex.getCause();
 			}

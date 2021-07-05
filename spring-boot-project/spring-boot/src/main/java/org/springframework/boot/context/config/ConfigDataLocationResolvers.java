@@ -37,6 +37,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  * A collection of {@link ConfigDataLocationResolver} instances loaded via
  * {@code spring.factories}.
  *
+ * 配置数据位置解析器集合。
  * @author Phillip Webb
  * @author Madhura Bhave
  */

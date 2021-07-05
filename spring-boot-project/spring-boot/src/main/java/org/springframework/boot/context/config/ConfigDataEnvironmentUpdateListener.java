@@ -25,6 +25,7 @@ import org.springframework.core.env.PropertySource;
  * {@link EventListener} to listen to {@link Environment} updates triggered by the
  * {@link ConfigDataEnvironmentPostProcessor}.
  *
+ * 环境更新监听器
  * @author Phillip Webb
  * @since 2.4.2
  */

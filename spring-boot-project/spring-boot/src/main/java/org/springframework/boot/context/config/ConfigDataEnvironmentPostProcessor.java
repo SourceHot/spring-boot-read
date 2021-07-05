@@ -113,7 +113,7 @@ public class ConfigDataEnvironmentPostProcessor implements EnvironmentPostProces
 		catch (UseLegacyConfigProcessingException ex) {
 			this.logger.debug(LogMessage.format("Switching to legacy config file processing [%s]",
 					ex.getConfigurationProperty()));
-			// 配置 profile相关内容
+			// 配置profile相关内容
 			configureAdditionalProfiles(environment, additionalProfiles);
 			// 配置监听器
 			postProcessUsingLegacyApplicationListener(environment, resourceLoader);
