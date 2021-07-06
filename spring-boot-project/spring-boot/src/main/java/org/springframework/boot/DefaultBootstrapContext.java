@@ -36,10 +36,19 @@ import org.springframework.util.Assert;
  */
 public class DefaultBootstrapContext implements ConfigurableBootstrapContext {
 
+	/**
+	 * 类和实例供应商映射表
+	 */
 	private final Map<Class<?>, InstanceSupplier<?>> instanceSuppliers = new HashMap<>();
 
+	/**
+	 * 类和实例映射表
+	 */
 	private final Map<Class<?>, Object> instances = new HashMap<>();
 
+	/**
+	 * 事件广播器
+	 */
 	private final ApplicationEventMulticaster events = new SimpleApplicationEventMulticaster();
 
 	@Override
@@ -56,7 +65,9 @@ public class DefaultBootstrapContext implements ConfigurableBootstrapContext {
 		Assert.notNull(type, "Type must not be null");
 		Assert.notNull(instanceSupplier, "InstanceSupplier must not be null");
 		synchronized (this.instanceSuppliers) {
+			// 判断是否已经存在
 			boolean alreadyRegistered = this.instanceSuppliers.containsKey(type);
+			// 允许替换 或者不存在
 			if (replaceExisting || !alreadyRegistered) {
 				Assert.state(!this.instances.containsKey(type), () -> type.getName() + " has already been created");
 				this.instanceSuppliers.put(type, instanceSupplier);

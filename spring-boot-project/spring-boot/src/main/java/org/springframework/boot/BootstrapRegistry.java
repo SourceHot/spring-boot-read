@@ -91,6 +91,7 @@ public interface BootstrapRegistry {
 	/**
 	 * Supplier used to provide the actual instance when needed.
 	 *
+	 * 实例提供接口
 	 * @param <T> the instance type
 	 * @see Scope
 	 */
@@ -164,6 +165,7 @@ public interface BootstrapRegistry {
 
 	/**
 	 * The scope of a instance.
+	 * 实例作用域
 	 * @since 2.4.2
 	 */
 	enum Scope {

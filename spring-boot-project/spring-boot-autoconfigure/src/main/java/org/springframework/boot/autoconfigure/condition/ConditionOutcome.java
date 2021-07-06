@@ -22,13 +22,14 @@ import org.springframework.util.ObjectUtils;
 /**
  * Outcome for a condition match, including log message.
  *
+ * 条件匹配的结果
  * @author Phillip Webb
  * @since 1.0.0
  * @see ConditionMessage
  */
 public class ConditionOutcome {
 	/**
-	 * 是否匹配
+	 * 条件处理结果
 	 */
 	private final boolean match;
 

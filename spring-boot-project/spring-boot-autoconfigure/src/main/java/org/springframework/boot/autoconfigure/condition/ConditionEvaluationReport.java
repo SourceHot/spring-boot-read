@@ -39,6 +39,7 @@ import org.springframework.util.ObjectUtils;
 /**
  * Records condition evaluation details for reporting and logging.
  *
+ * 用于记录报告和记录条件评估详细信息。
  * @author Greg Turnquist
  * @author Dave Syer
  * @author Phillip Webb
@@ -108,14 +109,21 @@ public final class ConditionEvaluationReport {
 	 */
 	public static ConditionEvaluationReport get(ConfigurableListableBeanFactory beanFactory) {
 		synchronized (beanFactory) {
+			// 返回对象
 			ConditionEvaluationReport report;
+			// 判断bean工厂中是否已经存在
 			if (beanFactory.containsSingleton(BEAN_NAME)) {
+				// 存在获取
 				report = beanFactory.getBean(BEAN_NAME, ConditionEvaluationReport.class);
-			} else {
+			}
+			else {
+				// 不存在创建并且放入bean工厂
 				report = new ConditionEvaluationReport();
 				beanFactory.registerSingleton(BEAN_NAME, report);
 			}
+			// 父报告处理
 			locateParent(beanFactory.getParentBeanFactory(), report);
+			// 返回
 			return report;
 		}
 	}
@@ -129,6 +137,7 @@ public final class ConditionEvaluationReport {
 	/**
 	 * Record the occurrence of condition evaluation.
 	 *
+	 * 记录报告
 	 * @param source    the source of the condition (class or method name)
 	 * @param condition the condition evaluated
 	 * @param outcome   the condition outcome

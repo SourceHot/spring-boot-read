@@ -42,11 +42,16 @@ public abstract class SpringBootCondition implements Condition {
 
 	@Override
 	public final boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 获取类名或者方法名
 		String classOrMethodName = getClassOrMethodName(metadata);
 		try {
+			// 获取条件解析结果
 			ConditionOutcome outcome = getMatchOutcome(context, metadata);
+			// 日志输出
 			logOutcome(classOrMethodName, outcome);
+			// 记录条件结果
 			recordEvaluation(context, classOrMethodName, outcome);
+			// 获取匹配结果
 			return outcome.isMatch();
 		}
 		catch (NoClassDefFoundError ex) {
@@ -73,11 +78,14 @@ public abstract class SpringBootCondition implements Condition {
 	}
 
 	private static String getClassOrMethodName(AnnotatedTypeMetadata metadata) {
+		// 判断类型是否是ClassMetadata
 		if (metadata instanceof ClassMetadata) {
 			ClassMetadata classMetadata = (ClassMetadata) metadata;
 			return classMetadata.getClassName();
 		}
+		// 类型强转MethodMetadata
 		MethodMetadata methodMetadata = (MethodMetadata) metadata;
+		// 字符串组装
 		return methodMetadata.getDeclaringClassName() + "#" + methodMetadata.getMethodName();
 	}
 

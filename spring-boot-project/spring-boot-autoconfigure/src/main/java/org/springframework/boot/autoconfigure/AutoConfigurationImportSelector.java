@@ -119,14 +119,23 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		if (!isEnabled(annotationMetadata)) {
 			return EMPTY_ENTRY;
 		}
+		// 注解属性表
 		AnnotationAttributes attributes = getAttributes(annotationMetadata);
+		// 获取配置类
 		List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
+		// 过滤重复项
 		configurations = removeDuplicates(configurations);
+		// 获取排除的类
 		Set<String> exclusions = getExclusions(annotationMetadata, attributes);
+		// 检查排除的类
 		checkExcludedClasses(configurations, exclusions);
+		// 配置类中移除排除的类
 		configurations.removeAll(exclusions);
+		// 过滤,
 		configurations = getConfigurationClassFilter().filter(configurations);
+		// 触发导入自动装配事件
 		fireAutoConfigurationImportEvents(configurations, exclusions);
+		// 组装对象
 		return new AutoConfigurationEntry(configurations, exclusions);
 	}
 
@@ -364,8 +373,13 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 
 		List<String> filter(List<String> configurations) {
 			long startTime = System.nanoTime();
+			// 将配置类转换成数组
 			String[] candidates = StringUtils.toStringArray(configurations);
 			boolean skipped = false;
+			// 获取所有的AutoConfigurationImportFilter
+			// 1. OnClassCondition
+			// 2. OnWebApplicationCondition
+			// 3. OnBeanCondition
 			for (AutoConfigurationImportFilter filter : this.filters) {
 				boolean[] match = filter.match(candidates, this.autoConfigurationMetadata);
 				for (int i = 0; i < match.length; i++) {
@@ -430,8 +444,10 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 					() -> String.format("Only %s implementations are supported, got %s",
 							AutoConfigurationImportSelector.class.getSimpleName(),
 							deferredImportSelector.getClass().getName()));
+			// 获取自动装配条目
 			AutoConfigurationEntry autoConfigurationEntry = ((AutoConfigurationImportSelector) deferredImportSelector)
 					.getAutoConfigurationEntry(annotationMetadata);
+			// 添加到自动装配元素集合
 			this.autoConfigurationEntries.add(autoConfigurationEntry);
 			for (String importClassName : autoConfigurationEntry.getConfigurations()) {
 				this.entries.putIfAbsent(importClassName, annotationMetadata);
@@ -480,10 +496,19 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 
 	}
 
+	/**
+	 * 自动装配条目
+	 */
 	protected static class AutoConfigurationEntry {
 
+		/**
+		 * 配置类
+		 */
 		private final List<String> configurations;
 
+		/**
+		 * 排除类
+		 */
 		private final Set<String> exclusions;
 
 		private AutoConfigurationEntry() {

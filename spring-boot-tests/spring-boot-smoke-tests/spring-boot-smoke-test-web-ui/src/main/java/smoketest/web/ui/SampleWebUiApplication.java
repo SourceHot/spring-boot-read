@@ -24,6 +24,10 @@ import org.springframework.core.convert.converter.Converter;
 @SpringBootApplication
 public class SampleWebUiApplication {
 
+	public static void main(String[] args) {
+		SpringApplication.run(SampleWebUiApplication.class, args);
+	}
+
 	@Bean
 	public MessageRepository messageRepository() {
 		return new InMemoryMessageRepository();
@@ -37,10 +41,6 @@ public class SampleWebUiApplication {
 				return messageRepository().findMessage(Long.valueOf(id));
 			}
 		};
-	}
-
-	public static void main(String[] args) {
-		SpringApplication.run(SampleWebUiApplication.class, args);
 	}
 
 }
