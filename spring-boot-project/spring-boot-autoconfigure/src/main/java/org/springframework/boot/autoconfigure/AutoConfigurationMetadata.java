@@ -21,6 +21,7 @@ import java.util.Set;
 /**
  * Provides access to meta-data written by the auto-configure annotation processor.
  *
+ * 自动配置元数据
  * @author Phillip Webb
  * @since 1.5.0
  */
@@ -29,6 +30,7 @@ public interface AutoConfigurationMetadata {
 	/**
 	 * Return {@code true} if the specified class name was processed by the annotation
 	 * processor.
+	 * 是否已处理
 	 * @param className the source class
 	 * @return if the class was processed
 	 */
@@ -36,6 +38,7 @@ public interface AutoConfigurationMetadata {
 
 	/**
 	 * Get an {@link Integer} value from the meta-data.
+	 * 获取元数据中key对应的数据
 	 * @param className the source class
 	 * @param key the meta-data key
 	 * @return the meta-data value or {@code null}
@@ -44,6 +47,7 @@ public interface AutoConfigurationMetadata {
 
 	/**
 	 * Get an {@link Integer} value from the meta-data.
+	 * 获取元数据中key对应的数据,支持默认值
 	 * @param className the source class
 	 * @param key the meta-data key
 	 * @param defaultValue the default value
@@ -53,6 +57,7 @@ public interface AutoConfigurationMetadata {
 
 	/**
 	 * Get a {@link Set} value from the meta-data.
+	 * 从元数据中获取key对应的set数据
 	 * @param className the source class
 	 * @param key the meta-data key
 	 * @return the meta-data value or {@code null}
@@ -61,6 +66,7 @@ public interface AutoConfigurationMetadata {
 
 	/**
 	 * Get a {@link Set} value from the meta-data.
+	 * 从元数据中获取key对应的set数据
 	 * @param className the source class
 	 * @param key the meta-data key
 	 * @param defaultValue the default value

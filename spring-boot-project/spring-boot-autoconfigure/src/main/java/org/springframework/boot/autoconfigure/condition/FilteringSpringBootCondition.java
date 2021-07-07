@@ -84,13 +84,20 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 		this.beanClassLoader = classLoader;
 	}
 
+	/**
+	 * 过滤方法
+	 */
 	protected final List<String> filter(Collection<String> classNames, ClassNameFilter classNameFilter,
 			ClassLoader classLoader) {
+		// 类名集合为空返回空
 		if (CollectionUtils.isEmpty(classNames)) {
 			return Collections.emptyList();
 		}
+		// 匹配的结果集合
 		List<String> matches = new ArrayList<>(classNames.size());
+		// 循环处理类名
 		for (String candidate : classNames) {
+			// 通过类名过滤器来判断是否符合,符合加入到结果集合中
 			if (classNameFilter.matches(candidate, classLoader)) {
 				matches.add(candidate);
 			}
@@ -113,8 +120,10 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 		return Class.forName(className);
 	}
 
+	/**
+	 * 类名过滤枚举
+	 */
 	protected enum ClassNameFilter {
-
 		PRESENT {
 
 			@Override
@@ -123,7 +132,6 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 			}
 
 		},
-
 		MISSING {
 
 			@Override

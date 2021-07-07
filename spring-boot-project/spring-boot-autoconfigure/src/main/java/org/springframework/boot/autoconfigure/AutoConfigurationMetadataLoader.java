@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
 /**
  * Internal utility used to load {@link AutoConfigurationMetadata}.
  *
+ * 自动配置元数据加载器
  * @author Phillip Webb
  */
 final class AutoConfigurationMetadataLoader {

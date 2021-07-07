@@ -26,16 +26,19 @@ public enum SearchStrategy {
 
 	/**
 	 * Search only the current context.
+	 * 仅搜索当前上下文
 	 */
 	CURRENT,
 
 	/**
 	 * Search all ancestors, but not the current context.
+	 * 搜索所有祖先，但不搜索当前上下文。
 	 */
 	ANCESTORS,
 
 	/**
 	 * Search the entire hierarchy.
+	 * 全部
 	 */
 	ALL
 

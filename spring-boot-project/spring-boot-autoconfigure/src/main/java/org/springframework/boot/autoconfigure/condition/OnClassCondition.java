@@ -49,10 +49,13 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		// Split the work and perform half in a background thread if more than one
 		// processor is available. Using a single additional thread seems to offer the
 		// best performance. More threads make things worse.
+		// 配置类数量大于1并且可用处理器数量大于1
 		if (autoConfigurationClasses.length > 1 && Runtime.getRuntime().availableProcessors() > 1) {
+			// 新建线程处理
 			return resolveOutcomesThreaded(autoConfigurationClasses, autoConfigurationMetadata);
 		}
 		else {
+			// 在原有线程中处理
 			OutcomesResolver outcomesResolver = new StandardOutcomesResolver(autoConfigurationClasses, 0,
 					autoConfigurationClasses.length, autoConfigurationMetadata, getBeanClassLoader());
 			return outcomesResolver.resolveOutcomes();
@@ -88,7 +91,9 @@ class OnClassCondition extends FilteringSpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 获取类加载器
 		ClassLoader classLoader = context.getClassLoader();
+		// 创建条件信息对象
 		ConditionMessage matchMessage = ConditionMessage.empty();
 		List<String> onClasses = getCandidates(metadata, ConditionalOnClass.class);
 		if (onClasses != null) {
@@ -142,8 +147,14 @@ class OnClassCondition extends FilteringSpringBootCondition {
 
 	private static final class ThreadedOutcomesResolver implements OutcomesResolver {
 
+		/**
+		 * 线程
+		 */
 		private final Thread thread;
 
+		/**
+		 * 处理结果
+		 */
 		private volatile ConditionOutcome[] outcomes;
 
 		private ThreadedOutcomesResolver(OutcomesResolver outcomesResolver) {
@@ -166,14 +177,29 @@ class OnClassCondition extends FilteringSpringBootCondition {
 
 	private static final class StandardOutcomesResolver implements OutcomesResolver {
 
+		/***
+		 * 自动装配类名称
+		 */
 		private final String[] autoConfigurationClasses;
 
+		/**
+		 * 开始索引
+		 */
 		private final int start;
 
+		/**
+		 * 结束索引
+		 */
 		private final int end;
 
+		/**
+		 * 自动装配元数据
+		 */
 		private final AutoConfigurationMetadata autoConfigurationMetadata;
 
+		/**
+		 * 类加载器
+		 */
 		private final ClassLoader beanClassLoader;
 
 		private StandardOutcomesResolver(String[] autoConfigurationClasses, int start, int end,
@@ -192,12 +218,17 @@ class OnClassCondition extends FilteringSpringBootCondition {
 
 		private ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses, int start, int end,
 				AutoConfigurationMetadata autoConfigurationMetadata) {
+			// 创建返回值集合
 			ConditionOutcome[] outcomes = new ConditionOutcome[end - start];
+			// 循环处理自动装配类
 			for (int i = start; i < end; i++) {
+				// 获取自动装配类
 				String autoConfigurationClass = autoConfigurationClasses[i];
 				if (autoConfigurationClass != null) {
+					// 从自动装配元数据中获取ConditionalOnClass对应的数据
 					String candidates = autoConfigurationMetadata.get(autoConfigurationClass, "ConditionalOnClass");
 					if (candidates != null) {
+						// 获取ConditionOutcome数据结果
 						outcomes[i - start] = getOutcome(candidates);
 					}
 				}
