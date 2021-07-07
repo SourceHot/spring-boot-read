@@ -95,28 +95,39 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		ClassLoader classLoader = context.getClassLoader();
 		// 创建条件信息对象
 		ConditionMessage matchMessage = ConditionMessage.empty();
+		// 注解元数据中获取ConditionalOnClass的数据
 		List<String> onClasses = getCandidates(metadata, ConditionalOnClass.class);
+		// 类集合不为空
 		if (onClasses != null) {
+			// 过滤类数据
 			List<String> missing = filter(onClasses, ClassNameFilter.MISSING, classLoader);
+			// 如果过滤后的类名称不为空将返回不匹配的结果
 			if (!missing.isEmpty()) {
 				return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnClass.class)
 						.didNotFind("required class", "required classes").items(Style.QUOTE, missing));
 			}
+			// 创建匹配的条件消息
 			matchMessage = matchMessage.andCondition(ConditionalOnClass.class)
 					.found("required class", "required classes")
 					.items(Style.QUOTE, filter(onClasses, ClassNameFilter.PRESENT, classLoader));
 		}
+		// 注解元数据中获取ConditionalOnMissingClass的数据
 		List<String> onMissingClasses = getCandidates(metadata, ConditionalOnMissingClass.class);
+		// 集合不为空
 		if (onMissingClasses != null) {
+			// 过滤类数据
 			List<String> present = filter(onMissingClasses, ClassNameFilter.PRESENT, classLoader);
+			// 如果过滤后的类名称不为空将返回不匹配的结果
 			if (!present.isEmpty()) {
 				return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnMissingClass.class)
 						.found("unwanted class", "unwanted classes").items(Style.QUOTE, present));
 			}
+			// 创建匹配的条件消息
 			matchMessage = matchMessage.andCondition(ConditionalOnMissingClass.class)
 					.didNotFind("unwanted class", "unwanted classes")
 					.items(Style.QUOTE, filter(onMissingClasses, ClassNameFilter.MISSING, classLoader));
 		}
+		// 返回匹配结果
 		return ConditionOutcome.match(matchMessage);
 	}
 

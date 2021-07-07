@@ -40,24 +40,33 @@ class OnResourceCondition extends SpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 从注解元数据中获取ConditionalOnResource注解对应的数据表
 		MultiValueMap<String, Object> attributes = metadata
 				.getAllAnnotationAttributes(ConditionalOnResource.class.getName(), true);
+		// 获取资源加载器
 		ResourceLoader loader = context.getResourceLoader();
+		// 资源地址集合
 		List<String> locations = new ArrayList<>();
+		// 设置资源地址集合
 		collectValues(locations, attributes.get("resources"));
 		Assert.isTrue(!locations.isEmpty(),
 				"@ConditionalOnResource annotations must specify at least one resource location");
+		// 丢失的资源地址集合
 		List<String> missing = new ArrayList<>();
 		for (String location : locations) {
+			// 对资源地址中存在的占位符进行处理
 			String resource = context.getEnvironment().resolvePlaceholders(location);
+			// 通过资源加载器获取资源判断是否存在,如果不存在将加入到丢失的资源地址集合中
 			if (!loader.getResource(resource).exists()) {
 				missing.add(location);
 			}
 		}
+		// 丢失的资源地址集合不为空的情况下返回匹配失败对象.
 		if (!missing.isEmpty()) {
 			return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnResource.class)
 					.didNotFind("resource", "resources").items(Style.QUOTE, missing));
 		}
+		// 返回匹配成功对象
 		return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnResource.class)
 				.found("location", "locations").items(locations));
 	}

@@ -40,9 +40,13 @@ class OnJavaCondition extends SpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 从注解元数据中获取ConditionalOnJava对应的属性表
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnJava.class.getName());
+		// 获取range对象
 		Range range = (Range) attributes.get("range");
+		// 获取java版本
 		JavaVersion version = (JavaVersion) attributes.get("value");
+		// 获取条件匹配的结果
 		return getMatchOutcome(range, JVM_VERSION, version);
 	}
 

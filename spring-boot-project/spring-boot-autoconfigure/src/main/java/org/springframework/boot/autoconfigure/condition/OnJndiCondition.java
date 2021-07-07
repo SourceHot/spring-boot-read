@@ -39,10 +39,13 @@ class OnJndiCondition extends SpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 从注解元数据中获取ConditionalOnJndi注解对应的数据
 		AnnotationAttributes annotationAttributes = AnnotationAttributes
 				.fromMap(metadata.getAnnotationAttributes(ConditionalOnJndi.class.getName()));
+		// 从属性表中获取value数据值
 		String[] locations = annotationAttributes.getStringArray("value");
 		try {
+			// 获取条件处理结果
 			return getMatchOutcome(locations);
 		}
 		catch (NoClassDefFoundError ex) {
@@ -52,21 +55,28 @@ class OnJndiCondition extends SpringBootCondition {
 	}
 
 	private ConditionOutcome getMatchOutcome(String[] locations) {
+		// jndi是否可用,如果不可用将返回匹配失败结果对象.
 		if (!isJndiAvailable()) {
 			return ConditionOutcome
 					.noMatch(ConditionMessage.forCondition(ConditionalOnJndi.class).notAvailable("JNDI environment"));
 		}
+		// 如果locations数据量为0将返回匹配成功结果.
 		if (locations.length == 0) {
 			return ConditionOutcome
 					.match(ConditionMessage.forCondition(ConditionalOnJndi.class).available("JNDI environment"));
 		}
+		// 获取jndi加载器
 		JndiLocator locator = getJndiLocator(locations);
+		// jndi中寻找地址
 		String location = locator.lookupFirstLocation();
+		// 创建描述对象
 		String details = "(" + StringUtils.arrayToCommaDelimitedString(locations) + ")";
+		// jndi中的地址搜索对象不为空返回匹配成功结果
 		if (location != null) {
 			return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnJndi.class, details)
 					.foundExactly("\"" + location + "\""));
 		}
+		// jndi中的地址搜索对象为空返回匹配失败结果对象
 		return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnJndi.class, details)
 				.didNotFind("any matching JNDI location").atAll());
 	}

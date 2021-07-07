@@ -51,10 +51,13 @@ class OnWebApplicationCondition extends FilteringSpringBootCondition {
 	@Override
 	protected ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses,
 			AutoConfigurationMetadata autoConfigurationMetadata) {
+		// 创建返回集合
 		ConditionOutcome[] outcomes = new ConditionOutcome[autoConfigurationClasses.length];
 		for (int i = 0; i < outcomes.length; i++) {
+			// 获取自动装配的类名
 			String autoConfigurationClass = autoConfigurationClasses[i];
 			if (autoConfigurationClass != null) {
+				// 获取条件结果
 				outcomes[i] = getOutcome(
 						autoConfigurationMetadata.get(autoConfigurationClass, "ConditionalOnWebApplication"));
 			}
@@ -66,17 +69,21 @@ class OnWebApplicationCondition extends FilteringSpringBootCondition {
 		if (type == null) {
 			return null;
 		}
+		// 创建条件消息构建器
 		ConditionMessage.Builder message = ConditionMessage.forCondition(ConditionalOnWebApplication.class);
+		// 类型是 SERVLET 时
 		if (ConditionalOnWebApplication.Type.SERVLET.name().equals(type)) {
 			if (!ClassNameFilter.isPresent(SERVLET_WEB_APPLICATION_CLASS, getBeanClassLoader())) {
 				return ConditionOutcome.noMatch(message.didNotFind("servlet web application classes").atAll());
 			}
 		}
+		// 类型是 REACTIVE 时
 		if (ConditionalOnWebApplication.Type.REACTIVE.name().equals(type)) {
 			if (!ClassNameFilter.isPresent(REACTIVE_WEB_APPLICATION_CLASS, getBeanClassLoader())) {
 				return ConditionOutcome.noMatch(message.didNotFind("reactive web application classes").atAll());
 			}
 		}
+		// 不包含org.springframework.web.context.support.GenericWebApplicationContext并且不包含org.springframework.web.reactive.HandlerResult
 		if (!ClassNameFilter.isPresent(SERVLET_WEB_APPLICATION_CLASS, getBeanClassLoader())
 				&& !ClassUtils.isPresent(REACTIVE_WEB_APPLICATION_CLASS, getBeanClassLoader())) {
 			return ConditionOutcome.noMatch(message.didNotFind("reactive or servlet web application classes").atAll());
@@ -86,25 +93,33 @@ class OnWebApplicationCondition extends FilteringSpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 确定注解元数据中是否包含ConditionalOnWebApplication注解
 		boolean required = metadata.isAnnotated(ConditionalOnWebApplication.class.getName());
+		// 判断是否是web应用
 		ConditionOutcome outcome = isWebApplication(context, metadata, required);
+		// 存在ConditionalOnWebApplication注解并且不匹配返回匹配失败的结果对象
 		if (required && !outcome.isMatch()) {
 			return ConditionOutcome.noMatch(outcome.getConditionMessage());
 		}
+		// 不存在ConditionalOnWebApplication注解并且匹配返回匹配失败的结果对象
 		if (!required && outcome.isMatch()) {
 			return ConditionOutcome.noMatch(outcome.getConditionMessage());
 		}
+		// 返回匹配成功的结果对象
 		return ConditionOutcome.match(outcome.getConditionMessage());
 	}
 
 	private ConditionOutcome isWebApplication(ConditionContext context, AnnotatedTypeMetadata metadata,
 			boolean required) {
 		switch (deduceType(metadata)) {
-		case SERVLET:
+			case SERVLET:
+				// 判断是否是servlet
 			return isServletWebApplication(context);
-		case REACTIVE:
+			case REACTIVE:
+				// 判断是否是reactive
 			return isReactiveWebApplication(context);
-		default:
+			default:
+				// 任意web应用
 			return isAnyWebApplication(context, required);
 		}
 	}

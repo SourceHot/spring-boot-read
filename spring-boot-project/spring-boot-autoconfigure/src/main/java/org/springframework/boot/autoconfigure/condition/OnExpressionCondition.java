@@ -37,17 +37,25 @@ class OnExpressionCondition extends SpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 从注解元数据中获取ConditionalOnExpression中的value数据,数据是el表达式
 		String expression = (String) metadata.getAnnotationAttributes(ConditionalOnExpression.class.getName())
 				.get("value");
+		// 表达式包装
 		expression = wrapIfNecessary(expression);
+		// 消息构建器
 		ConditionMessage.Builder messageBuilder = ConditionMessage.forCondition(ConditionalOnExpression.class,
 				"(" + expression + ")");
+		// 通过条件上下文获取占位符解析器对el表达式进行解析
 		expression = context.getEnvironment().resolvePlaceholders(expression);
+		// 通过条件上下文获取bean工厂
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
 		if (beanFactory != null) {
+			// el表达式执行
 			boolean result = evaluateExpression(beanFactory, expression);
+			// 创建条件匹配的结果
 			return new ConditionOutcome(result, messageBuilder.resultedIn(result));
 		}
+		// 返回不匹配结果对象
 		return ConditionOutcome.noMatch(messageBuilder.because("no BeanFactory available."));
 	}
 

@@ -34,10 +34,14 @@ class OnWarDeploymentCondition extends SpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 获取资源加载器
 		ResourceLoader resourceLoader = context.getResourceLoader();
+		// 资源加扎起类型是否是WebApplicationContext
 		if (resourceLoader instanceof WebApplicationContext) {
 			WebApplicationContext applicationContext = (WebApplicationContext) resourceLoader;
+			// 获取servlet上下文
 			ServletContext servletContext = applicationContext.getServletContext();
+			// servlet上下文不为空返回匹配成功对象
 			if (servletContext != null) {
 				return ConditionOutcome.match("Application is deployed as a WAR file.");
 			}

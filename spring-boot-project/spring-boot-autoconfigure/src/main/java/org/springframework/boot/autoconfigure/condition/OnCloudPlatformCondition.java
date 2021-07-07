@@ -34,17 +34,24 @@ class OnCloudPlatformCondition extends SpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 从注解元数据中获取ConditionalOnCloudPlatform对应的数据表
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnCloudPlatform.class.getName());
+		// 获取value数据并强制转换
 		CloudPlatform cloudPlatform = (CloudPlatform) attributes.get("value");
+		// 获取条件匹配的结果
 		return getMatchOutcome(context.getEnvironment(), cloudPlatform);
 	}
 
 	private ConditionOutcome getMatchOutcome(Environment environment, CloudPlatform cloudPlatform) {
+		// 获取云平台名称
 		String name = cloudPlatform.name();
+		// 消息构造器
 		ConditionMessage.Builder message = ConditionMessage.forCondition(ConditionalOnCloudPlatform.class);
+		// 判断云平台是否激活, 如果激活返回匹配成功的结果
 		if (cloudPlatform.isActive(environment)) {
 			return ConditionOutcome.match(message.foundExactly(name));
 		}
+		// 不激活返回匹配失败的结果
 		return ConditionOutcome.noMatch(message.didNotFind(name).atAll());
 	}
 

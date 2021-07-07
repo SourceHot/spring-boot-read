@@ -47,17 +47,25 @@ class OnPropertyCondition extends SpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		// 从注解元数据中获取ConditionalOnProperty注解对应的数据
 		List<AnnotationAttributes> allAnnotationAttributes = annotationAttributesFromMultiValueMap(
 				metadata.getAllAnnotationAttributes(ConditionalOnProperty.class.getName()));
+		// 不匹配的条件消息集合
 		List<ConditionMessage> noMatch = new ArrayList<>();
+		// 匹配的条件消息集合
 		List<ConditionMessage> match = new ArrayList<>();
+		// 循环处理注解属性
 		for (AnnotationAttributes annotationAttributes : allAnnotationAttributes) {
+			// 确认条件解析结果
 			ConditionOutcome outcome = determineOutcome(annotationAttributes, context.getEnvironment());
+			// 放入不同的条件结果组中
 			(outcome.isMatch() ? match : noMatch).add(outcome.getConditionMessage());
 		}
 		if (!noMatch.isEmpty()) {
+			// 返回匹配失败对象
 			return ConditionOutcome.noMatch(ConditionMessage.of(noMatch));
 		}
+		// 返回匹配成功对象
 		return ConditionOutcome.match(ConditionMessage.of(match));
 	}
 
@@ -85,19 +93,26 @@ class OnPropertyCondition extends SpringBootCondition {
 	}
 
 	private ConditionOutcome determineOutcome(AnnotationAttributes annotationAttributes, PropertyResolver resolver) {
+		// 创建搜索器
 		Spec spec = new Spec(annotationAttributes);
+		// 缺少的属性值
 		List<String> missingProperties = new ArrayList<>();
+		// 不匹配的属性值
 		List<String> nonMatchingProperties = new ArrayList<>();
+		// 置入属性值
 		spec.collectProperties(resolver, missingProperties, nonMatchingProperties);
+		// 缺少的属性值不为空,返回匹配失败对象
 		if (!missingProperties.isEmpty()) {
 			return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnProperty.class, spec)
 					.didNotFind("property", "properties").items(Style.QUOTE, missingProperties));
 		}
+		// 不匹配的属性值不为空,返回匹配失败对象
 		if (!nonMatchingProperties.isEmpty()) {
 			return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnProperty.class, spec)
 					.found("different value in property", "different value in properties")
 					.items(Style.QUOTE, nonMatchingProperties));
 		}
+		// 返回匹配成功对象
 		return ConditionOutcome
 				.match(ConditionMessage.forCondition(ConditionalOnProperty.class, spec).because("matched"));
 	}
