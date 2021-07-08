@@ -91,11 +91,15 @@ public abstract class AutoConfigurationPackages {
 	 * @param packageNames the package names to set
 	 */
 	public static void register(BeanDefinitionRegistry registry, String... packageNames) {
+		// bean注册器中是否存在指定的bean定义
 		if (registry.containsBeanDefinition(BEAN)) {
+			// 获取bean定义
 			BasePackagesBeanDefinition beanDefinition = (BasePackagesBeanDefinition) registry.getBeanDefinition(BEAN);
+			// 向bean定义中添加包名集合
 			beanDefinition.addBasePackages(packageNames);
 		}
 		else {
+			// 注册bean定义
 			registry.registerBeanDefinition(BEAN, new BasePackagesBeanDefinition(packageNames));
 		}
 	}
@@ -108,11 +112,13 @@ public abstract class AutoConfigurationPackages {
 
 		@Override
 		public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+			// 注册
 			register(registry, new PackageImports(metadata).getPackageNames().toArray(new String[0]));
 		}
 
 		@Override
 		public Set<Object> determineImports(AnnotationMetadata metadata) {
+			// 确认导入类集合
 			return Collections.singleton(new PackageImports(metadata));
 		}
 
@@ -123,11 +129,16 @@ public abstract class AutoConfigurationPackages {
 	 */
 	private static final class PackageImports {
 
+		/**
+		 * 包名集合
+		 */
 		private final List<String> packageNames;
 
 		PackageImports(AnnotationMetadata metadata) {
+			// 从注解元数据中获取AutoConfigurationPackage注解对应的属性表
 			AnnotationAttributes attributes = AnnotationAttributes
 					.fromMap(metadata.getAnnotationAttributes(AutoConfigurationPackage.class.getName(), false));
+			// 获取basePackages数据
 			List<String> packageNames = new ArrayList<>(Arrays.asList(attributes.getStringArray("basePackages")));
 			for (Class<?> basePackageClass : attributes.getClassArray("basePackageClasses")) {
 				packageNames.add(basePackageClass.getPackage().getName());

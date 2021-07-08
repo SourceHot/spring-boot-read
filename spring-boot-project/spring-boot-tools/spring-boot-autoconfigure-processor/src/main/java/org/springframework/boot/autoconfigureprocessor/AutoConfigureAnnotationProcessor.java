@@ -61,13 +61,24 @@ import javax.tools.StandardLocation;
 		"org.springframework.boot.autoconfigure.AutoConfigureAfter",
 		"org.springframework.boot.autoconfigure.AutoConfigureOrder" })
 public class AutoConfigureAnnotationProcessor extends AbstractProcessor {
-
+	/**
+	 * 属性地址
+	 */
 	protected static final String PROPERTIES_PATH = "META-INF/spring-autoconfigure-metadata.properties";
 
+	/**
+	 * 注解集合
+	 */
 	private final Map<String, String> annotations;
 
+	/**
+	 * 数据提取器映射表
+	 */
 	private final Map<String, ValueExtractor> valueExtractors;
 
+	/**
+	 * 属性表
+	 */
 	private final Map<String, String> properties = new TreeMap<>();
 
 	public AutoConfigureAnnotationProcessor() {
@@ -109,10 +120,12 @@ public class AutoConfigureAnnotationProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		for (Map.Entry<String, String> entry : this.annotations.entrySet()) {
+			// 处理数据
 			process(roundEnv, entry.getKey(), entry.getValue());
 		}
 		if (roundEnv.processingOver()) {
 			try {
+				// 写出文件
 				writeProperties();
 			}
 			catch (Exception ex) {
@@ -125,7 +138,9 @@ public class AutoConfigureAnnotationProcessor extends AbstractProcessor {
 	private void process(RoundEnvironment roundEnv, String propertyKey, String annotationName) {
 		TypeElement annotationType = this.processingEnv.getElementUtils().getTypeElement(annotationName);
 		if (annotationType != null) {
+			// 在环境中获取带有annotationType的元素
 			for (Element element : roundEnv.getElementsAnnotatedWith(annotationType)) {
+				// 单个数据的处理流程
 				processElement(element, propertyKey, annotationName);
 			}
 		}
@@ -133,10 +148,15 @@ public class AutoConfigureAnnotationProcessor extends AbstractProcessor {
 
 	private void processElement(Element element, String propertyKey, String annotationName) {
 		try {
+			// 确认限定名称，可以理解为类名
 			String qualifiedName = Elements.getQualifiedName(element);
+			// 获取注解对象
 			AnnotationMirror annotation = getAnnotation(element, annotationName);
+			// 限定名和注解对象都不为空的情况下
 			if (qualifiedName != null && annotation != null) {
+				// 获取数据值, 获取需要依靠值提取器
 				List<Object> values = getValues(propertyKey, annotation);
+				// 置入数据对象集合
 				this.properties.put(qualifiedName + "." + propertyKey, toCommaDelimitedString(values));
 				this.properties.put(qualifiedName, "");
 			}
