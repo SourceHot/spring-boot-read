@@ -36,6 +36,7 @@ import org.springframework.context.ResourceLoaderAware;
  * <li>{@link ResourceLoaderAware}</li>
  * </ul>
  *
+ * 自动配置过滤器
  * @author Phillip Webb
  * @since 1.5.0
  */

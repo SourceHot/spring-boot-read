@@ -29,8 +29,14 @@ import java.util.Set;
  */
 public class AutoConfigurationImportEvent extends EventObject {
 
+	/**
+	 * 候选配置类集合
+	 */
 	private final List<String> candidateConfigurations;
 
+	/**
+	 * 排除的类集合
+	 */
 	private final Set<String> exclusions;
 
 	public AutoConfigurationImportEvent(Object source, List<String> candidateConfigurations, Set<String> exclusions) {

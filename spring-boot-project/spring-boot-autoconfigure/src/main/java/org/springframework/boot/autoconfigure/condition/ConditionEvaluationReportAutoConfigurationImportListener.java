@@ -32,13 +32,20 @@ import org.springframework.boot.autoconfigure.AutoConfigurationImportListener;
 class ConditionEvaluationReportAutoConfigurationImportListener
 		implements AutoConfigurationImportListener, BeanFactoryAware {
 
+	/**
+	 * bean工厂
+	 */
 	private ConfigurableListableBeanFactory beanFactory;
 
 	@Override
 	public void onAutoConfigurationImportEvent(AutoConfigurationImportEvent event) {
+		// bean工厂不为空的情况下处理
 		if (this.beanFactory != null) {
+			// 获取条件报告对象
 			ConditionEvaluationReport report = ConditionEvaluationReport.get(this.beanFactory);
+			// 记录评估配置类
 			report.recordEvaluationCandidates(event.getCandidateConfigurations());
+			// 记录排除的类
 			report.recordExclusions(event.getExclusions());
 		}
 	}
