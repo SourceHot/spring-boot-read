@@ -53,33 +53,43 @@ public abstract class AbstractLoggingSystem extends LoggingSystem {
 
 	@Override
 	public void initialize(LoggingInitializationContext initializationContext, String configLocation, LogFile logFile) {
+		// 判断配置文件地址是否存在
 		if (StringUtils.hasLength(configLocation)) {
+			// 使用配置文件进行初始化
 			initializeWithSpecificConfig(initializationContext, configLocation, logFile);
 			return;
 		}
+		// 约定的初始化,默认初始化策略
 		initializeWithConventions(initializationContext, logFile);
 	}
 
 	private void initializeWithSpecificConfig(LoggingInitializationContext initializationContext, String configLocation,
 			LogFile logFile) {
+		// 解析配置地址
 		configLocation = SystemPropertyUtils.resolvePlaceholders(configLocation);
+		// 加载配置文件
 		loadConfiguration(initializationContext, configLocation, logFile);
 	}
 
 	private void initializeWithConventions(LoggingInitializationContext initializationContext, LogFile logFile) {
+		// 获取默认的初始化配置地址
 		String config = getSelfInitializationConfig();
 		if (config != null && logFile == null) {
 			// self initialization has occurred, reinitialize in case of property changes
+			// 重新初始化
 			reinitialize(initializationContext);
 			return;
 		}
 		if (config == null) {
+			// 获取spring中的日志文件
 			config = getSpringInitializationConfig();
 		}
 		if (config != null) {
+			// 加载配置文件
 			loadConfiguration(initializationContext, config, logFile);
 			return;
 		}
+		// 加载默认配置文件
 		loadDefaults(initializationContext, logFile);
 	}
 

@@ -38,9 +38,11 @@ class DelegatingLoggingSystemFactory implements LoggingSystemFactory {
 
 	@Override
 	public LoggingSystem getLoggingSystem(ClassLoader classLoader) {
+		// 获取LoggingSystemFactory集合
 		List<LoggingSystemFactory> delegates = (this.delegates != null) ? this.delegates.apply(classLoader) : null;
 		if (delegates != null) {
 			for (LoggingSystemFactory delegate : delegates) {
+				// 通过委托对象获取日志系统
 				LoggingSystem loggingSystem = delegate.getLoggingSystem(classLoader);
 				if (loggingSystem != null) {
 					return loggingSystem;

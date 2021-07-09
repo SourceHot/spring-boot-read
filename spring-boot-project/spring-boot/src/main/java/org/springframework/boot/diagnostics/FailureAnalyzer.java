@@ -20,6 +20,7 @@ package org.springframework.boot.diagnostics;
  * A {@code FailureAnalyzer} is used to analyze a failure and provide diagnostic
  * information that can be displayed to the user.
  *
+ * 故障分析器
  * @author Andy Wilkinson
  * @since 1.4.0
  */

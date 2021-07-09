@@ -1,33 +1,40 @@
 # Logging Systems
+# 日志系统
 org.springframework.boot.logging.LoggingSystemFactory=\
 org.springframework.boot.logging.logback.LogbackLoggingSystem.Factory,\
 org.springframework.boot.logging.log4j2.Log4J2LoggingSystem.Factory,\
 org.springframework.boot.logging.java.JavaLoggingSystem.Factory
 
 # PropertySource Loaders
+# 数据源加载器
 org.springframework.boot.env.PropertySourceLoader=\
 org.springframework.boot.env.PropertiesPropertySourceLoader,\
 org.springframework.boot.env.YamlPropertySourceLoader
 
 # ConfigData Location Resolvers
+# 配置数据解析器
 org.springframework.boot.context.config.ConfigDataLocationResolver=\
 org.springframework.boot.context.config.ConfigTreeConfigDataLocationResolver,\
 org.springframework.boot.context.config.StandardConfigDataLocationResolver
 
 # ConfigData Loaders
+# 配置数据加载器
 org.springframework.boot.context.config.ConfigDataLoader=\
 org.springframework.boot.context.config.ConfigTreeConfigDataLoader,\
 org.springframework.boot.context.config.StandardConfigDataLoader
 
 # Run Listeners
+# 监听器
 org.springframework.boot.SpringApplicationRunListener=\
 org.springframework.boot.context.event.EventPublishingRunListener
 
 # Error Reporters
+# 异常报告期
 org.springframework.boot.SpringBootExceptionReporter=\
 org.springframework.boot.diagnostics.FailureAnalyzers
 
 # Application Context Initializers
+# 应用上下文实例化接口
 org.springframework.context.ApplicationContextInitializer=\
 org.springframework.boot.context.ConfigurationWarningsApplicationContextInitializer,\
 org.springframework.boot.context.ContextIdApplicationContextInitializer,\
@@ -36,6 +43,7 @@ org.springframework.boot.rsocket.context.RSocketPortInfoApplicationContextInitia
 org.springframework.boot.web.context.ServerPortInfoApplicationContextInitializer
 
 # Application Listeners
+# 应用监听器
 org.springframework.context.ApplicationListener=\
 org.springframework.boot.ClearCachesApplicationListener,\
 org.springframework.boot.builder.ParentContextCloserApplicationListener,\
@@ -47,6 +55,7 @@ org.springframework.boot.env.EnvironmentPostProcessorApplicationListener,\
 org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener
 
 # Environment Post Processors
+# 环境后置处理器
 org.springframework.boot.env.EnvironmentPostProcessor=\
 org.springframework.boot.cloud.CloudFoundryVcapEnvironmentPostProcessor,\
 org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor,\
@@ -56,6 +65,7 @@ org.springframework.boot.env.SystemEnvironmentPropertySourceEnvironmentPostProce
 org.springframework.boot.reactor.DebugAgentEnvironmentPostProcessor
 
 # Failure Analyzers
+# 故障分析器
 org.springframework.boot.diagnostics.FailureAnalyzer=\
 org.springframework.boot.context.config.ConfigDataNotFoundFailureAnalyzer,\
 org.springframework.boot.context.properties.IncompatibleConfigurationFailureAnalyzer,\
@@ -77,5 +87,6 @@ org.springframework.boot.diagnostics.analyzer.PatternParseFailureAnalyzer,\
 org.springframework.boot.liquibase.LiquibaseChangelogMissingFailureAnalyzer
 
 # Failure Analysis Reporters
+# 故障分析报告
 org.springframework.boot.diagnostics.FailureAnalysisReporter=\
 org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter
