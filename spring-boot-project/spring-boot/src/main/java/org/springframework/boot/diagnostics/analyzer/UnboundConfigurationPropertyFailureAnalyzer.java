@@ -26,6 +26,7 @@ import org.springframework.boot.diagnostics.FailureAnalysis;
  * An {@link AbstractFailureAnalyzer} that performs analysis of failures caused by any
  * {@link UnboundConfigurationPropertiesException}.
  *
+ * 未绑定属性故障分析器
  * @author Madhura Bhave
  */
 class UnboundConfigurationPropertyFailureAnalyzer

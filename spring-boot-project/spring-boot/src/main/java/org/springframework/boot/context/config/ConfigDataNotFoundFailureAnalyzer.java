@@ -24,6 +24,7 @@ import org.springframework.boot.origin.Origin;
  * An implementation of {@link AbstractFailureAnalyzer} to analyze failures caused by
  * {@link ConfigDataNotFoundException}.
  *
+ * 配置数据搜索失败的异常分析
  * @author Michal Mlak
  * @author Phillip Webb
  */

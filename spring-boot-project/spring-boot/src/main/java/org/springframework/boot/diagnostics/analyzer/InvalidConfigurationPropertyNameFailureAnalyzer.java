@@ -27,6 +27,7 @@ import org.springframework.boot.diagnostics.FailureAnalysis;
  * An {@link AbstractFailureAnalyzer} that performs analysis of failures caused by
  * {@link InvalidConfigurationPropertyNameException}.
  *
+ * 无效的配置属性名称故障分析器
  * @author Madhura Bhave
  */
 class InvalidConfigurationPropertyNameFailureAnalyzer

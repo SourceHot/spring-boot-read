@@ -27,6 +27,7 @@ import org.springframework.boot.diagnostics.FailureAnalysis;
  * An {@link AbstractFailureAnalyzer} that performs analysis of failures caused by a
  * {@link BeanDefinitionOverrideException}.
  *
+ * bean定义覆盖分析器
  * @author Andy Wilkinson
  */
 class BeanDefinitionOverrideFailureAnalyzer extends AbstractFailureAnalyzer<BeanDefinitionOverrideException> {

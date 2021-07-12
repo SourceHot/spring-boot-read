@@ -31,6 +31,7 @@ import org.springframework.util.StringUtils;
  * An {@link AbstractInjectionFailureAnalyzer} that performs analysis of failures caused
  * by a {@link NoUniqueBeanDefinitionException}.
  *
+ * bean定义不唯一分析器
  * @author Andy Wilkinson
  */
 class NoUniqueBeanDefinitionFailureAnalyzer extends AbstractInjectionFailureAnalyzer<NoUniqueBeanDefinitionException>

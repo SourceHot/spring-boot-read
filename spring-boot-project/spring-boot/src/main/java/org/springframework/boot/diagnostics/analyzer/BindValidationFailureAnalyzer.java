@@ -31,6 +31,7 @@ import org.springframework.validation.ObjectError;
  * failures caused by {@link BindValidationException} or
  * {@link org.springframework.validation.BindException}.
  *
+ * 绑定验证失败分析器
  * @author Madhura Bhave
  */
 class BindValidationFailureAnalyzer extends AbstractFailureAnalyzer<Throwable> {

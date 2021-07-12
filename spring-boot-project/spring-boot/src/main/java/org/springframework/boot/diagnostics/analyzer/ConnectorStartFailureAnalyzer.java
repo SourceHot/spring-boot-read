@@ -23,6 +23,7 @@ import org.springframework.boot.web.embedded.tomcat.ConnectorStartFailedExceptio
 /**
  * An {@link AbstractFailureAnalyzer} for {@link ConnectorStartFailedException}.
  *
+ * 连接启动失败分析器
  * @author Andy Wilkinson
  */
 class ConnectorStartFailureAnalyzer extends AbstractFailureAnalyzer<ConnectorStartFailedException> {

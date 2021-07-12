@@ -36,6 +36,7 @@ public interface SpringBootExceptionReporter {
 
 	/**
 	 * Report a startup failure to the user.
+	 * 判断是否需要报告异常
 	 * @param failure the source failure
 	 * @return {@code true} if the failure was reported or {@code false} if default
 	 * reporting should occur.

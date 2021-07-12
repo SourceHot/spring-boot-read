@@ -24,6 +24,7 @@ import org.springframework.boot.web.server.PortInUseException;
  * A {@code FailureAnalyzer} that performs analysis of failures caused by a
  * {@code PortInUseException}.
  *
+ * 端口故障分析器
  * @author Andy Wilkinson
  */
 class PortInUseFailureAnalyzer extends AbstractFailureAnalyzer<PortInUseException> {

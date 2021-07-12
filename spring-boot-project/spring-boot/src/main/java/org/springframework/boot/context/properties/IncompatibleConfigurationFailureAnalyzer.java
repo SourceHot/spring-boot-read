@@ -25,6 +25,7 @@ import org.springframework.boot.diagnostics.FailureAnalysis;
  * A {@code FailureAnalyzer} that performs analysis of failures caused by a
  * {@code IncompatibleConfigurationException}.
  *
+ * 兼容性相关的异常分析
  * @author Brian Clozel
  */
 class IncompatibleConfigurationFailureAnalyzer extends AbstractFailureAnalyzer<IncompatibleConfigurationException> {

@@ -33,6 +33,8 @@ import org.springframework.core.annotation.MergedAnnotations;
  * {@link ConfigurationProperties @ConfigurationProperties} that are intended to use
  * {@link ConstructorBinding constructor binding} but did not.
  *
+ *
+ * 非构造函数注入失败的分析器
  * @author Andy Wilkinson
  */
 class NotConstructorBoundInjectionFailureAnalyzer

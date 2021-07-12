@@ -31,6 +31,7 @@ import org.springframework.util.ClassUtils;
  * An {@link AbstractFailureAnalyzer} that analyzes {@link NoSuchMethodError
  * NoSuchMethodErrors}.
  *
+ * 不具备方法的异常分析器
  * @author Andy Wilkinson
  * @author Stephane Nicoll
  */

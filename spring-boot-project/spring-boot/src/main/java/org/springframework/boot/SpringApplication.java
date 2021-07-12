@@ -1115,10 +1115,15 @@ public class SpringApplication {
 		}
 	}
 
+	/**
+	 * 报告异常记录日志
+	 */
 	private void reportFailure(Collection<SpringBootExceptionReporter> exceptionReporters, Throwable failure) {
 		try {
 			for (SpringBootExceptionReporter reporter : exceptionReporters) {
+				// 判断是否需要报告异常
 				if (reporter.reportException(failure)) {
+					// 注册异常
 					registerLoggedException(failure);
 					return;
 				}

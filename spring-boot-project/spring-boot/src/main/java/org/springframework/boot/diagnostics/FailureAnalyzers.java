@@ -51,8 +51,14 @@ final class FailureAnalyzers implements SpringBootExceptionReporter {
 
 	private static final Log logger = LogFactory.getLog(FailureAnalyzers.class);
 
+	/**
+	 * 类加载器
+	 */
 	private final ClassLoader classLoader;
 
+	/**
+	 * 异常分析器集合
+	 */
 	private final List<FailureAnalyzer> analyzers;
 
 	FailureAnalyzers(ConfigurableApplicationContext context) {
@@ -68,6 +74,9 @@ final class FailureAnalyzers implements SpringBootExceptionReporter {
 		return (context != null) ? context.getClassLoader() : null;
 	}
 
+	/**
+	 * 加载异常分析器
+	 */
 	private List<FailureAnalyzer> loadFailureAnalyzers(ConfigurableApplicationContext context,
 			ClassLoader classLoader) {
 		List<String> classNames = SpringFactoriesLoader.loadFactoryNames(FailureAnalyzer.class, classLoader);
@@ -87,6 +96,9 @@ final class FailureAnalyzers implements SpringBootExceptionReporter {
 		return analyzers;
 	}
 
+	/**
+	 * 创建异常分析器
+	 */
 	private FailureAnalyzer createAnalyzer(ConfigurableApplicationContext context, String className) throws Exception {
 		Constructor<?> constructor = ClassUtils.forName(className, this.classLoader).getDeclaredConstructor();
 		ReflectionUtils.makeAccessible(constructor);
@@ -108,13 +120,16 @@ final class FailureAnalyzers implements SpringBootExceptionReporter {
 
 	@Override
 	public boolean reportException(Throwable failure) {
+		// 进行异常分析
 		FailureAnalysis analysis = analyze(failure, this.analyzers);
+		// 进行报告
 		return report(analysis, this.classLoader);
 	}
 
 	private FailureAnalysis analyze(Throwable failure, List<FailureAnalyzer> analyzers) {
 		for (FailureAnalyzer analyzer : analyzers) {
 			try {
+				// 分析获取报告结果
 				FailureAnalysis analysis = analyzer.analyze(failure);
 				if (analysis != null) {
 					return analysis;
@@ -128,11 +143,13 @@ final class FailureAnalyzers implements SpringBootExceptionReporter {
 	}
 
 	private boolean report(FailureAnalysis analysis, ClassLoader classLoader) {
+		// 从spring.factories文件获取FailureAnalysisReporter对应的数据
 		List<FailureAnalysisReporter> reporters = SpringFactoriesLoader.loadFactories(FailureAnalysisReporter.class,
 				classLoader);
 		if (analysis == null || reporters.isEmpty()) {
 			return false;
 		}
+		// 遍历报告对象进行报告操作
 		for (FailureAnalysisReporter reporter : reporters) {
 			reporter.report(analysis);
 		}

@@ -29,7 +29,7 @@ org.springframework.boot.SpringApplicationRunListener=\
 org.springframework.boot.context.event.EventPublishingRunListener
 
 # Error Reporters
-# 异常报告期
+# 异常报告器
 org.springframework.boot.SpringBootExceptionReporter=\
 org.springframework.boot.diagnostics.FailureAnalyzers
 

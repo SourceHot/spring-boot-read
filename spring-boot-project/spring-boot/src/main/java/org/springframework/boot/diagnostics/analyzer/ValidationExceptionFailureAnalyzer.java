@@ -26,6 +26,7 @@ import org.springframework.boot.diagnostics.FailureAnalyzer;
  * A {@link FailureAnalyzer} that performs analysis of failures caused by a
  * {@link ValidationException}.
  *
+ * 验证异常失败分析器
  * @author Andy Wilkinson
  */
 class ValidationExceptionFailureAnalyzer extends AbstractFailureAnalyzer<ValidationException> {

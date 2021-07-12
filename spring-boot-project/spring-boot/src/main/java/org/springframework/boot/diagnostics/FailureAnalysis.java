@@ -19,15 +19,25 @@ package org.springframework.boot.diagnostics;
 /**
  * The result of analyzing a failure.
  *
+ * 分析结果
  * @author Andy Wilkinson
  * @since 1.4.0
  */
 public class FailureAnalysis {
 
+	/**
+	 * 描述信息
+	 */
 	private final String description;
 
+	/**
+	 * 行为对象
+	 */
 	private final String action;
 
+	/**
+	 * 异常堆栈
+	 */
 	private final Throwable cause;
 
 	/**

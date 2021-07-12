@@ -28,9 +28,14 @@ import org.springframework.core.ResolvableType;
  */
 public abstract class AbstractFailureAnalyzer<T extends Throwable> implements FailureAnalyzer {
 
+	/**
+	 * 分析方法，对外使用
+	 */
 	@Override
 	public FailureAnalysis analyze(Throwable failure) {
+		// 寻找异常对象
 		T cause = findCause(failure, getCauseType());
+		// 异常存在进行分析得到FailureAnalysis对象
 		if (cause != null) {
 			return analyze(failure, cause);
 		}
@@ -53,6 +58,7 @@ public abstract class AbstractFailureAnalyzer<T extends Throwable> implements Fa
 	 */
 	@SuppressWarnings("unchecked")
 	protected Class<? extends T> getCauseType() {
+		// 通过泛型获取具体异常类
 		return (Class<? extends T>) ResolvableType.forClass(AbstractFailureAnalyzer.class, getClass()).resolveGeneric();
 	}
 

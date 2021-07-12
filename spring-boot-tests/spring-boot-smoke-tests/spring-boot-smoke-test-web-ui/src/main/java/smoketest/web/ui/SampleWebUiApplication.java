@@ -16,6 +16,9 @@
 
 package smoketest.web.ui;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +27,11 @@ import org.springframework.core.convert.converter.Converter;
 @SpringBootApplication
 public class SampleWebUiApplication {
 
+	private static final Logger log = LoggerFactory.getLogger(SampleWebUiApplication.class);
+
 	public static void main(String[] args) {
 		SpringApplication.run(SampleWebUiApplication.class, args);
+		log.info("hhh");
 	}
 
 	@Bean

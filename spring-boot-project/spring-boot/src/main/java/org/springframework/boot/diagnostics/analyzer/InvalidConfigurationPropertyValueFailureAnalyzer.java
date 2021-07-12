@@ -37,6 +37,7 @@ import org.springframework.util.StringUtils;
  * A {@link FailureAnalyzer} that performs analysis of failures caused by an
  * {@link InvalidConfigurationPropertyValueException}.
  *
+ * 无效的配置属性值故障分析器
  * @author Stephane Nicoll
  */
 class InvalidConfigurationPropertyValueFailureAnalyzer

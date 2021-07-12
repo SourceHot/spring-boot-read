@@ -24,6 +24,7 @@ import org.springframework.web.util.pattern.PatternParseException;
  * A {@code FailureAnalyzer} that performs analysis of failures caused by a
  * {@code PatternParseException}.
  *
+ * 路径匹配模式异常分析器。
  * @author Brian Clozel
  */
 class PatternParseFailureAnalyzer extends AbstractFailureAnalyzer<PatternParseException> {

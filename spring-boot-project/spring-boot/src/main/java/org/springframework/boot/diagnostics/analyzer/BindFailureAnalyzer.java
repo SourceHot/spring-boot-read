@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
  * {@link BindException} excluding {@link BindValidationException} and
  * {@link UnboundConfigurationPropertiesException}.
  *
+ * 绑定失败分析器
  * @author Andy Wilkinson
  * @author Madhura Bhave
  */

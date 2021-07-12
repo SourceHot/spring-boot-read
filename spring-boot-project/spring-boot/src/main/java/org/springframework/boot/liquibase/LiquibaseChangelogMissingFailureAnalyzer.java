@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
  * An {@link AbstractFailureAnalyzer} that analyzes exceptions of type
  * {@link ChangeLogParseException} caused by a Liquibase changelog not being present.
  *
+ * liquibase相关更新日志丢失报告器
  * @author Sebastiaan Fernandez
  */
 class LiquibaseChangelogMissingFailureAnalyzer extends AbstractFailureAnalyzer<ChangeLogParseException> {

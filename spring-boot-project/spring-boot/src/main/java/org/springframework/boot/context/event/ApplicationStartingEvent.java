@@ -29,6 +29,7 @@ import org.springframework.core.env.Environment;
  * of the event is the {@link SpringApplication} itself, but beware of using its internal
  * state too much at this early stage since it might be modified later in the lifecycle.
  *
+ * 应用程序启动事件
  * @author Phillip Webb
  * @author Madhura Bhave
  * @since 1.5.0
