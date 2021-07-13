@@ -67,6 +67,9 @@ public final class ConfigurationPropertiesBean {
 
 	private final Bindable<?> bindTarget;
 
+	/**
+	 * 绑定方法
+	 */
 	private final BindMethod bindMethod;
 
 	private ConfigurationPropertiesBean(String name, Object instance, ConfigurationProperties annotation,
@@ -294,16 +297,19 @@ public final class ConfigurationPropertiesBean {
 
 	/**
 	 * The binding method that is used for the bean.
+	 * 绑定方法
 	 */
 	public enum BindMethod {
 
 		/**
 		 * Java Bean using getter/setter binding.
+		 * 基于getset
 		 */
 		JAVA_BEAN,
 
 		/**
 		 * Value object using constructor binding.
+		 * 基于构造函数
 		 */
 		VALUE_OBJECT;
 

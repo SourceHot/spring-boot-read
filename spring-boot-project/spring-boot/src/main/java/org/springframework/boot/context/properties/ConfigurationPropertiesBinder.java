@@ -65,16 +65,34 @@ class ConfigurationPropertiesBinder {
 
 	private static final String VALIDATOR_BEAN_NAME = EnableConfigurationProperties.VALIDATOR_BEAN_NAME;
 
+	/**
+	 * 应用上下文
+	 */
 	private final ApplicationContext applicationContext;
 
+	/**
+	 * 属性源
+	 */
 	private final PropertySources propertySources;
 
+	/**
+	 * 验证器
+	 */
 	private final Validator configurationPropertiesValidator;
 
+	/**
+	 * 是否开启jsr303验证
+	 */
 	private final boolean jsr303Present;
 
+	/**
+	 * 验证器
+	 */
 	private volatile Validator jsr303Validator;
 
+	/**
+	 * 绑定器
+	 */
 	private volatile Binder binder;
 
 	ConfigurationPropertiesBinder(ApplicationContext applicationContext) {
@@ -84,12 +102,16 @@ class ConfigurationPropertiesBinder {
 		this.jsr303Present = ConfigurationPropertiesJsr303Validator.isJsr303Present(applicationContext);
 	}
 
+	/**
+	 * 绑定方法
+	 */
 	BindResult<?> bind(ConfigurationPropertiesBean propertiesBean) {
 		Bindable<?> target = propertiesBean.asBindTarget();
 		ConfigurationProperties annotation = propertiesBean.getAnnotation();
 		BindHandler bindHandler = getBindHandler(target, annotation);
 		return getBinder().bind(annotation.prefix(), target, bindHandler);
 	}
+
 
 	Object bindOrCreate(ConfigurationPropertiesBean propertiesBean) {
 		Bindable<?> target = propertiesBean.asBindTarget();
@@ -186,6 +208,7 @@ class ConfigurationPropertiesBinder {
 	}
 
 	static void register(BeanDefinitionRegistry registry) {
+		// 不存在org.springframework.boot.context.internalConfigurationPropertiesBinderFactory的定义
 		if (!registry.containsBeanDefinition(FACTORY_BEAN_NAME)) {
 			AbstractBeanDefinition definition = BeanDefinitionBuilder
 					.genericBeanDefinition(ConfigurationPropertiesBinder.Factory.class,
@@ -194,6 +217,7 @@ class ConfigurationPropertiesBinder {
 			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 			registry.registerBeanDefinition(ConfigurationPropertiesBinder.FACTORY_BEAN_NAME, definition);
 		}
+		// 不存在org.springframework.boot.context.internalConfigurationPropertiesBinder对应的定义
 		if (!registry.containsBeanDefinition(BEAN_NAME)) {
 			AbstractBeanDefinition definition = BeanDefinitionBuilder
 					.genericBeanDefinition(ConfigurationPropertiesBinder.class,

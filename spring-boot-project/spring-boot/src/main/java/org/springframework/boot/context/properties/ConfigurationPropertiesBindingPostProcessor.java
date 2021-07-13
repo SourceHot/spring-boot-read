@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * {@link BeanPostProcessor} to bind {@link PropertySources} to beans annotated with
  * {@link ConfigurationProperties @ConfigurationProperties}.
  *
+ * 配置属性绑定后处理器
  * @author Dave Syer
  * @author Phillip Webb
  * @author Christian Dupuis
@@ -49,10 +50,19 @@ public class ConfigurationPropertiesBindingPostProcessor
 	 */
 	public static final String BEAN_NAME = ConfigurationPropertiesBindingPostProcessor.class.getName();
 
+	/**
+	 * 应用上下文
+	 */
 	private ApplicationContext applicationContext;
 
+	/**
+	 * bean定义注册器
+	 */
 	private BeanDefinitionRegistry registry;
 
+	/**
+	 * 属性绑定器
+	 */
 	private ConfigurationPropertiesBinder binder;
 
 	@Override
@@ -106,14 +116,19 @@ public class ConfigurationPropertiesBindingPostProcessor
 	 */
 	public static void register(BeanDefinitionRegistry registry) {
 		Assert.notNull(registry, "Registry must not be null");
+		// 注册器中不包含ConfigurationPropertiesBindingPostProcessor定义
 		if (!registry.containsBeanDefinition(BEAN_NAME)) {
+			// 创建ConfigurationPropertiesBindingPostProcessor对象的bean定义对象
 			BeanDefinition definition = BeanDefinitionBuilder
 					.genericBeanDefinition(ConfigurationPropertiesBindingPostProcessor.class,
 							ConfigurationPropertiesBindingPostProcessor::new)
 					.getBeanDefinition();
+			// 设置role
 			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			// 注册bean定义
 			registry.registerBeanDefinition(BEAN_NAME, definition);
 		}
+		// 属性绑定器注册
 		ConfigurationPropertiesBinder.register(registry);
 	}
 

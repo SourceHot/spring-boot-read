@@ -55,8 +55,11 @@ final class ConfigurationPropertiesBeanRegistrar {
 	}
 
 	void register(Class<?> type, MergedAnnotation<ConfigurationProperties> annotation) {
+		// 获取名称
 		String name = getName(type, annotation);
+		// 判断name是否存在bean定义，不存在进行注册
 		if (!containsBeanDefinition(name)) {
+			// 注册
 			registerBeanDefinition(name, type, annotation);
 		}
 	}
