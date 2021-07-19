@@ -124,11 +124,15 @@ class ConfigDataProperties {
 	 */
 	private static class LegacyProfilesBindHandler implements BindHandler {
 
+		/**
+		 * 配置属性表
+		 */
 		private ConfigurationProperty property;
 
 		@Override
 		public Object onSuccess(ConfigurationPropertyName name, Bindable<?> target, BindContext context,
 				Object result) {
+			// 设置成员变量配置属性表
 			this.property = context.getConfigurationProperty();
 			return result;
 		}

@@ -106,9 +106,13 @@ class ConfigurationPropertiesBinder {
 	 * 绑定方法
 	 */
 	BindResult<?> bind(ConfigurationPropertiesBean propertiesBean) {
+		// 获取绑定目标
 		Bindable<?> target = propertiesBean.asBindTarget();
+		// 获取ConfigurationProperties注解
 		ConfigurationProperties annotation = propertiesBean.getAnnotation();
+		// 获取绑定处理器
 		BindHandler bindHandler = getBindHandler(target, annotation);
+		// 获取绑定对象进行绑定
 		return getBinder().bind(annotation.prefix(), target, bindHandler);
 	}
 

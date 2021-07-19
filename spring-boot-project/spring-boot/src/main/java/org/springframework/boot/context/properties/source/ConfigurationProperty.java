@@ -28,14 +28,20 @@ import org.springframework.util.ObjectUtils;
  * consisting of a {@link #getName() name}, {@link #getValue() value} and optional
  * {@link #getOrigin() origin}.
  *
+ * 配置属性表
  * @author Phillip Webb
  * @author Madhura Bhave
  * @since 2.0.0
  */
 public final class ConfigurationProperty implements OriginProvider, Comparable<ConfigurationProperty> {
-
+	/**
+	 * 配置属性名称
+	 */
 	private final ConfigurationPropertyName name;
 
+	/**
+	 * 配置数据值
+	 */
 	private final Object value;
 
 	private final Origin origin;

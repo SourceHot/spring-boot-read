@@ -50,6 +50,7 @@ public class IgnoreTopLevelConverterNotFoundBindHandler extends AbstractBindHand
 	@Override
 	public Object onFailure(ConfigurationPropertyName name, Bindable<?> target, BindContext context, Exception error)
 			throws Exception {
+		// 上下文深度为0并且异常类型是ConverterNotFoundException将返回null，其他情况抛出异常
 		if (context.getDepth() == 0 && error instanceof ConverterNotFoundException) {
 			return null;
 		}

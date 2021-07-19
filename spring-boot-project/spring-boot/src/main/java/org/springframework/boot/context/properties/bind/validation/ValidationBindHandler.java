@@ -46,14 +46,31 @@ import org.springframework.validation.Validator;
  */
 public class ValidationBindHandler extends AbstractBindHandler {
 
+	/**
+	 * 验证器集合
+	 */
 	private final Validator[] validators;
 
+	/**
+	 * key: 配置属性名称
+	 * value: 解析类
+	 */
 	private final Map<ConfigurationPropertyName, ResolvableType> boundTypes = new LinkedHashMap<>();
 
+	/**
+	 * key: 配置属性名称
+	 * value: 对象值
+	 */
 	private final Map<ConfigurationPropertyName, Object> boundResults = new LinkedHashMap<>();
 
+	/**
+	 * 配置属性集合
+	 */
 	private final Set<ConfigurationProperty> boundProperties = new LinkedHashSet<>();
 
+	/**
+	 * 绑定异常对象
+	 */
 	private BindValidationException exception;
 
 	public ValidationBindHandler(Validator... validators) {

@@ -39,9 +39,11 @@ public class BoundPropertiesTrackingBindHandler extends AbstractBindHandler {
 
 	@Override
 	public Object onSuccess(ConfigurationPropertyName name, Bindable<?> target, BindContext context, Object result) {
+		// 从上下文中获取配置属性表如果不为空并且名称和属性表中的名称相同会进行验证处理
 		if (context.getConfigurationProperty() != null && name.equals(context.getConfigurationProperty().getName())) {
 			this.consumer.accept(context.getConfigurationProperty());
 		}
+		// 父类处理
 		return super.onSuccess(name, target, context, result);
 	}
 

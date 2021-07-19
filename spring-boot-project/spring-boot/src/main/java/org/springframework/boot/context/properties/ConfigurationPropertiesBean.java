@@ -59,11 +59,21 @@ import org.springframework.validation.annotation.Validated;
  */
 public final class ConfigurationPropertiesBean {
 
+	/**
+	 * 名称
+	 */
 	private final String name;
 
+	/**
+	 * 实例对象
+	 */
 	private final Object instance;
 
+	/**
+	 * ConfigurationProperties注解
+	 */
 	private final ConfigurationProperties annotation;
+
 
 	private final Bindable<?> bindTarget;
 
@@ -200,11 +210,14 @@ public final class ConfigurationPropertiesBean {
 	 * {@link ConfigurationProperties @ConfigurationProperties}
 	 */
 	public static ConfigurationPropertiesBean get(ApplicationContext applicationContext, Object bean, String beanName) {
+		// 寻找方法
 		Method factoryMethod = findFactoryMethod(applicationContext, beanName);
+		// 创建ConfigurationPropertiesBean对象
 		return create(beanName, bean, bean.getClass(), factoryMethod);
 	}
 
 	private static Method findFactoryMethod(ApplicationContext applicationContext, String beanName) {
+		// 应用上下文是ConfigurableApplicationContext类型才处理
 		if (applicationContext instanceof ConfigurableApplicationContext) {
 			return findFactoryMethod((ConfigurableApplicationContext) applicationContext, beanName);
 		}
@@ -216,14 +229,19 @@ public final class ConfigurationPropertiesBean {
 	}
 
 	private static Method findFactoryMethod(ConfigurableListableBeanFactory beanFactory, String beanName) {
+		// 判断是否存在bean名称对应的bean定义对象
 		if (beanFactory.containsBeanDefinition(beanName)) {
+			// 存在搜索bean定义
 			BeanDefinition beanDefinition = beanFactory.getMergedBeanDefinition(beanName);
+			// bean定义类型是RootBeanDefinition
 			if (beanDefinition instanceof RootBeanDefinition) {
+				// 获取工厂方法
 				Method resolvedFactoryMethod = ((RootBeanDefinition) beanDefinition).getResolvedFactoryMethod();
 				if (resolvedFactoryMethod != null) {
 					return resolvedFactoryMethod;
 				}
 			}
+			// 类型不是RootBeanDefinition的情况处理
 			return findFactoryMethodUsingReflection(beanFactory, beanDefinition);
 		}
 		return null;
@@ -231,17 +249,24 @@ public final class ConfigurationPropertiesBean {
 
 	private static Method findFactoryMethodUsingReflection(ConfigurableListableBeanFactory beanFactory,
 			BeanDefinition beanDefinition) {
+		// 获取工厂方法名称
 		String factoryMethodName = beanDefinition.getFactoryMethodName();
+		// 获取工厂bean名称
 		String factoryBeanName = beanDefinition.getFactoryBeanName();
+		// 工厂bean名称为空或者工厂方法
 		if (factoryMethodName == null || factoryBeanName == null) {
 			return null;
 		}
+		// 从容器中获取工厂bean名称对应的类型
 		Class<?> factoryType = beanFactory.getType(factoryBeanName);
+		// 判断是否是CGLIB代理,如果是CGLIB代理获取父类
 		if (factoryType.getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR)) {
 			factoryType = factoryType.getSuperclass();
 		}
+		// 创建存储容器
 		AtomicReference<Method> factoryMethod = new AtomicReference<>();
 		ReflectionUtils.doWithMethods(factoryType, (method) -> {
+			// 方法名称相同设置
 			if (method.getName().equals(factoryMethodName)) {
 				factoryMethod.set(method);
 			}
@@ -257,19 +282,27 @@ public final class ConfigurationPropertiesBean {
 	}
 
 	private static ConfigurationPropertiesBean create(String name, Object instance, Class<?> type, Method factory) {
+		// 寻找注解
 		ConfigurationProperties annotation = findAnnotation(instance, type, factory, ConfigurationProperties.class);
+		// 注解为空返回空
 		if (annotation == null) {
 			return null;
 		}
+		// 寻找Validated注解
 		Validated validated = findAnnotation(instance, type, factory, Validated.class);
+		// 创建注解数组，包含ConfigurationProperties或者Validated注解
 		Annotation[] annotations = (validated != null) ? new Annotation[] { annotation, validated }
 				: new Annotation[] { annotation };
+		// 得到绑定类型，
 		ResolvableType bindType = (factory != null) ? ResolvableType.forMethodReturnType(factory)
 				: ResolvableType.forClass(type);
+		// 创建Bindable对象，其中存储的数据是类型和注解
 		Bindable<Object> bindTarget = Bindable.of(bindType).withAnnotations(annotations);
+		// 实例不为空的情况下需要进行数据对象的重新处理
 		if (instance != null) {
 			bindTarget = bindTarget.withExistingValue(instance);
 		}
+		// 构造函数创建对象
 		return new ConfigurationPropertiesBean(name, instance, annotation, bindTarget);
 	}
 

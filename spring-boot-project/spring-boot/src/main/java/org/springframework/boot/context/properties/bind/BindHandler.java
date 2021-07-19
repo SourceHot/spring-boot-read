@@ -37,6 +37,7 @@ public interface BindHandler {
 
 	/**
 	 * Called when binding of an element starts but before any result has been determined.
+	 * 在开始进行元素绑定之前的调用
 	 * @param <T> the bindable source type
 	 * @param name the name of the element being bound
 	 * @param target the item being bound
@@ -50,6 +51,8 @@ public interface BindHandler {
 	/**
 	 * Called when binding of an element ends with a successful result. Implementations
 	 * may change the ultimately returned result or perform addition validation.
+	 *
+	 * 元素绑定成功后调用
 	 * @param name the name of the element being bound
 	 * @param target the item being bound
 	 * @param context the bind context
@@ -64,6 +67,8 @@ public interface BindHandler {
 	 * Called when binding of an element ends with an unbound result and a newly created
 	 * instance is about to be returned. Implementations may change the ultimately
 	 * returned result or perform addition validation.
+	 *
+	 * 创建时调用
 	 * @param name the name of the element being bound
 	 * @param target the item being bound
 	 * @param context the bind context
@@ -79,6 +84,8 @@ public interface BindHandler {
 	 * Called when binding fails for any reason (including failures from
 	 * {@link #onSuccess} or {@link #onCreate} calls). Implementations may choose to
 	 * swallow exceptions and return an alternative result.
+	 *
+	 * 绑定失败时调用
 	 * @param name the name of the element being bound
 	 * @param target the item being bound
 	 * @param context the bind context
@@ -95,6 +102,8 @@ public interface BindHandler {
 	 * Called when binding finishes with either bound or unbound result. This method will
 	 * not be called when binding failed, even if a handler returns a result from
 	 * {@link #onFailure}.
+	 *
+	 * 完成处理后调用
 	 * @param name the name of the element being bound
 	 * @param target the item being bound
 	 * @param context the bind context

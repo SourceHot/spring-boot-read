@@ -83,6 +83,7 @@ final class UseLegacyConfigProcessingException extends ConfigDataException {
 		@Override
 		public Object onSuccess(ConfigurationPropertyName name, Bindable<?> target, BindContext context,
 				Object result) {
+			// 判断result是否为true，不为true抛出异常
 			if (Boolean.TRUE.equals(result)) {
 				throw new UseLegacyConfigProcessingException(context.getConfigurationProperty());
 			}

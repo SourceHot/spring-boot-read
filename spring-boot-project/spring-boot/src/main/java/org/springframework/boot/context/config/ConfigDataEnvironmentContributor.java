@@ -47,6 +47,7 @@ import org.springframework.util.CollectionUtils;
  * </ul>
  * In each phase <em>all</em> imports will be resolved before they are loaded.
  *
+ * 环境配置候选者对象
  * @author Phillip Webb
  * @author Madhura Bhave
  */

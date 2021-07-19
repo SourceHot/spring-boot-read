@@ -46,8 +46,14 @@ public final class Bindable<T> {
 
 	private final ResolvableType boxedType;
 
+	/**
+	 * 值提供器，存储bean实例
+	 */
 	private final Supplier<T> value;
 
+	/**
+	 * 注解集合
+	 */
 	private final Annotation[] annotations;
 
 	private Bindable(ResolvableType type, ResolvableType boxedType, Supplier<T> value, Annotation[] annotations) {

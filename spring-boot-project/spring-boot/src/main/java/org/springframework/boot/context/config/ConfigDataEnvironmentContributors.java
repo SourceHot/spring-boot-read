@@ -350,8 +350,12 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 
 	}
 
+
 	private class InactiveSourceChecker implements BindHandler {
 
+		/**
+		 * 配置数据激活上下文
+		 */
 		private final ConfigDataActivationContext activationContext;
 
 		InactiveSourceChecker(ConfigDataActivationContext activationContext) {
@@ -362,6 +366,7 @@ class ConfigDataEnvironmentContributors implements Iterable<ConfigDataEnvironmen
 		public Object onSuccess(ConfigurationPropertyName name, Bindable<?> target, BindContext context,
 				Object result) {
 			for (ConfigDataEnvironmentContributor contributor : ConfigDataEnvironmentContributors.this) {
+				// 判断当前配置环境是否处于激活状态，如果未激活会进一步判断是否需要抛出异常
 				if (!contributor.isActive(this.activationContext)) {
 					InactiveConfigDataAccessException.throwIfPropertyFound(contributor, name);
 				}

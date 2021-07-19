@@ -117,11 +117,17 @@ public class InactiveConfigDataAccessException extends ConfigDataException {
 	 * @param name the name to check
 	 */
 	static void throwIfPropertyFound(ConfigDataEnvironmentContributor contributor, ConfigurationPropertyName name) {
+		// 获取配置属性来源接口
 		ConfigurationPropertySource source = contributor.getConfigurationPropertySource();
+		// 提取配置属性
 		ConfigurationProperty property = (source != null) ? source.getConfigurationProperty(name) : null;
+		// 配置属性不为空
 		if (property != null) {
+			// 候选对象中获取属性源
 			PropertySource<?> propertySource = contributor.getPropertySource();
+			// 获取配置数据资源对象
 			ConfigDataResource location = contributor.getResource();
+			// 抛出异常
 			throw new InactiveConfigDataAccessException(propertySource, location, name.toString(),
 					property.getOrigin());
 		}

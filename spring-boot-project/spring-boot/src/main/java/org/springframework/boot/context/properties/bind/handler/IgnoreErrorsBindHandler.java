@@ -41,6 +41,7 @@ public class IgnoreErrorsBindHandler extends AbstractBindHandler {
 	@Override
 	public Object onFailure(ConfigurationPropertyName name, Bindable<?> target, BindContext context, Exception error)
 			throws Exception {
+		// 目标对象的值为空返回null，不为空则返回值
 		return (target.getValue() != null) ? target.getValue().get() : null;
 	}
 
