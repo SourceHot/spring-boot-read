@@ -45,6 +45,7 @@ import org.springframework.util.Assert;
 /**
  * {@link DataObjectBinder} for immutable value objects.
  *
+ * 通过构造函数+参数列表的形式进行数据设置
  * @author Madhura Bhave
  * @author Stephane Nicoll
  * @author Phillip Webb

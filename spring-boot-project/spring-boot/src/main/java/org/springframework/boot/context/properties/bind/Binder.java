@@ -55,16 +55,34 @@ public class Binder {
 	private static final Set<Class<?>> NON_BEAN_CLASSES = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList(Object.class, Class.class)));
 
+	/**
+	 * 配置数据源
+	 */
 	private final Iterable<ConfigurationPropertySource> sources;
 
+	/**
+	 * 占位符解析器
+	 */
 	private final PlaceholdersResolver placeholdersResolver;
 
+	/**
+	 *  转换服务
+	 */
 	private final ConversionService conversionService;
 
+	/**
+	 * 属性编辑注册器
+	 */
 	private final Consumer<PropertyEditorRegistry> propertyEditorInitializer;
 
+	/**
+	 * 绑定处理器
+	 */
 	private final BindHandler defaultBindHandler;
 
+	/**
+	 * 数据绑定器
+	 */
 	private final List<DataObjectBinder> dataObjectBinders;
 
 	/**
@@ -171,6 +189,31 @@ public class Binder {
 		ValueObjectBinder valueObjectBinder = new ValueObjectBinder(constructorProvider);
 		JavaBeanBinder javaBeanBinder = JavaBeanBinder.INSTANCE;
 		this.dataObjectBinders = Collections.unmodifiableList(Arrays.asList(valueObjectBinder, javaBeanBinder));
+	}
+
+	/**
+	 * Create a new {@link Binder} instance from the specified environment.
+	 * @param environment the environment source (must have attached
+	 * {@link ConfigurationPropertySources})
+	 * @return a {@link Binder} instance
+	 */
+	public static Binder get(Environment environment) {
+		return get(environment, null);
+	}
+
+	/**
+	 * Create a new {@link Binder} instance from the specified environment.
+	 * @param environment the environment source (must have attached
+	 * {@link ConfigurationPropertySources})
+	 * @param defaultBindHandler the default bind handler to use if none is specified when
+	 * binding
+	 * @return a {@link Binder} instance
+	 * @since 2.2.0
+	 */
+	public static Binder get(Environment environment, BindHandler defaultBindHandler) {
+		Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources.get(environment);
+		PropertySourcesPlaceholdersResolver placeholdersResolver = new PropertySourcesPlaceholdersResolver(environment);
+		return new Binder(sources, placeholdersResolver, null, null, defaultBindHandler);
 	}
 
 	/**
@@ -304,19 +347,26 @@ public class Binder {
 		Assert.notNull(name, "Name must not be null");
 		Assert.notNull(target, "Target must not be null");
 		handler = (handler != null) ? handler : this.defaultBindHandler;
+		// 创建上下文
 		Context context = new Context();
+
 		return bind(name, target, handler, context, false, create);
 	}
 
 	private <T> T bind(ConfigurationPropertyName name, Bindable<T> target, BindHandler handler, Context context,
 			boolean allowRecursiveBinding, boolean create) {
 		try {
+			// 绑定处理器进行开始操作
 			Bindable<T> replacementTarget = handler.onStart(name, target, context);
 			if (replacementTarget == null) {
+				// 处理绑定结果
 				return handleBindResult(name, target, handler, context, null, create);
 			}
+			// 目标对象设置
 			target = replacementTarget;
+			// 进行对象绑定
 			Object bound = bindObject(name, target, handler, context, allowRecursiveBinding);
+			// 处理绑定结果
 			return handleBindResult(name, target, handler, context, bound, create);
 		}
 		catch (Exception ex) {
@@ -326,17 +376,26 @@ public class Binder {
 
 	private <T> T handleBindResult(ConfigurationPropertyName name, Bindable<T> target, BindHandler handler,
 			Context context, Object result, boolean create) throws Exception {
+		// 结果对象不为空
 		if (result != null) {
+			// 通过绑定处理器获取处理结果
 			result = handler.onSuccess(name, target, context, result);
+			// 从上下文中获取转换器进行转换
 			result = context.getConverter().convert(result, target);
 		}
+		// 结果对象为空并且允许创建
 		if (result == null && create) {
+			// 创建结果对象
 			result = create(target, context);
+			// 通过绑定处理器进行对象创建
 			result = handler.onCreate(name, target, context, result);
+			// 从上下文中获取转换器进行转换
 			result = context.getConverter().convert(result, target);
 			Assert.state(result != null, () -> "Unable to create instance for " + target.getType());
 		}
+		// 触发绑定处理器的完成操作
 		handler.onFinish(name, target, context, result);
+		// 从上下文中获取转换器进行转换
 		return context.getConverter().convert(result, target);
 	}
 
@@ -366,14 +425,17 @@ public class Binder {
 
 	private <T> Object bindObject(ConfigurationPropertyName name, Bindable<T> target, BindHandler handler,
 			Context context, boolean allowRecursiveBinding) {
+		// 根据配置属性名称在上下文中寻找对应的配置属性
 		ConfigurationProperty property = findProperty(name, context);
 		if (property == null && context.depth != 0 && containsNoDescendantOf(context.getSources(), name)) {
 			return null;
 		}
+		// 集合数据绑定器
 		AggregateBinder<?> aggregateBinder = getAggregateBinder(target, context);
 		if (aggregateBinder != null) {
 			return bindAggregate(name, target, handler, context, aggregateBinder);
 		}
+		// 配置属性不存在的处理
 		if (property != null) {
 			try {
 				return bindProperty(target, context, property);
@@ -387,6 +449,7 @@ public class Binder {
 				throw ex;
 			}
 		}
+		// 绑定数据
 		return bindDataObject(name, target, handler, context, allowRecursiveBinding);
 	}
 
@@ -428,24 +491,35 @@ public class Binder {
 	}
 
 	private <T> Object bindProperty(Bindable<T> target, Context context, ConfigurationProperty property) {
+		// 设置配置属性
 		context.setConfigurationProperty(property);
+		// 从配置属性中取值
 		Object result = property.getValue();
+		// 占位符解析
 		result = this.placeholdersResolver.resolvePlaceholders(result);
+		// 转换器进行转换
 		result = context.getConverter().convert(result, target);
+		// 返回结果对象
 		return result;
 	}
 
 	private Object bindDataObject(ConfigurationPropertyName name, Bindable<?> target, BindHandler handler,
 			Context context, boolean allowRecursiveBinding) {
+		// 确定是否需要绑定
 		if (isUnbindableBean(name, target, context)) {
 			return null;
 		}
+		// 获取实际类型
 		Class<?> type = target.getType().resolve(Object.class);
+		// 不允许递归绑定
+		// 绑定队列中存在
 		if (!allowRecursiveBinding && context.isBindingDataObject(type)) {
 			return null;
 		}
+		// 创建数据绑定接口
 		DataObjectPropertyBinder propertyBinder = (propertyName, propertyTarget) -> bind(name.append(propertyName),
 				propertyTarget, handler, context, false, false);
+		// 返回结果
 		return context.withDataObject(type, () -> {
 			for (DataObjectBinder dataObjectBinder : this.dataObjectBinders) {
 				Object instance = dataObjectBinder.bind(name, target, context, propertyBinder);
@@ -482,47 +556,43 @@ public class Binder {
 	}
 
 	/**
-	 * Create a new {@link Binder} instance from the specified environment.
-	 * @param environment the environment source (must have attached
-	 * {@link ConfigurationPropertySources})
-	 * @return a {@link Binder} instance
-	 */
-	public static Binder get(Environment environment) {
-		return get(environment, null);
-	}
-
-	/**
-	 * Create a new {@link Binder} instance from the specified environment.
-	 * @param environment the environment source (must have attached
-	 * {@link ConfigurationPropertySources})
-	 * @param defaultBindHandler the default bind handler to use if none is specified when
-	 * binding
-	 * @return a {@link Binder} instance
-	 * @since 2.2.0
-	 */
-	public static Binder get(Environment environment, BindHandler defaultBindHandler) {
-		Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources.get(environment);
-		PropertySourcesPlaceholdersResolver placeholdersResolver = new PropertySourcesPlaceholdersResolver(environment);
-		return new Binder(sources, placeholdersResolver, null, null, defaultBindHandler);
-	}
-
-	/**
 	 * Context used when binding and the {@link BindContext} implementation.
 	 */
 	final class Context implements BindContext {
 
+		/**
+		 * 绑定转换器
+		 */
 		private final BindConverter converter;
 
-		private int depth;
-
+		/**
+		 * 配置属性源集合
+		 */
 		private final List<ConfigurationPropertySource> source = Arrays.asList((ConfigurationPropertySource) null);
 
-		private int sourcePushCount;
-
+		/**
+		 * 数据队列
+		 */
 		private final Deque<Class<?>> dataObjectBindings = new ArrayDeque<>();
 
+		/**
+		 * 构造函数队列
+		 */
 		private final Deque<Class<?>> constructorBindings = new ArrayDeque<>();
 
+		/**
+		 *
+		 */
+		private int depth;
+
+		/**
+		 *
+		 */
+		private int sourcePushCount;
+
+		/**
+		 *
+		 */
 		private ConfigurationProperty configurationProperty;
 
 		Context() {
@@ -575,10 +645,6 @@ public class Binder {
 			}
 		}
 
-		void setConfigurationProperty(ConfigurationProperty configurationProperty) {
-			this.configurationProperty = configurationProperty;
-		}
-
 		void clearConfigurationProperty() {
 			this.configurationProperty = null;
 		}
@@ -624,6 +690,10 @@ public class Binder {
 		@Override
 		public ConfigurationProperty getConfigurationProperty() {
 			return this.configurationProperty;
+		}
+
+		void setConfigurationProperty(ConfigurationProperty configurationProperty) {
+			this.configurationProperty = configurationProperty;
 		}
 
 	}

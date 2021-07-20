@@ -32,6 +32,7 @@ public interface MethodValidationExcludeFilter {
 
 	/**
 	 * Evaluate whether to exclude the given {@code type} from method validation.
+	 * 判断是否是排除的
 	 * @param type the type to evaluate
 	 * @return {@code true} to exclude the type from method validation, otherwise
 	 * {@code false}.

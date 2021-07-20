@@ -24,6 +24,7 @@ import org.springframework.core.env.PropertySource;
 /**
  * A source of {@link ConfigurationProperty ConfigurationProperties}.
  *
+ * 配置属性源
  * @author Phillip Webb
  * @author Madhura Bhave
  * @since 2.0.0

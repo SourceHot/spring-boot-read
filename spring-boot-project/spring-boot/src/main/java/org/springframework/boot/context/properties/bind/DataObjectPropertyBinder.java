@@ -20,6 +20,7 @@ package org.springframework.boot.context.properties.bind;
  * Binder that can be used by {@link DataObjectBinder} implementations to bind the data
  * object properties.
  *
+ * 数据绑定
  * @author Phillip Webb
  * @author Madhura Bhave
  */

@@ -40,6 +40,7 @@ import org.springframework.core.ResolvableType;
 /**
  * {@link DataObjectBinder} for mutable Java Beans.
  *
+ * 通过getter&stter方法进行数据设置
  * @author Phillip Webb
  * @author Madhura Bhave
  */

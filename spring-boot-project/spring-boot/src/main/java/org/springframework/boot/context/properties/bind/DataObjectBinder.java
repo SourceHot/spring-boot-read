@@ -23,6 +23,7 @@ import org.springframework.boot.context.properties.source.ConfigurationPropertyN
  * Internal strategy used by {@link Binder} to bind data objects. A data object is an
  * object composed itself of recursively bound properties.
  *
+ * 数据绑定器
  * @author Phillip Webb
  * @author Madhura Bhave
  * @see JavaBeanBinder
