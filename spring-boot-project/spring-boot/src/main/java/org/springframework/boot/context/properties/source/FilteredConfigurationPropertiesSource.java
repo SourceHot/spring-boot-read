@@ -27,9 +27,13 @@ import org.springframework.util.Assert;
  * @author Madhura Bhave
  */
 class FilteredConfigurationPropertiesSource implements ConfigurationPropertySource {
-
+	/**
+	 * 配置属性源
+	 */
 	private final ConfigurationPropertySource source;
-
+	/**
+	 * 过滤器
+	 */
 	private final Predicate<ConfigurationPropertyName> filter;
 
 	FilteredConfigurationPropertiesSource(ConfigurationPropertySource source,

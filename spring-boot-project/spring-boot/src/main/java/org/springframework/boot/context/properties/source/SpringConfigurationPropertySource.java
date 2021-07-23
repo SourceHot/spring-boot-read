@@ -56,9 +56,13 @@ class SpringConfigurationPropertySource implements ConfigurationPropertySource {
 
 	private static final PropertyMapper[] SYSTEM_ENVIRONMENT_MAPPERS = { SystemEnvironmentPropertyMapper.INSTANCE,
 			DefaultPropertyMapper.INSTANCE };
-
+	/**
+	 *
+	 */
 	private final PropertySource<?> propertySource;
-
+	/**
+	 * 属性映射接口
+	 */
 	private final PropertyMapper[] mappers;
 
 	/**

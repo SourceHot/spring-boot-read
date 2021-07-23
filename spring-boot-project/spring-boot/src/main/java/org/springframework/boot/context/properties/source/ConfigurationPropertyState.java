@@ -31,18 +31,22 @@ public enum ConfigurationPropertyState {
 	/**
 	 * The {@link ConfigurationPropertySource} has at least one matching
 	 * {@link ConfigurationProperty}.
+	 * 至少有一个匹配
 	 */
 	PRESENT,
 
 	/**
 	 * The {@link ConfigurationPropertySource} has no matching
 	 * {@link ConfigurationProperty ConfigurationProperties}.
+	 * 不匹配的
 	 */
 	ABSENT,
 
 	/**
 	 * It's not possible to determine if {@link ConfigurationPropertySource} has matching
 	 * {@link ConfigurationProperty ConfigurationProperties} or not.
+	 *
+	 * 未知的
 	 */
 	UNKNOWN;
 

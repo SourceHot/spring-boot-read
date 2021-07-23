@@ -36,6 +36,10 @@ import org.springframework.util.MultiValueMap;
  */
 public final class ConfigurationPropertyNameAliases implements Iterable<ConfigurationPropertyName> {
 
+	/**
+	 * key: 配置属性名称
+	 * value: 配置属性名称的别名
+	 */
 	private final MultiValueMap<ConfigurationPropertyName, ConfigurationPropertyName> aliases = new LinkedMultiValueMap<>();
 
 	public ConfigurationPropertyNameAliases() {
