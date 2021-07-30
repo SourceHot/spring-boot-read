@@ -45,9 +45,13 @@ import org.springframework.util.StringUtils;
  * @author Phillip Webb
  */
 class ConfigurationPropertiesScanRegistrar implements ImportBeanDefinitionRegistrar {
-
+	/**
+	 * 环境配置
+	 */
 	private final Environment environment;
-
+	/**
+	 * 资源加载器
+	 */
 	private final ResourceLoader resourceLoader;
 
 	ConfigurationPropertiesScanRegistrar(Environment environment, ResourceLoader resourceLoader) {
@@ -57,22 +61,30 @@ class ConfigurationPropertiesScanRegistrar implements ImportBeanDefinitionRegist
 
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+		// 获取包扫描路径集合
 		Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
+		// 扫描
 		scan(registry, packagesToScan);
 	}
 
 	private Set<String> getPackagesToScan(AnnotationMetadata metadata) {
+		// 提取ConfigurationPropertiesScan注解属性
 		AnnotationAttributes attributes = AnnotationAttributes
 				.fromMap(metadata.getAnnotationAttributes(ConfigurationPropertiesScan.class.getName()));
+		// 从注解中属性中获取basePackages属性对应的数据
 		String[] basePackages = attributes.getStringArray("basePackages");
+		// 从注解属性中获取basePackageClasses属性对应的数据
 		Class<?>[] basePackageClasses = attributes.getClassArray("basePackageClasses");
 		Set<String> packagesToScan = new LinkedHashSet<>(Arrays.asList(basePackages));
+		// 从类中提取所在包路径
 		for (Class<?> basePackageClass : basePackageClasses) {
 			packagesToScan.add(ClassUtils.getPackageName(basePackageClass));
 		}
+		// 如果包扫描路径为空则获取注解元数据的类名所在的包
 		if (packagesToScan.isEmpty()) {
 			packagesToScan.add(ClassUtils.getPackageName(metadata.getClassName()));
 		}
+		// 移除空字符串
 		packagesToScan.removeIf((candidate) -> !StringUtils.hasText(candidate));
 		return packagesToScan;
 	}
