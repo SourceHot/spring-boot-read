@@ -59,30 +59,54 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 		implements ConfigurableServletWebServerFactory {
 
 	protected final Log logger = LogFactory.getLog(getClass());
-
-	private String contextPath = "";
-
-	private String displayName;
-
-	private Session session = new Session();
-
-	private boolean registerDefaultServlet = false;
-
-	private MimeMappings mimeMappings = new MimeMappings(MimeMappings.DEFAULT);
-
-	private List<ServletContextInitializer> initializers = new ArrayList<>();
-
-	private Jsp jsp = new Jsp();
-
-	private Map<Locale, Charset> localeCharsetMappings = new HashMap<>();
-
-	private Map<String, String> initParameters = Collections.emptyMap();
-
+	/**
+	 * 文档根路径
+	 */
 	private final DocumentRoot documentRoot = new DocumentRoot(this.logger);
-
+	/**
+	 * 静态资源
+	 */
 	private final StaticResourceJars staticResourceJars = new StaticResourceJars();
-
+	/**
+	 * web监听器类名
+	 */
 	private final Set<String> webListenerClassNames = new HashSet<>();
+	/**
+	 * 上下文路径
+	 */
+	private String contextPath = "";
+	/**
+	 * 显示名称
+	 */
+	private String displayName;
+	/**
+	 * session对象
+	 */
+	private Session session = new Session();
+	/**
+	 * 是否注册默认的servlet
+	 */
+	private boolean registerDefaultServlet = false;
+	/**
+	 * Mime 映射
+	 */
+	private MimeMappings mimeMappings = new MimeMappings(MimeMappings.DEFAULT);
+	/**
+	 * ServletContextInitializer集合
+	 */
+	private List<ServletContextInitializer> initializers = new ArrayList<>();
+	/**
+	 * Jsp对象
+	 */
+	private Jsp jsp = new Jsp();
+	/**
+	 * 地区（语言）和字符集映射表
+	 */
+	private Map<Locale, Charset> localeCharsetMappings = new HashMap<>();
+	/**
+	 * 初始化参数表
+	 */
+	private Map<String, String> initParameters = Collections.emptyMap();
 
 	/**
 	 * Create a new {@link AbstractServletWebServerFactory} instance.
@@ -93,6 +117,7 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 	/**
 	 * Create a new {@link AbstractServletWebServerFactory} instance with the specified
 	 * port.
+	 *
 	 * @param port the port number for the web server
 	 */
 	public AbstractServletWebServerFactory(int port) {
@@ -102,8 +127,9 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 	/**
 	 * Create a new {@link AbstractServletWebServerFactory} instance with the specified
 	 * context path and port.
+	 *
 	 * @param contextPath the context path for the web server
-	 * @param port the port number for the web server
+	 * @param port        the port number for the web server
 	 */
 	public AbstractServletWebServerFactory(String contextPath, int port) {
 		super(port);
@@ -114,6 +140,7 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 	/**
 	 * Returns the context path for the web server. The path will start with "/" and not
 	 * end with "/". The root context is represented by an empty string.
+	 *
 	 * @return the context path
 	 */
 	public String getContextPath() {
@@ -149,6 +176,7 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 
 	/**
 	 * Flag to indicate that the default servlet should be registered.
+	 *
 	 * @return true if the default servlet is to be registered
 	 */
 	public boolean isRegisterDefaultServlet() {
@@ -162,6 +190,7 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 
 	/**
 	 * Returns the mime-type mappings.
+	 *
 	 * @return the mimeMappings the mime-type mappings.
 	 */
 	public MimeMappings getMimeMappings() {
@@ -176,6 +205,7 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 	/**
 	 * Returns the document root which will be used by the web context to serve static
 	 * files.
+	 *
 	 * @return the document root
 	 */
 	public File getDocumentRoot() {
@@ -219,6 +249,7 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 
 	/**
 	 * Return the Locale to Charset mappings.
+	 *
 	 * @return the charset mappings
 	 */
 	public Map<Locale, Charset> getLocaleCharsetMappings() {
@@ -231,18 +262,19 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 		this.localeCharsetMappings = localeCharsetMappings;
 	}
 
+	public Map<String, String> getInitParameters() {
+		return this.initParameters;
+	}
+
 	@Override
 	public void setInitParameters(Map<String, String> initParameters) {
 		this.initParameters = initParameters;
 	}
 
-	public Map<String, String> getInitParameters() {
-		return this.initParameters;
-	}
-
 	/**
 	 * Utility method that can be used by subclasses wishing to combine the specified
 	 * {@link ServletContextInitializer} parameters with those defined in this instance.
+	 *
 	 * @param initializers the initializers to merge
 	 * @return a complete set of merged initializers (with the specified parameters
 	 * appearing first)
@@ -258,6 +290,7 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 
 	/**
 	 * Returns whether or not the JSP servlet should be registered with the web server.
+	 *
 	 * @return {@code true} if the servlet should be registered, otherwise {@code false}
 	 */
 	protected boolean shouldRegisterJspServlet() {
@@ -268,6 +301,7 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 	/**
 	 * Returns the absolute document root when it points to a valid directory, logging a
 	 * warning and returning {@code null} otherwise.
+	 *
 	 * @return the valid document root
 	 */
 	protected final File getValidDocumentRoot() {
@@ -309,9 +343,11 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 
 		@Override
 		public void onStartup(ServletContext servletContext) throws ServletException {
+			// 会话追踪模式（SessionTrackingMode）不为空的情况下，将其设置给servlet上下文
 			if (this.session.getTrackingModes() != null) {
 				servletContext.setSessionTrackingModes(unwrap(this.session.getTrackingModes()));
 			}
+			// 配置session cookie
 			configureSessionCookie(servletContext.getSessionCookieConfig());
 		}
 
@@ -340,6 +376,9 @@ public abstract class AbstractServletWebServerFactory extends AbstractConfigurab
 			}
 		}
 
+		/**
+		 * 解包
+		 */
 		private Set<javax.servlet.SessionTrackingMode> unwrap(Set<Session.SessionTrackingMode> modes) {
 			if (modes == null) {
 				return null;

@@ -33,6 +33,7 @@ public interface ConfigurableWebServerFactory extends WebServerFactory, ErrorPag
 	 * Sets the port that the web server should listen on. If not specified port '8080'
 	 * will be used. Use port -1 to disable auto-start (i.e start the web application
 	 * context but not have it listen to any port).
+	 * 设置端口
 	 * @param port the port to set
 	 */
 	void setPort(int port);
@@ -45,24 +46,28 @@ public interface ConfigurableWebServerFactory extends WebServerFactory, ErrorPag
 
 	/**
 	 * Sets the error pages that will be used when handling exceptions.
+	 * 设置异常页集合
 	 * @param errorPages the error pages
 	 */
 	void setErrorPages(Set<? extends ErrorPage> errorPages);
 
 	/**
 	 * Sets the SSL configuration that will be applied to the server's default connector.
+	 * 设置ssl对象
 	 * @param ssl the SSL configuration
 	 */
 	void setSsl(Ssl ssl);
 
 	/**
 	 * Sets a provider that will be used to obtain SSL stores.
+	 * 设置SslStoreProvider对象
 	 * @param sslStoreProvider the SSL store provider
 	 */
 	void setSslStoreProvider(SslStoreProvider sslStoreProvider);
 
 	/**
 	 * Sets the HTTP/2 configuration that will be applied to the server.
+	 * 设置HTTP2对象
 	 * @param http2 the HTTP/2 configuration
 	 */
 	void setHttp2(Http2 http2);

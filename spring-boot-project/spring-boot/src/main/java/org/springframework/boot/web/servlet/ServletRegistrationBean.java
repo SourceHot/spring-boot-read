@@ -50,16 +50,34 @@ import org.springframework.util.StringUtils;
  */
 public class ServletRegistrationBean<T extends Servlet> extends DynamicRegistrationBean<ServletRegistration.Dynamic> {
 
+	/**
+	 * 默认匹配地址
+	 */
 	private static final String[] DEFAULT_MAPPINGS = { "/*" };
 
+	/**
+	 * servlet接口实例
+	 */
 	private T servlet;
 
+	/**
+	 * 路由映射集合
+	 */
 	private Set<String> urlMappings = new LinkedHashSet<>();
 
+	/**
+	 * 是否始终进行路由映射
+	 */
 	private boolean alwaysMapUrl = true;
 
+	/**
+	 * 启动加载标记
+	 */
 	private int loadOnStartup = -1;
 
+	/**
+	 * 配置数据
+	 */
 	private MultipartConfigElement multipartConfig;
 
 	/**
@@ -186,7 +204,9 @@ public class ServletRegistrationBean<T extends Servlet> extends DynamicRegistrat
 	@Override
 	protected void configure(ServletRegistration.Dynamic registration) {
 		super.configure(registration);
+		// 转换成数组
 		String[] urlMapping = StringUtils.toStringArray(this.urlMappings);
+		// 数据长度为0并且alwaysMapUrl为真的情况下将采用DEFAULT_MAPPINGS
 		if (urlMapping.length == 0 && this.alwaysMapUrl) {
 			urlMapping = DEFAULT_MAPPINGS;
 		}

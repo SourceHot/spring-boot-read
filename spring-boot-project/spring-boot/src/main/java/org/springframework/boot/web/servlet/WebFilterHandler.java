@@ -43,15 +43,19 @@ class WebFilterHandler extends ServletComponentHandler {
 	@Override
 	public void doHandle(Map<String, Object> attributes, AnnotatedBeanDefinition beanDefinition,
 			BeanDefinitionRegistry registry) {
+		// 创建bean定义构建器, bean类型是FilterRegistrationBean
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(FilterRegistrationBean.class);
 		builder.addPropertyValue("asyncSupported", attributes.get("asyncSupported"));
+		// 提取dispatcherTypes数据
 		builder.addPropertyValue("dispatcherTypes", extractDispatcherTypes(attributes));
 		builder.addPropertyValue("filter", beanDefinition);
 		builder.addPropertyValue("initParameters", extractInitParameters(attributes));
+		// 确认名称
 		String name = determineName(attributes, beanDefinition);
 		builder.addPropertyValue("name", name);
 		builder.addPropertyValue("servletNames", attributes.get("servletNames"));
 		builder.addPropertyValue("urlPatterns", extractUrlPatterns(attributes));
+		// 注册bean
 		registry.registerBeanDefinition(name, builder.getBeanDefinition());
 	}
 

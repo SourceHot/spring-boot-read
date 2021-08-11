@@ -46,13 +46,21 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public abstract class AbstractFilterRegistrationBean<T extends Filter> extends DynamicRegistrationBean<Dynamic> {
 
 	private static final String[] DEFAULT_URL_MAPPINGS = { "/*" };
-
+	/**
+		 * ServletRegistrationBean集合
+	 */
 	private Set<ServletRegistrationBean<?>> servletRegistrationBeans = new LinkedHashSet<>();
-
+	/**
+	 * servlet 名称集合
+	 */
 	private Set<String> servletNames = new LinkedHashSet<>();
-
+	/**
+	 * 路由匹配集合
+	 */
 	private Set<String> urlPatterns = new LinkedHashSet<>();
-
+	/**
+	 * 类型集合
+	 */
 	private EnumSet<DispatcherType> dispatcherTypes;
 
 	private boolean matchAfter = false;
@@ -220,7 +228,9 @@ public abstract class AbstractFilterRegistrationBean<T extends Filter> extends D
 		super.configure(registration);
 		EnumSet<DispatcherType> dispatcherTypes = this.dispatcherTypes;
 		if (dispatcherTypes == null) {
+			// 获取拦截器
 			T filter = getFilter();
+			// 判断拦截器类型是否是OncePerRequestFilter,如果是将会修正dispatcherTypes数据为所有DispatcherType,如果不是将会选择DispatcherType.REQUEST数据进行修正
 			if (ClassUtils.isPresent("org.springframework.web.filter.OncePerRequestFilter",
 					filter.getClass().getClassLoader()) && filter instanceof OncePerRequestFilter) {
 				dispatcherTypes = EnumSet.allOf(DispatcherType.class);
@@ -229,20 +239,25 @@ public abstract class AbstractFilterRegistrationBean<T extends Filter> extends D
 				dispatcherTypes = EnumSet.of(DispatcherType.REQUEST);
 			}
 		}
+		// servlet名称处理
 		Set<String> servletNames = new LinkedHashSet<>();
+		// 从成员变量servletRegistrationBeans中提取servlet名称
 		for (ServletRegistrationBean<?> servletRegistrationBean : this.servletRegistrationBeans) {
 			servletNames.add(servletRegistrationBean.getServletName());
 		}
+		// 补充成员变量servletNames的数据
 		servletNames.addAll(this.servletNames);
 		if (servletNames.isEmpty() && this.urlPatterns.isEmpty()) {
+			// 添加映射配置
 			registration.addMappingForUrlPatterns(dispatcherTypes, this.matchAfter, DEFAULT_URL_MAPPINGS);
-		}
-		else {
+		} else {
 			if (!servletNames.isEmpty()) {
+				// 添加映射配置
 				registration.addMappingForServletNames(dispatcherTypes, this.matchAfter,
 						StringUtils.toStringArray(servletNames));
 			}
 			if (!this.urlPatterns.isEmpty()) {
+				// 添加映射配置
 				registration.addMappingForUrlPatterns(dispatcherTypes, this.matchAfter,
 						StringUtils.toStringArray(this.urlPatterns));
 			}

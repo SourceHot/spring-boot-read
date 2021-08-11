@@ -41,10 +41,19 @@ public abstract class DynamicRegistrationBean<D extends Registration.Dynamic> ex
 
 	private static final Log logger = LogFactory.getLog(RegistrationBean.class);
 
+	/**
+	 * 名称
+	 */
 	private String name;
 
+	/**
+	 * 是否支持异步
+	 */
 	private boolean asyncSupported = true;
 
+	/**
+	 * 初始化配置参数
+	 */
 	private Map<String, String> initParameters = new LinkedHashMap<>();
 
 	/**
@@ -105,11 +114,13 @@ public abstract class DynamicRegistrationBean<D extends Registration.Dynamic> ex
 
 	@Override
 	protected final void register(String description, ServletContext servletContext) {
+		// 获取Registration.Dynamic对象
 		D registration = addRegistration(description, servletContext);
 		if (registration == null) {
 			logger.info(StringUtils.capitalize(description) + " was not registered (possibly already registered?)");
 			return;
 		}
+		// 配置Registration.Dynamic对象
 		configure(registration);
 	}
 

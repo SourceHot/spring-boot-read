@@ -49,12 +49,14 @@ public interface ConfigurableServletWebServerFactory
 	 * Sets the context path for the web server. The context should start with a "/"
 	 * character but not end with a "/" character. The default context path can be
 	 * specified using an empty string.
+	 * 设置上下文路径
 	 * @param contextPath the contextPath to set
 	 */
 	void setContextPath(String contextPath);
 
 	/**
 	 * Sets the display name of the application deployed in the web server.
+	 * 设置显示名称
 	 * @param displayName the displayName to set
 	 * @since 1.3.0
 	 */
@@ -63,6 +65,7 @@ public interface ConfigurableServletWebServerFactory
 	/**
 	 * Sets the configuration that will be applied to the container's HTTP session
 	 * support.
+	 * 设置session对象
 	 * @param session the session configuration
 	 */
 	void setSession(Session session);
@@ -70,12 +73,14 @@ public interface ConfigurableServletWebServerFactory
 	/**
 	 * Set if the DefaultServlet should be registered. Defaults to {@code false} since
 	 * 2.4.
+	 * 设置是否注册默认的servlet
 	 * @param registerDefaultServlet if the default servlet should be registered
 	 */
 	void setRegisterDefaultServlet(boolean registerDefaultServlet);
 
 	/**
 	 * Sets the mime-type mappings.
+	 * 设置 MIME 类型映射
 	 * @param mimeMappings the mime type mappings (defaults to
 	 * {@link MimeMappings#DEFAULT})
 	 */
@@ -84,6 +89,7 @@ public interface ConfigurableServletWebServerFactory
 	/**
 	 * Sets the document root directory which will be used by the web context to serve
 	 * static files.
+	 * 设置 Web 上下文将使用的文档根目录来提供静态文件。
 	 * @param documentRoot the document root or {@code null} if not required
 	 */
 	void setDocumentRoot(File documentRoot);
@@ -114,6 +120,7 @@ public interface ConfigurableServletWebServerFactory
 
 	/**
 	 * Sets the Locale to Charset mappings.
+	 * 用于设置地区和字符编码的绑定关系。
 	 * @param localeCharsetMappings the Locale to Charset mappings
 	 */
 	void setLocaleCharsetMappings(Map<Locale, Charset> localeCharsetMappings);

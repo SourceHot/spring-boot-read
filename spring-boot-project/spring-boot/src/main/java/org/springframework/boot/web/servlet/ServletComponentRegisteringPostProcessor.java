@@ -62,8 +62,11 @@ class ServletComponentRegisteringPostProcessor implements BeanFactoryPostProcess
 
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+		// 判断是否是嵌入式web启动
 		if (isRunningInEmbeddedWebServer()) {
+			// 创建类路径扫描器
 			ClassPathScanningCandidateComponentProvider componentProvider = createComponentProvider();
+			// 包扫描
 			for (String packageToScan : this.packagesToScan) {
 				scanPackage(componentProvider, packageToScan);
 			}
@@ -71,8 +74,11 @@ class ServletComponentRegisteringPostProcessor implements BeanFactoryPostProcess
 	}
 
 	private void scanPackage(ClassPathScanningCandidateComponentProvider componentProvider, String packageToScan) {
+		// 提取输入的包路径下的bean定义对象
 		for (BeanDefinition candidate : componentProvider.findCandidateComponents(packageToScan)) {
+			// 判断类型是否是AnnotatedBeanDefinition
 			if (candidate instanceof AnnotatedBeanDefinition) {
+
 				for (ServletComponentHandler handler : HANDLERS) {
 					handler.handle(((AnnotatedBeanDefinition) candidate),
 							(BeanDefinitionRegistry) this.applicationContext);

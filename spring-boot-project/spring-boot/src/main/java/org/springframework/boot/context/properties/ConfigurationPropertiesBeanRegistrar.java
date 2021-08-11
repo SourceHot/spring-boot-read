@@ -39,8 +39,14 @@ import org.springframework.util.StringUtils;
  */
 final class ConfigurationPropertiesBeanRegistrar {
 
+	/**
+	 * bean定义注册器。
+	 */
 	private final BeanDefinitionRegistry registry;
 
+	/**
+	 * bean工厂。
+	 */
 	private final BeanFactory beanFactory;
 
 	ConfigurationPropertiesBeanRegistrar(BeanDefinitionRegistry registry) {
@@ -49,8 +55,10 @@ final class ConfigurationPropertiesBeanRegistrar {
 	}
 
 	void register(Class<?> type) {
+		// 提取ConfigurationProperties注解
 		MergedAnnotation<ConfigurationProperties> annotation = MergedAnnotations
 				.from(type, SearchStrategy.TYPE_HIERARCHY).get(ConfigurationProperties.class);
+		// 核心注册流程
 		register(type, annotation);
 	}
 

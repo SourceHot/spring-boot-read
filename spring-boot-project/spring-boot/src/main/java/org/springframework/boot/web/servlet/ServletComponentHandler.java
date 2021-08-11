@@ -16,16 +16,16 @@
 
 package org.springframework.boot.web.servlet;
 
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
+
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Abstract base class for handlers of Servlet components discovered via classpath
@@ -34,9 +34,13 @@ import org.springframework.util.Assert;
  * @author Andy Wilkinson
  */
 abstract class ServletComponentHandler {
-
+	/**
+	 * 注解类型
+	 */
 	private final Class<? extends Annotation> annotationType;
-
+	/**
+	 * 类型过滤器
+	 */
 	private final TypeFilter typeFilter;
 
 	protected ServletComponentHandler(Class<? extends Annotation> annotationType) {
@@ -69,14 +73,16 @@ abstract class ServletComponentHandler {
 	}
 
 	void handle(AnnotatedBeanDefinition beanDefinition, BeanDefinitionRegistry registry) {
+		// 从bean定义中获取指定注解的属性
 		Map<String, Object> attributes = beanDefinition.getMetadata()
 				.getAnnotationAttributes(this.annotationType.getName());
+		// 注解属性不为空的情况进行实际执行
 		if (attributes != null) {
 			doHandle(attributes, beanDefinition, registry);
 		}
 	}
 
 	protected abstract void doHandle(Map<String, Object> attributes, AnnotatedBeanDefinition beanDefinition,
-			BeanDefinitionRegistry registry);
+									 BeanDefinitionRegistry registry);
 
 }

@@ -90,10 +90,15 @@ class ConfigurationPropertiesScanRegistrar implements ImportBeanDefinitionRegist
 	}
 
 	private void scan(BeanDefinitionRegistry registry, Set<String> packages) {
+		//  创建Bean注册器
 		ConfigurationPropertiesBeanRegistrar registrar = new ConfigurationPropertiesBeanRegistrar(registry);
+		// 获取扫描器
 		ClassPathScanningCandidateComponentProvider scanner = getScanner(registry);
+		// 循环包路径
 		for (String basePackage : packages) {
+			// 通过扫描器扫描bean定义
 			for (BeanDefinition candidate : scanner.findCandidateComponents(basePackage)) {
+				// 注册
 				register(registrar, candidate.getBeanClassName());
 			}
 		}

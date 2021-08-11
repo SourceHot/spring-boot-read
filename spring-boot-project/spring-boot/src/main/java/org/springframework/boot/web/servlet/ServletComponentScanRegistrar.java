@@ -43,24 +43,44 @@ class ServletComponentScanRegistrar implements ImportBeanDefinitionRegistrar {
 
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+		// 获取包扫描路径
 		Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
+		// bean定义注册器中存在servletComponentRegisteringPostProcessor对应的bean
 		if (registry.containsBeanDefinition(BEAN_NAME)) {
+			// 更新后置处理器
 			updatePostProcessor(registry, packagesToScan);
-		}
-		else {
+		} else {
+			// 添加后置处理器
 			addPostProcessor(registry, packagesToScan);
 		}
 	}
 
+
+	/**
+	 * 更新后置处理器
+	 *
+	 * @param registry
+	 * @param packagesToScan
+	 */
 	private void updatePostProcessor(BeanDefinitionRegistry registry, Set<String> packagesToScan) {
+		// 从bean定义注册器中获取servletComponentRegisteringPostProcessor对应的bean定义
 		ServletComponentRegisteringPostProcessorBeanDefinition definition = (ServletComponentRegisteringPostProcessorBeanDefinition) registry
 				.getBeanDefinition(BEAN_NAME);
+		// 添加包扫描路径
 		definition.addPackageNames(packagesToScan);
 	}
 
+	/**
+	 * 添加后置处理器
+	 *
+	 * @param registry
+	 * @param packagesToScan
+	 */
 	private void addPostProcessor(BeanDefinitionRegistry registry, Set<String> packagesToScan) {
+		// 创建ServletComponentRegisteringPostProcessorBeanDefinition对象
 		ServletComponentRegisteringPostProcessorBeanDefinition definition = new ServletComponentRegisteringPostProcessorBeanDefinition(
 				packagesToScan);
+		// bean定义注册
 		registry.registerBeanDefinition(BEAN_NAME, definition);
 	}
 
